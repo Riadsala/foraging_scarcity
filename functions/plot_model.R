@@ -90,6 +90,13 @@ plt_post_prior <- function(var, xtitle, post, prior) {
 }
 
 
+plot_traceplots(m)
+{
+  
+  traceplot(m, pars = c("cW", "bS", "b", "sig_cw", "sig_switch"))
+  
+}
+
 plot_model_spatial <- function(m) {
   
   m %>% 
