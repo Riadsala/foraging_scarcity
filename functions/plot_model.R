@@ -1,36 +1,5 @@
 library(tidybayes)
 
-plt_post_prior <- function(var, xtitle) {
-  
-  prior_var = paste("prior", var, sep = "_")
-  
-  if (var == "p_floor") 
-  {
-  post %>% 
-    ggplot() + 
-    geom_rect(data = prior %>% 
-                median_hdci(exp(get(prior_var)), .width = c(0.53, 0.97)),
-              aes(ymin = -Inf, ymax = Inf, xmin = .lower, xmax = .upper), 
-              fill = "white", alpha = 0.25) +  
-    geom_density(aes(exp(get(var)), fill = block), alpha = 0.5) +
-    scale_x_continuous(xtitle) +
-    coord_cartesian(xlim = c(0, 0.5))-> plt
-    
-  } else {
-    post %>% 
-      ggplot() + 
-      geom_rect(data = prior %>% 
-                  median_hdci(get(prior_var), .width = c(0.53, 0.97)),
-                aes(ymin = -Inf, ymax = Inf, xmin = .lower, xmax = .upper), 
-                fill = "white", alpha = 0.25) +  
-      geom_density(aes(get(var), fill = block), alpha = 0.5) +
-      scale_x_continuous(xtitle) -> plt
-    
-  }
-  
-  return(plt)
-  
-}
 
 plot_model_fixed <- function(m)
 {
@@ -78,9 +47,9 @@ plot_model_fixed <- function(m)
     scale_x_continuous("stick probability", limits = c(0, 1))  -> plt_sW
   
   # plot proximity and direction effects
-  plt_dis <- plt_post_prior("phi_dis", "proximity tuning")
-  plt_dir <- plt_post_prior("phi_dir", "direciton tuning") 
-  plt_flr <- plt_post_prior("p_floor", "floor") 
+  plt_dis <- plt_post_prior("phi_dis", "proximity tuning", post, prior)
+  plt_dir <- plt_post_prior("phi_dir", "direciton tuning", post, prior) 
+  plt_flr <- plt_post_prior("p_floor", "floor", post, prior) 
 
   plt <-  (plt_cW + plt_sW) / (plt_dis + plt_dir  + plt_flr) +
     plot_layout(guides = "collect") & theme(legend.position = "bottom")
@@ -88,6 +57,39 @@ plot_model_fixed <- function(m)
   return(plt)
 }
   
+plt_post_prior <- function(var, xtitle, post, prior) {
+  
+  prior_var = paste("prior", var, sep = "_")
+  
+  if (var == "p_floor") 
+  {
+    post %>% 
+      ggplot() + 
+      geom_rect(data = prior %>% 
+                  median_hdci(exp(get(prior_var)), .width = c(0.53, 0.97)),
+                aes(ymin = -Inf, ymax = Inf, xmin = .lower, xmax = .upper), 
+                fill = "white", alpha = 0.25) +  
+      geom_density(aes(exp(get(var)), fill = block), alpha = 0.5) +
+      scale_x_continuous(xtitle) +
+      coord_cartesian(xlim = c(0, 0.5))-> plt
+    
+  } else {
+    post %>% 
+      ggplot() + 
+      geom_rect(data = prior %>% 
+                  median_hdci(get(prior_var), .width = c(0.53, 0.97)),
+                aes(ymin = -Inf, ymax = Inf, xmin = .lower, xmax = .upper), 
+                fill = "white", alpha = 0.25) +  
+      geom_density(aes(get(var), fill = block), alpha = 0.5) +
+      scale_x_continuous(xtitle) -> plt
+    
+  }
+  
+  return(plt)
+  
+}
+
+
 plot_model_spatial <- function(m) {
   
   m %>% 

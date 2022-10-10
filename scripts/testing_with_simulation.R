@@ -74,8 +74,6 @@ d_found <- d %>% filter(found > 0) %>%
   arrange(person, condition, trial, found) %>%
   rename(block = "condition")
 
-
-
 # d_found %>% filter(block == 1, trial == 1) %>%
 #   ggplot(aes(x, y)) + 
 #   geom_label(aes(label = id, colour = as.factor(class))) + 
