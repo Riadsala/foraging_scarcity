@@ -1,3 +1,5 @@
+library(tidybayes)
+
 plt_post_prior <- function(var, xtitle) {
   
   prior_var = paste("prior", var, sep = "_")
