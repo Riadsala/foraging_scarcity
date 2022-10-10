@@ -239,7 +239,7 @@ model {
   }
 
   // priors for random effects - stick/switch weights
-  sig_switch ~ normal(0, 0.1);
+  sig_switch ~ normal(0, 1);
   for (ii in 1:K) { 
     target += normal_lpdf(bS[ii] | 0, prior_sd_bS);
     for (obs in 1:L) {
