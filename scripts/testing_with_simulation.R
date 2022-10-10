@@ -42,8 +42,8 @@ d <- sim_foraging_people(n_people = n_people,
                          b_stick = b_stick, sig_d = sig_d, sig_theta = sig_theta, # fixed effects
                          phi_stick = phi_stick, phi_d = phi_d, phi_theta = phi_theta) # random effects)
 
-# write_csv(d, "scratch/sim_data.csv")
-# d <- read_csv("scratch/sim_data.csv")
+write_csv(d, "../scratch/sim_data.csv")
+d <- read_csv("../scratch/sim_data.csv")
 
 d %>% group_by(person, condition) %>%
   summarise(b_stick = unique(b_stick),
@@ -92,7 +92,7 @@ d_list <- prep_data_for_stan(d_found, d_stim)
 m <- stan("../models/foraging_model_multilevel.stan", data = d_list, 
            chains = 4, iter = 1000)
 
-    saveRDS(m, "scratch/tmp.model")
+    saveRDS(m, "../scratch/tmp.model")
     
 ######################################################
 # plot model

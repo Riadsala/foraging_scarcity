@@ -6,8 +6,8 @@ library(ggdark)
 
 theme_set(dark_theme_bw())
 
-d <- read_csv("scratch/sim_data.csv")
-m <- readRDS("scratch/tmp.model")
+d <- read_csv("../scratch/sim_data.csv")
+m <- readRDS("../scratch/tmp.model")
 
 source("../functions/plot_model.R")
 
