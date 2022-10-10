@@ -85,7 +85,7 @@ d_list <- prep_data_for_stan(d_found, d_stim)
 # run model
 ######################################################
 
-m <- stan("../models/foraging_model_multilevel.stan", data = d_list, 
+m <- stan("../models/foraging_model_no_init_sel.stan", data = d_list, 
            chains = 4, iter = 1000)
 
     saveRDS(m, "../scratch/tmp.model")
