@@ -1,0 +1,149 @@
+plt_post_prior <- function(var, xtitle) {
+  
+  prior_var = paste("prior", var, sep = "_")
+  
+  if (var == "p_floor") 
+  {
+  post %>% 
+    ggplot() + 
+    geom_rect(data = prior %>% 
+                median_hdci(exp(get(prior_var)), .width = c(0.53, 0.97)),
+              aes(ymin = -Inf, ymax = Inf, xmin = .lower, xmax = .upper), 
+              fill = "white", alpha = 0.25) +  
+    geom_density(aes(exp(get(var)), fill = block), alpha = 0.5) +
+    scale_x_continuous(xtitle) +
+    coord_cartesian(xlim = c(0, 0.5))-> plt
+    
+  } else {
+    post %>% 
+      ggplot() + 
+      geom_rect(data = prior %>% 
+                  median_hdci(get(prior_var), .width = c(0.53, 0.97)),
+                aes(ymin = -Inf, ymax = Inf, xmin = .lower, xmax = .upper), 
+                fill = "white", alpha = 0.25) +  
+      geom_density(aes(get(var), fill = block), alpha = 0.5) +
+      scale_x_continuous(xtitle) -> plt
+    
+  }
+  
+  return(plt)
+  
+}
+
+plot_model_fixed <- function(m)
+{
+  
+  m %>% recover_types(d$found) %>%
+    spread_draws(cW[block, class], bS[block], p_floor[block], phi_dis[block], phi_dir[block]) %>%
+    mutate(block = as_factor(block),
+           block = fct_recode(block, feature = "1", conjunction = "2"),
+           class = as_factor(class)) %>%
+    ungroup() -> post
+  
+  m %>% recover_types(d$found) %>%
+    spread_draws(prior_cW[class], prior_sW, prior_phi_dis, prior_phi_dir, prior_p_floor) %>%
+    mutate(class = as_factor(class)) %>%
+    ungroup() -> prior
+  
+  n_classes <- length(unique(post$class))
+  my_widths <- c(0.53, 0.97)
+  
+  # plot class weights
+  post %>%
+    ggplot() + 
+    geom_rect(data = prior %>% 
+                median_hdci(prior_cW, .width = c(0.53, 0.97)),
+              aes(xmin = -Inf, xmax = Inf, ymin = .lower, ymax = .upper), 
+              fill = "white", alpha = 0.25) +
+    stat_pointinterval(aes(class, cW, colour = block), 
+                       .width = my_widths,
+                       position = position_dodge(0.2)) +
+    geom_hline(yintercept = 1/n_classes, linetype = 2) +
+    scale_y_continuous("class weights", limits = c(0, 1))  -> plt_cW
+  
+  # plot stick-switch param
+  post  %>%
+    ggplot()  + 
+    geom_rect(data = prior %>% 
+                median_hdci(prior_sW, .width = c(0.53, 0.97)) %>%
+                mutate(.lower = boot::inv.logit(.lower),
+                       .upper = boot::inv.logit(.upper)),
+              aes(ymin = -Inf, ymax = Inf, xmin = .lower, xmax = .upper), 
+              fill = "white", alpha = 0.25) + 
+  geom_vline(xintercept = 0.5, colour = "black", linetype= 2) +
+    stat_pointinterval(aes(boot::inv.logit(bS), block, colour = block), .width = my_widths) +
+    geom_vline(xintercept = 0.5, linetype = 2) +
+    scale_x_continuous("stick probability", limits = c(0, 1))  -> plt_sW
+  
+  # plot proximity and direction effects
+  plt_dis <- plt_post_prior("phi_dis", "proximity tuning")
+  plt_dir <- plt_post_prior("phi_dir", "direciton tuning") 
+  plt_flr <- plt_post_prior("p_floor", "floor") 
+
+  plt <-  (plt_cW + plt_sW) / (plt_dis + plt_dir  + plt_flr) +
+    plot_layout(guides = "collect") & theme(legend.position = "bottom")
+  
+  return(plt)
+}
+  
+plot_model_spatial <- function(m) {
+  
+  m %>% 
+    spread_draws(p_floor[block], phi_dis[block], phi_dir[block]) %>%
+    mutate(block = as_factor(block),
+           block = fct_recode(block, feature = "1", conjunction = "2")) %>%
+    ungroup() -> post
+  
+  m %>% spread_draws(u[block, person],) %>%
+    mutate(param = block %% 3,
+           param = if_else(param == 0, 3, param),
+           block = (block / 3),
+           block = ceiling(block),
+           block = as_factor(block),
+           block = fct_recode(block, feature = "1", conjunction = "2"),
+           param = as_factor(param),
+           param = fct_recode(param, phi_dir = "1", "phi_dis" = "2", "p_floor" = "3")) %>%
+    rename(uz = "u") -> post_u
+  
+  full_join(post %>%
+              pivot_longer(c(phi_dis, phi_dir, p_floor), names_to = "param", values_to = "u"), 
+            post_u) %>% 
+    mutate(uz = u + uz) %>%
+    group_by(person, block, param) %>%
+    summarise(uz = mean(uz)) - post_u
+
+  # now to lambdas
+    m %>% recover_types(d$found) %>%
+      spread_draws(lambda[person]) %>%
+      mutate(person = as_factor(person)) %>%
+      ggplot(aes(lambda, person)) +
+      stat_pointinterval(colour = "white") -> plt_lambda
+  
+  distances <- seq(0, 1.5, 0.05)
+  # draw distance tuning figure for foxed effect
+    pmap_dfr(select(post, block, phi_dis, p_floor), 
+             function(phi_dis, p_floor, t, block) tibble(t=t, block = block,
+                                                       q = exp(-phi_dis * t) + exp(p_floor)),
+             t = distances) %>%
+      group_by(block, t) %>%
+      median_hdci(q, .width = c(0.53, 0.97)) %>%
+      select(-q, -.point, -.interval) %>%
+      unite("interval", .lower, .upper) %>%
+      pivot_wider(names_from = ".width", values_from = "interval") %>%
+      separate(`0.53`, c("lower53", "upper53"), sep  = "_", convert = T)  %>%
+      separate(`0.97`, c("lower97", "upper97"), sep  = "_", convert = T) -> q
+    
+    
+    
+    
+  # plot fixed effect distance -> weight function HDPI
+    q %>%
+      ggplot(aes(t)) +
+      geom_ribbon(aes(ymin = lower97, ymax = upper97, fill = block), alpha = 0.5) +
+      geom_ribbon(aes(ymin = lower53, ymax = upper53, fill = block), alpha = 0.7) +
+      scale_x_continuous("distance to target") +
+      scale_y_continuous("weighting") -> plt_dis
+    
+    plt_lambda + plt_dis
+  
+}

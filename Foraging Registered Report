@@ -1,0 +1,19 @@
+Foraging Registered Report
+ 
+
+Hypothesis:
+
+
+- Individual differences in model accuracy will be (largely) explained by individual differences in proximity bias.
+
+? Test-retest Correlation is around 0.7... previously Clarke et al (2022, QJEP) estimated this in a slightly odd way, and given the interest in indiv differences, it would be good to check this. More specifically, we can calculate reliability for each parameter in our model!
+
+- Negative momentum will be observed, at least for the majority of participants. We will further explore this using eye-tracking and expect to see look-ahead fixations to targets that participants "track back" to collect. 
+
+- Only bD and bM will correlate with one another across participants. {What about lambda? - AC's hypothesis is that it will correlated with bD and bM, but not the other parameters.}
+
+- The model will find it harder to predict item-selections with longer inter-item selection times. 
+
+- Adding a new parameter (bFloor) will allow the model to better capture the data, in particular, it can give more weight to further away targets. We expect bFloor to correlate with model accuracy.  
+
+- scarcity stuff
