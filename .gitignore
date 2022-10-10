@@ -2,3 +2,4 @@
 *.rda
 scratch/
 *.rData
+*.Rhistory
