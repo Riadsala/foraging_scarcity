@@ -1,9 +1,7 @@
 library(tidyverse)
 library(rstan)
 library(patchwork)
-library(tidybayes)
-library(loo)
-library(ggdark)
+
 
 # function to test the main multi-level foraging model
 
