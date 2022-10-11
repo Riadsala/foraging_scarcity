@@ -101,7 +101,8 @@ data {
   int <lower = 1, upper = L> Z[N]; // random effect levels 
   
   real alpha; // param for class weight prior
-  real prior_sd_bS; // prior for sd for bS
+  real prior_mu_bS; 
+  real prior_sd_bS; 
   real prior_mu_phidis;
   real prior_sd_phidis;
   real prior_mu_phidir;
@@ -241,7 +242,7 @@ model {
   // priors for random effects - stick/switch weights
   sig_switch ~ normal(0, 1);
   for (ii in 1:K) { 
-    target += normal_lpdf(bS[ii] | 0, prior_sd_bS);
+    target += normal_lpdf(bS[ii] | prior_mu_bS, prior_sd_bS);
     for (obs in 1:L) {
       u_stick[ii, obs] ~ normal(0, sig_switch);
     }
