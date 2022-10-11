@@ -141,6 +141,7 @@ prep_data_for_stan <- function(df, ds) {
     E = theta,
     Z = df$person,
     alpha = 2,
+    prior_mu_bS = 1.1,
     prior_sd_bS = 2,
     prior_mu_phidis = 15,
     prior_sd_phidis = 5,

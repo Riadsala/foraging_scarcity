@@ -90,7 +90,7 @@ plt_post_prior <- function(var, xtitle, post, prior) {
 }
 
 
-plot_traceplots(m)
+plot_traceplots <- function(m)
 {
   
   traceplot(m, pars = c("cW", "bS", "b", "sig_cw", "sig_switch"))
@@ -118,10 +118,11 @@ plot_model_spatial <- function(m) {
   
   full_join(post %>%
               pivot_longer(c(phi_dis, phi_dir, p_floor), names_to = "param", values_to = "u"), 
-            post_u) %>% 
+            post_u, 
+            by = c("block", ".chain", ".iteration", ".draw", "param")) %>% 
     mutate(uz = u + uz) %>%
     group_by(person, block, param) %>%
-    summarise(uz = mean(uz)) - post_u
+    summarise(uz = mean(uz), .groups = "drop") -> post_u
 
   # now to lambdas
     m %>% recover_types(d$found) %>%
@@ -145,9 +146,7 @@ plot_model_spatial <- function(m) {
       separate(`0.97`, c("lower97", "upper97"), sep  = "_", convert = T) -> q
     
     
-    
-    
-  # plot fixed effect distance -> weight function HDPI
+    # plot fixed effect distance -> weight function HDPI
     q %>%
       ggplot(aes(t)) +
       geom_ribbon(aes(ymin = lower97, ymax = upper97, fill = block), alpha = 0.5) +
