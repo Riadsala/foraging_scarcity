@@ -97,6 +97,57 @@ plot_traceplots <- function(m)
   
 }
 
+plt_beta_comp <- function(dat, var) {
+  
+  dat %>% filter(dim == var) %>%
+    ggplot(aes(x, z, group = interaction(c, draw), colour = c)) +
+    geom_path(alpha = 0.1) + 
+    theme(legend.position = "none")  + 
+    scale_y_continuous("likelihood")  -> plt
+  
+  if (var == "y") {
+    plt <- plt + coord_flip() + 
+      scale_x_reverse()  +
+      xlab(var)
+  }
+  
+  return(plt)
+  
+}
+
+sample_beta <- function(c, .draw, dim, a, b) {
+  
+  x <- seq(0.01, 0.99, 0.01)
+  
+  return(tibble(c = c, 
+                draw = .draw,
+                dim = dim,
+                x = x,
+                z = dbeta(x, shape1 = a, shape2 = b)))
+}
+
+
+plot_init_sel <- function(m) {
+  
+  # now to lambdas
+  m %>% recover_types(d$found) %>%
+    spread_draws(lambda[person]) %>%
+    mutate(person = as_factor(person)) %>%
+    ggplot(aes(lambda, person)) +
+    stat_pointinterval(colour = "white") -> plt_lambda
+  
+    gather_draws(m, a_x[c], b_x[c], a_y[c], b_y[c], ndraws = 100) %>%
+      separate(.variable, into = c("param", "dim")) %>%
+      select(-.chain, -.iteration) %>%
+      pivot_wider(names_from = param, values_from = ".value") %>%
+      pmap_df(sample_beta) %>%
+      mutate(c = as_factor(c)) -> plt_dat
+    
+    plt <- plt_lambda + plt_beta_comp(plt_dat, "y") + plt_beta_comp(plt_dat, "x")
+   
+    return(plt)
+}
+
 plot_model_spatial <- function(m) {
   
   m %>% 
@@ -122,16 +173,14 @@ plot_model_spatial <- function(m) {
             by = c("block", ".chain", ".iteration", ".draw", "param")) %>% 
     mutate(uz = u + uz) %>%
     group_by(person, block, param) %>%
-    summarise(uz = mean(uz), .groups = "drop") -> post_u
+    summarise(uz = mean(uz), .groups = "drop") %>%
+    pivot_wider(names_from = "param", values_from = "uz") -> post_u
 
-  # now to lambdas
-    m %>% recover_types(d$found) %>%
-      spread_draws(lambda[person]) %>%
-      mutate(person = as_factor(person)) %>%
-      ggplot(aes(lambda, person)) +
-      stat_pointinterval(colour = "white") -> plt_lambda
+ 
+    
+    
+  distances <- seq(0, 1, 0.025)
   
-  distances <- seq(0, 1.5, 0.05)
   # draw distance tuning figure for foxed effect
     pmap_dfr(select(post, block, phi_dis, p_floor), 
              function(phi_dis, p_floor, t, block) tibble(t=t, block = block,
@@ -145,7 +194,6 @@ plot_model_spatial <- function(m) {
       separate(`0.53`, c("lower53", "upper53"), sep  = "_", convert = T)  %>%
       separate(`0.97`, c("lower97", "upper97"), sep  = "_", convert = T) -> q
     
-    
     # plot fixed effect distance -> weight function HDPI
     q %>%
       ggplot(aes(t)) +
@@ -154,6 +202,18 @@ plot_model_spatial <- function(m) {
       scale_x_continuous("distance to target") +
       scale_y_continuous("weighting") -> plt_dis
     
-    plt_lambda + plt_dis
+    # now plot indiv prox fall offs:
+    pmap_dfr(select(post_u, block, phi_dis, p_floor , person), 
+             function(phi_dis, p_floor, t, block, person) tibble(t=t, block = block, person = person,
+                                                         q = exp(-phi_dis * t) + exp(p_floor)),
+             t = distances) %>%
+      ggplot(aes(x = t, y = q, colour = block, group = interaction(block, person))) + 
+      geom_path(alpha = 0.5) +
+      scale_x_continuous("distance to target") +
+      scale_y_continuous("weighting") -> plt_dis_p
+    
+    
+    
+    plt_lambda + plt_dis + plt_dis_p
   
 }

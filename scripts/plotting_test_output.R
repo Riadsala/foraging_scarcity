@@ -13,5 +13,5 @@ source("../functions/plot_model.R")
 
 plot_model_fixed(m)
 
-
+plot_init_sel(m)
 plot_model_spatial(m)
