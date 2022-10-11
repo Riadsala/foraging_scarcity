@@ -1,7 +1,7 @@
 library(tidybayes)
 
 
-plot_model_fixed <- function(m)
+plot_model_fixed <- function(m,d)
 {
   
   m %>% recover_types(d$found) %>%
