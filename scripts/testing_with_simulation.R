@@ -14,10 +14,10 @@ source("../functions/get_run_info.R")
 ######################################################
 # first of all we want to generate some synthetic data
 ######################################################
-n_people <- 6
+n_people <- 10
 n_conditions <- 2
-n_trials_per_cond <- 5
-n_targ_per_class <- 8
+n_trials_per_cond <- 10
+n_targ_per_class <- 20
 n_targ_class <- 2
 
 targ_class_weights <- list(c(1,1), c(2,1))
