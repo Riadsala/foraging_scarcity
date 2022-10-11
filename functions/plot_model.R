@@ -71,7 +71,7 @@ plt_post_prior <- function(var, xtitle, post, prior) {
                 fill = "white", alpha = 0.25) +  
       geom_density(aes(exp(get(var)), fill = block), alpha = 0.5) +
       scale_x_continuous(xtitle) +
-      coord_cartesian(xlim = c(0, 0.5))-> plt
+      coord_cartesian(xlim = c(0, 0.1))-> plt
     
   } else {
     post %>% 
@@ -89,6 +89,13 @@ plt_post_prior <- function(var, xtitle, post, prior) {
   
 }
 
+
+plot_traceplots(m)
+{
+  
+  traceplot(m, pars = c("cW", "bS", "b", "sig_cw", "sig_switch"))
+  
+}
 
 plot_model_spatial <- function(m) {
   
