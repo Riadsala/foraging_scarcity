@@ -176,8 +176,6 @@ plot_model_spatial <- function(m) {
     summarise(uz = mean(uz), .groups = "drop") %>%
     pivot_wider(names_from = "param", values_from = "uz") -> post_u
 
- 
-    
     
   distances <- seq(0, 1, 0.025)
   
@@ -214,6 +212,6 @@ plot_model_spatial <- function(m) {
     
     
     
-    plt_lambda + plt_dis + plt_dis_p
+     plt_dis + plt_dis_p
   
 }

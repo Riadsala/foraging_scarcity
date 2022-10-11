@@ -3,3 +3,4 @@
 scratch/
 *.rData
 *.Rhistory
+scripts/.Rhistory

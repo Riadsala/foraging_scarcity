@@ -11,7 +11,7 @@ m <- readRDS("../scratch/tmp.model")
 
 source("../functions/plot_model.R")
 
-plot_model_fixed(m)
+plot_model_fixed(m, d)
 
 plot_init_sel(m)
 plot_model_spatial(m)
