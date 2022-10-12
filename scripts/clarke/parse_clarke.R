@@ -11,23 +11,21 @@ source("../../functions/get_run_info.R")
 
 options(mc.cores = parallel::detectCores())
 
-# chopping down a bit
-# 4 people, 5 trials per block
+# it gets stuck if there are missing people
+# it also gets stuck if people have different numbers of trials
 
 dc <- read_csv("../../data/clarke2020/clarke_2020_qjep.csv") %>%
   select(person = "observer", block = "condition", trial = "trial",  
          id = "id", found = "found", class = "targ_type",
          x = "x", y = "y") %>%
-  filter(trial == 2) %>%
-  filter(person != 14, person != 25, person != 29, person != 32, person !=45, person != 47, person !=58)
-  # hacky, removing anyone with a missing trial
+  filter(trial == 20) 
 
 dc %>% mutate(x = as.vector(rescale(x, to = c(0.01, 0.99))),
               y = as.vector(rescale(y, to = c(0.01, 0.99)))) -> dc 
 
-#dc_summary <- dc %>%
-#  group_by(person, block) %>%
-#  summarise(n = n())
+dc_summary <- dc %>%
+  group_by(person, block) %>%
+  summarise(n = n())
 
 d_stim <- dc %>% select(person, block, trial, id, x, y, class) %>%
   arrange(person, block, trial) 
