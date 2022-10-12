@@ -18,11 +18,16 @@ dc <- read_csv("../../data/clarke2020/clarke_2020_qjep.csv") %>%
   select(person = "observer", block = "condition", trial = "trial",  
          id = "id", found = "found", class = "targ_type",
          x = "x", y = "y") %>%
-  filter(person < 5,
-         trial < 6) 
+  filter(trial == 2) %>%
+  filter(person != 14, person != 25, person != 29, person != 32, person !=45, person != 47, person !=58)
+  # hacky, removing anyone with a missing trial
 
 dc %>% mutate(x = as.vector(rescale(x, to = c(0.01, 0.99))),
               y = as.vector(rescale(y, to = c(0.01, 0.99)))) -> dc 
+
+#dc_summary <- dc %>%
+#  group_by(person, block) %>%
+#  summarise(n = n())
 
 d_stim <- dc %>% select(person, block, trial, id, x, y, class) %>%
   arrange(person, block, trial) 
@@ -47,4 +52,6 @@ summary(m)
 # plotting
 source("../../functions/plot_model.R")
 
-plot_model_fixed(m, dc)  
+plot_model_fixed(m, dc)
+plot_model_spatial(m, dc)
+plot_init_sel(m, dc)

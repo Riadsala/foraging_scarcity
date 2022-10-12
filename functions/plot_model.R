@@ -127,7 +127,7 @@ sample_beta <- function(c, .draw, dim, a, b) {
 }
 
 
-plot_init_sel <- function(m) {
+plot_init_sel <- function(m, d) {
   
   # now to lambdas
   m %>% recover_types(d$found) %>%
@@ -148,7 +148,7 @@ plot_init_sel <- function(m) {
     return(plt)
 }
 
-plot_model_spatial <- function(m) {
+plot_model_spatial <- function(m, d) {
   
   m %>% 
     spread_draws(p_floor[block], phi_dis[block], phi_dir[block]) %>%
