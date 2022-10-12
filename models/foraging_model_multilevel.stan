@@ -83,20 +83,20 @@ data {
   int <lower = 1> L; // number of participant levels 
   int <lower = 1> K; // number of experimental conditions  
 
-  int <lower = 1> n_trials;  // total number of trials per participant (ie, not per condition)
+  int <lower = 1> n_trials;  // total number of trials overall
   int <lower = 1> n_classes; // number of target classes - we assume this is constant over n_trials
   int <lower = 1> n_targets; // total number of targets per trial
   int <lower = 0, upper = n_targets> trial_start[N]; // = 1 is starting a new trial, 0 otherwise
 
   int <lower = 1> Y[N]; // target IDs - which target was selected here? This is what we predict
   
-  vector[n_targets] itemX[L*n_trials]; // x postiions of each target in each trial
-  vector[n_targets] itemY[L*n_trials]; // y position
+  vector[n_targets] itemX[n_trials]; // x postiions of each target in each trial
+  vector[n_targets] itemY[n_trials]; // y position
   vector<lower = 0>[n_targets] D[N]; // distance measures
   vector<lower = 0>[n_targets] E[N]; // direction measures
 
-  int <lower = 1, upper = K> X[n_trials*L]; // trial features (ie, which condition are we in)
-  int <lower = 1, upper = n_classes> targ_class[n_trials*L, n_targets]; // target class, one row per trial
+  int <lower = 1, upper = K> X[n_trials]; // trial features (ie, which condition are we in)
+  int <lower = 1, upper = n_classes> targ_class[n_trials, n_targets]; // target class, one row per trial
   vector<lower = -1, upper = 1>[n_targets] S[N]; // stick/switch (does this targ match prev targ) 
   int <lower = 1, upper = L> Z[N]; // random effect levels 
   
