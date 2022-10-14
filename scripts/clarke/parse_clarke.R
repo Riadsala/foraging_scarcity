@@ -21,6 +21,7 @@ dc <- read_csv("../../data/clarke2020/clarke_2020_qjep.csv") %>%
   filter(person < 6)
 
 write_csv(dc, 'subset_clarke.csv')
+dc <- read_csv('subset_clarke.csv')
 
 dc %>% mutate(x = as.vector(rescale(x, to = c(0.01, 0.99))),
               y = as.vector(rescale(y, to = c(0.01, 0.99)))) -> dc 
@@ -49,7 +50,7 @@ m <- stan("../../models/foraging_model_multilevel.stan", data = d_list,
           chains = 4, iter = 1000)
 summary(m)
 
-#saveRDS(m, 'clarke_model.rds')
+saveRDS(m, 'clarke_model.rds')
 
 # plotting
 source("../../functions/plot_model.R")

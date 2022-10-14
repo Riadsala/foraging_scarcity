@@ -3,13 +3,13 @@ prep_data_for_stan <- function(df, ds) {
   # make sure trial ids are unique
   
   df %>% mutate(block = as.factor(block),
-                trial = paste(as.numeric(block), trial),
+                trial = paste(as.numeric(person), as.numeric(block), trial),
                 trial = as.numeric(as_factor(trial)),
                 person = as.numeric(as_factor(person))) -> df
   
   ds %>% mutate(block = as.factor(block),
                 class = as.factor(class),
-                trial = paste(as.numeric(block), trial),
+                trial = paste(as.numeric(person), as.numeric(block), trial),
                 trial = as.numeric(as_factor(trial)),
                 person = as.numeric(as_factor(person))) -> ds
   
@@ -93,7 +93,7 @@ prep_data_for_stan <- function(df, ds) {
   
   X <- as.numeric(d_trl$condition)
   
-  targ_class = t(array(as.numeric(ds$class), dim = c(n_targ_per_class*n_targ_class, n_people*n_trials)))
+  targ_class = t(array(as.numeric(ds$class), dim = c(n_targ_per_class*n_targ_class, n_trials)))
   
   # work out which targets match previous target
   matching = array()
