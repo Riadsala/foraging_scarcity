@@ -223,6 +223,8 @@ model {
   a_y[2] ~ normal(1.5, 0.50);
   b_y[2] ~ normal(1.5, 0.50);
 
+  lambda ~ beta(0.85, 0.9);
+
   // priors for fixed effects
   for (ii in 1:K) {
     target += dirichlet_lpdf(cW[ii] |  rep_vector(alpha, n_classes));
