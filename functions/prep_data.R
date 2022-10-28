@@ -149,7 +149,6 @@ does_item_match_prev_target <- function(Y, df, targ_class, n_targ_per_class, n_t
 prep_data_for_stan <- function(df, ds) {
   
   # make sure trial ids are unique
-  
   df %>% mutate(block = as.factor(block),
                 trial = paste(as.numeric(block), trial),
                 trial = as.numeric(as_factor(trial))) -> df
@@ -158,6 +157,15 @@ prep_data_for_stan <- function(df, ds) {
                 class = as.factor(class),
                 trial = paste(as.numeric(block), trial),
                 trial = as.numeric(as_factor(trial))) -> ds
+  
+  # correct (x, y) so that neither ever = 0 or 1
+  # as this causes problems for Beta distributions
+  df %>% mutate(x = as.vector(rescale(x, to = c(0.01, 0.99))),
+                y = as.vector(rescale(y, to = c(0.01, 0.99)))) -> df
+  
+  ds %>% mutate(x = as.vector(rescale(x, to = c(0.01, 0.99))),
+                y = as.vector(rescale(y, to = c(0.01, 0.99)))) -> ds
+  
   
   # extract stimulus parameters
   n_people <- length(unique(df$person))
