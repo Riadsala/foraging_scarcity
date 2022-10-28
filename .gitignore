@@ -5,3 +5,5 @@ scratch/
 *.Rhistory
 scripts/.Rhistory
 *.rds
+*.rds
+scripts/clarke/clarke_model.rds

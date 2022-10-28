@@ -211,17 +211,17 @@ model {
 
   /* Based on Clarke et al (2022, Vision), we will set
   informative priors for top left corner and centre */
-  a_x[1] ~ normal(1.0, 0.25);
-  b_x[1] ~ normal(8.0, 1.00);
+  a_x[1] ~ normal(1.0, 0.10);
+  b_x[1] ~ normal(8.0, 0.50);
 
-  a_y[1] ~ normal(1.0, 0.25);
-  b_y[1] ~ normal(8.0, 1.00);
+  a_y[1] ~ normal(1.0, 0.10);
+  b_y[1] ~ normal(8.0, 0.50);
 
-  a_x[2] ~ normal(1.5, 0.50);
-  b_x[2] ~ normal(1.5, 0.50);
+  a_x[2] ~ normal(1.5, 0.25);
+  b_x[2] ~ normal(1.5, 0.25);
 
-  a_y[2] ~ normal(1.5, 0.50);
-  b_y[2] ~ normal(1.5, 0.50);
+  a_y[2] ~ normal(1.5, 0.25);
+  b_y[2] ~ normal(1.5, 0.25);
 
   lambda ~ beta(0.85, 0.9);
 
@@ -231,7 +231,7 @@ model {
     target += normal_lpdf(b[1+4*(ii-1)] | prior_mu_phidis, prior_sd_phidis);
     target += normal_lpdf(b[2+4*(ii-1)] | prior_mu_phidir, prior_sd_phidir);
     target += normal_lpdf(b[3+4*(ii-1)] | prior_mu_floor, prior_sd_floor);
-    target += beta_lpdf(inv_logit(b[4+4*(ii-1)]) | 1, 1);
+    target += normal_lpdf(b[4+4*(ii-1)] | 0, 2);
   }
 
   // priors for random effects - class weights
