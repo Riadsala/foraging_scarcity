@@ -231,7 +231,7 @@ model {
     target += normal_lpdf(b[1+4*(ii-1)] | prior_mu_phidis, prior_sd_phidis);
     target += normal_lpdf(b[2+4*(ii-1)] | prior_mu_phidir, prior_sd_phidir);
     target += normal_lpdf(b[3+4*(ii-1)] | prior_mu_floor, prior_sd_floor);
-    target += beta_lpdf(b[4+4*(ii-1)] |1, 1);
+    target += beta_lpdf(inv_logit(b[4+4*(ii-1)]) | 1, 1);
   }
 
   // priors for random effects - class weights
