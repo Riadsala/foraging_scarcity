@@ -39,8 +39,8 @@ functions{
   }
 
   vector compute_spatial_weights(int n, int n_targets, int kk, int ll, int ii,
-                                 real phi_dis, real phi_dir, real p_floor,
-                                 matrix u, vector D, vector E, real lambda,
+                                 real phi_dis, real phi_dir, real p_floor, real dir_bias,
+                                 matrix u, vector D, vector E, vector A, real lambda,
                                  real[] a_x, real[] b_x, real[] a_y, real[] b_y,
                                  vector itemX, vector itemY) {
 
@@ -61,10 +61,10 @@ functions{
 
       if (n == 2) {
         // for the second selected target, weight by distance from the first
-       w = w .* exp(-(phi_dis + u[1+3*(kk-1), ll]) * D);
+       w = w .* exp(-(phi_dis + u[1+3*(kk-1), ll]) * D) .* (1 + dir_bias*cos(4*A))/(dir_bias+1);
       } else {
         // for all later targets, also weight by direciton
-        w = w .* exp(-(phi_dis + u[1+3*(kk-1), ll]) * D - (phi_dir + u[2+3*(kk-1), ll]) * E);
+        w = w .* exp(-(phi_dis + u[1+3*(kk-1), ll]) * D - (phi_dir + u[2+3*(kk-1), ll]) * E) .* (1 + dir_bias*cos(4*A))/(dir_bias+1);
       
     }
      // apply shelf..
@@ -83,26 +83,26 @@ data {
   int <lower = 1> L; // number of participant levels 
   int <lower = 1> K; // number of experimental conditions  
 
-  int <lower = 1> n_trials;  // total number of trials overall
+  int <lower = 1> n_trials;  // total number of trials per participant (ie, not per condition)
   int <lower = 1> n_classes; // number of target classes - we assume this is constant over n_trials
   int <lower = 1> n_targets; // total number of targets per trial
   int <lower = 0, upper = n_targets> trial_start[N]; // = 1 is starting a new trial, 0 otherwise
 
   int <lower = 1> Y[N]; // target IDs - which target was selected here? This is what we predict
   
-  vector[n_targets] itemX[n_trials]; // x postiions of each target in each trial
-  vector[n_targets] itemY[n_trials]; // y position
+  vector[n_targets] itemX[L*n_trials]; // x postiions of each target in each trial
+  vector[n_targets] itemY[L*n_trials]; // y position
   vector<lower = 0>[n_targets] D[N]; // distance measures
-  vector<lower = 0>[n_targets] E[N]; // direction measures
+  vector<lower = 0>[n_targets] E[N]; // direction measures (relative)
+  vector[n_targets] A[N]; // direction measures (absolute)
 
-  int <lower = 1, upper = K> X[n_trials]; // trial features (ie, which condition are we in)
-  int <lower = 1, upper = n_classes> targ_class[n_trials, n_targets]; // target class, one row per trial
+  int <lower = 1, upper = K> X[n_trials*L]; // trial features (ie, which condition are we in)
+  int <lower = 1, upper = n_classes> targ_class[n_trials*L, n_targets]; // target class, one row per trial
   vector<lower = -1, upper = 1>[n_targets] S[N]; // stick/switch (does this targ match prev targ) 
   int <lower = 1, upper = L> Z[N]; // random effect levels 
   
   real alpha; // param for class weight prior
-  real prior_mu_bS; 
-  real prior_sd_bS; 
+  real prior_sd_bS; // prior for sd for bS
   real prior_mu_phidis;
   real prior_sd_phidis;
   real prior_mu_phidir;
@@ -146,7 +146,7 @@ parameters {
   sigmas, along with the floor (chance of selectin an 
   item at random)
   */
-  real b[3*K];
+  real b[4*K];
 
   ///////////////////////////////
   // random effects
@@ -163,9 +163,9 @@ parameters {
   /* and now the other parameters 
   proximity weighting, momemtum, and the "floor" parameter
   We will model the correlations between these parameters */
-  vector<lower=0>[3*K] sig_b; // random effect sigma for biases  
-  cholesky_factor_corr[3*K] L_u; // declare L_u to be the Choleski factor of a correlation matrix
-  matrix[3*K,L] z_u;  // random effect matrix
+  vector<lower=0>[4*K] sig_b; // random effect sigma for biases  
+  cholesky_factor_corr[4*K] L_u; // declare L_u to be the Choleski factor of a correlation matrix
+  matrix[4*K,L] z_u;  // random effect matrix
 }
 
 transformed parameters {
@@ -174,6 +174,7 @@ transformed parameters {
   real phi_dis[K]; // distance tuning
   real phi_dir[K]; // direction tuning
   real p_floor[K]; // probabiltiy floor
+  real direction_bias[K]; // prefer hori-vert over oblique
 
   // this transform random effects so that they have the correlation
   // matrix specified by the correlation matrix above
@@ -182,9 +183,10 @@ transformed parameters {
 
   // extract params from list of params
   for (ii in 1:K) {
-    phi_dis[ii] = b[1+3*(ii-1)];
-    phi_dir[ii] = b[2+3*(ii-1)];
-    p_floor[ii] = b[3+3*(ii-1)];
+    phi_dis[ii] = b[1+4*(ii-1)];
+    phi_dir[ii] = b[2+4*(ii-1)];
+    p_floor[ii] = b[3+4*(ii-1)];
+    direction_bias[ii] = inv_logit(b[4+4*(ii-1)]);
   }
 }
 
@@ -224,9 +226,10 @@ model {
   // priors for fixed effects
   for (ii in 1:K) {
     target += dirichlet_lpdf(cW[ii] |  rep_vector(alpha, n_classes));
-    target += normal_lpdf(b[1+3*(ii-1)] | prior_mu_phidis, prior_sd_phidis);
-    target += normal_lpdf(b[2+3*(ii-1)] | prior_mu_phidir, prior_sd_phidir);
-    target += normal_lpdf(b[3+3*(ii-1)] | prior_mu_floor, prior_sd_floor);
+    target += normal_lpdf(b[1+4*(ii-1)] | prior_mu_phidis, prior_sd_phidis);
+    target += normal_lpdf(b[2+4*(ii-1)] | prior_mu_phidir, prior_sd_phidir);
+    target += normal_lpdf(b[3+4*(ii-1)] | prior_mu_floor, prior_sd_floor);
+    target += beta_lpdf(b[4+4*(ii-1)] |1, 1);
   }
 
   // priors for random effects - class weights
@@ -240,9 +243,9 @@ model {
   }
 
   // priors for random effects - stick/switch weights
-  sig_switch ~ normal(0, 1);
+  sig_switch ~ normal(0, 0.1);
   for (ii in 1:K) { 
-    target += normal_lpdf(bS[ii] | prior_mu_bS, prior_sd_bS);
+    target += normal_lpdf(bS[ii] | 0, prior_sd_bS);
     for (obs in 1:L) {
       u_stick[ii, obs] ~ normal(0, sig_switch);
     }
@@ -277,7 +280,7 @@ model {
 
     // apply spatial weighting
     vector[n_targets] spatial_weights = compute_spatial_weights(trial_start[ii], n_targets, kk, ll, ii,
-                                 phi_dis[kk], phi_dir[kk], p_floor[kk], u, D[ii], E[ii],
+                                 phi_dis[kk], phi_dir[kk], p_floor[kk], direction_bias[kk], u, D[ii], E[ii], A[ii],
                                  lambda[ll], a_x, b_x, a_y, b_y, itemX[trl], itemY[trl]);
 
     // set the weight of each target to be its class weight
@@ -311,6 +314,6 @@ generated quantities {
   real prior_sW = normal_rng(0, prior_sd_bS);
   real prior_phi_dis = normal_rng(prior_mu_phidis, prior_sd_phidis);
   real prior_phi_dir = normal_rng(prior_mu_phidir, prior_sd_phidir);
-  real prior_p_floor = normal_rng(prior_mu_floor,  prior_sd_floor);
-
+  real prior_phi_flr = normal_rng(prior_mu_floor, prior_sd_floor);
+  real prior_direction_bias = beta_rng(1, 1);
 }
