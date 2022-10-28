@@ -5,14 +5,14 @@ plot_model_fixed <- function(m,d)
 {
   
   m %>% recover_types(d$found) %>%
-    spread_draws(cW[block, class], bS[block], p_floor[block], phi_dis[block], phi_dir[block]) %>%
+    spread_draws(cW[block, class], bS[block], p_floor[block], phi_dis[block], phi_dir[block], direction_bias[block]) %>%
     mutate(block = as_factor(block),
            block = fct_recode(block, feature = "1", conjunction = "2"),
            class = as_factor(class)) %>%
     ungroup() -> post
   
   m %>% recover_types(d$found) %>%
-    spread_draws(prior_cW[class], prior_sW, prior_phi_dis, prior_phi_dir, prior_p_floor) %>%
+    spread_draws(prior_cW[class], prior_sW, prior_phi_dis, prior_phi_dir, prior_p_floor, prior_direction_bias) %>%
     mutate(class = as_factor(class)) %>%
     ungroup() -> prior
   
@@ -47,17 +47,18 @@ plot_model_fixed <- function(m,d)
     scale_x_continuous("stick probability", limits = c(0, 1))  -> plt_sW
   
   # plot proximity and direction effects
-  plt_dis <- plt_post_prior("phi_dis", "proximity tuning", post, prior)
-  plt_dir <- plt_post_prior("phi_dir", "direciton tuning", post, prior) 
-  plt_flr <- plt_post_prior("p_floor", "floor", post, prior) 
-
-  plt <-  (plt_cW + plt_sW) / (plt_dis + plt_dir  + plt_flr) +
+  plt_dis <- plt_post_prior(post, prior, "phi_dis", "proximity tuning")
+  plt_dir <- plt_post_prior(post, prior, "phi_dir", "direction tuning")
+  plt_dir2 <- plt_post_prior(post, prior, "direction_bias", "Hori-Vert Pref") 
+  
+  
+  plt <-  (plt_cW + plt_sW) / (plt_dis + plt_dir + plt_dir2) +
     plot_layout(guides = "collect") & theme(legend.position = "bottom")
   
   return(plt)
 }
   
-plt_post_prior <- function(var, xtitle, post, prior) {
+plt_post_prior <- function(post, prior, var, xtitle) {
   
   prior_var = paste("prior", var, sep = "_")
   

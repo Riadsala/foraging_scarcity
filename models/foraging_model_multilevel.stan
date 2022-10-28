@@ -1,8 +1,7 @@
 functions{
 
-  /* this function calculates the weights for each item based on the
-     intial spatial weighting bias */   
   vector beta_weight(vector X, real a, real b) {
+    /* helper function for calculating beta pdf */  
 
     int n = size(X);
     vector[n] Z;
@@ -11,12 +10,12 @@ functions{
     return(Z);
   }
 
-  /* this function calculates the weights for each item based on the
-     intial spatial weighting bias */
   vector init_sel_weights(real lbda, 
                             real ax1, real bx1, real ay1, real by1, 
                             real ax2, real bx2, real ay2, real by2, 
                             vector X, vector Y) {
+    /* this function calculates the weights for each item based on the
+     intial spatial weighting bias */
 
     int n = size(X);
     vector[n] w1;
@@ -26,15 +25,15 @@ functions{
     w1 = beta_weight(X, ax1, bx1) .* beta_weight(Y, ay1, by1);
     w2 = beta_weight(X, ax2, bx2) .* beta_weight(Y, ay2, by2);
 
-    return lbda * w1 + (1-lbda) * w2 ;
+    return lbda * w1 + (1-lbda) * w2;
   }
 
   vector standarise_weights(vector w, int n_targets, vector remaining_items) {
-    // set weights for found targets to 0 
-    vector[n_targets] w_s = w .* remaining_items;    
-    // normalise so that weights sum to 1
-    w_s = w_s / sum(w_s);
 
+    /* set weights of found items to 0 and divide by the sum of 
+    remaining weights so that they sum to 1 */
+    vector[n_targets] w_s = w .* remaining_items;  
+    w_s = w_s / sum(w_s);
     return w_s;
   }
 
@@ -316,6 +315,6 @@ generated quantities {
   real prior_sW = normal_rng(0, prior_sd_bS);
   real prior_phi_dis = normal_rng(prior_mu_phidis, prior_sd_phidis);
   real prior_phi_dir = normal_rng(prior_mu_phidir, prior_sd_phidir);
-  real prior_phi_flr = normal_rng(prior_mu_floor, prior_sd_floor);
+  real prior_p_floor = normal_rng(prior_mu_floor, prior_sd_floor);
   real prior_direction_bias = beta_rng(1, 1);
 }

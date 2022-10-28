@@ -227,7 +227,7 @@ prep_data_for_stan <- function(df, ds) {
     Z = df$person,
     alpha = 2,
     prior_sd_bS = 1,
-    prior_mu_phidis = 10,
+    prior_mu_phidis = 15,
     prior_sd_phidis = 5,
     prior_mu_phidir = 0,
     prior_sd_phidir = 2,
