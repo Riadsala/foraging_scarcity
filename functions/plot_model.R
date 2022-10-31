@@ -5,14 +5,14 @@ plot_model_fixed <- function(m,d)
 {
   
   m %>% recover_types(d$found) %>%
-    spread_draws(cW[block, class], bS[block], p_floor[block], phi_dis[block], phi_dir[block]) %>%
+    spread_draws(cW[block, class], bS[block], p_floor[block], phi_dis[block], phi_dir[block], direction_bias[block]) %>%
     mutate(block = as_factor(block),
            block = fct_recode(block, feature = "1", conjunction = "2"),
            class = as_factor(class)) %>%
     ungroup() -> post
   
   m %>% recover_types(d$found) %>%
-    spread_draws(prior_cW[class], prior_sW, prior_phi_dis, prior_phi_dir, prior_p_floor) %>%
+    spread_draws(prior_cW[class], prior_sW, prior_phi_dis, prior_phi_dir, prior_p_floor, prior_direction_bias) %>%
     mutate(class = as_factor(class)) %>%
     ungroup() -> prior
   
@@ -47,17 +47,18 @@ plot_model_fixed <- function(m,d)
     scale_x_continuous("stick probability", limits = c(0, 1))  -> plt_sW
   
   # plot proximity and direction effects
-  plt_dis <- plt_post_prior("phi_dis", "proximity tuning", post, prior)
-  plt_dir <- plt_post_prior("phi_dir", "direciton tuning", post, prior) 
-  plt_flr <- plt_post_prior("p_floor", "floor", post, prior) 
-
-  plt <-  (plt_cW + plt_sW) / (plt_dis + plt_dir  + plt_flr) +
+  plt_dis <- plt_post_prior(post, prior, "phi_dis", "proximity tuning")
+  plt_dir <- plt_post_prior(post, prior, "phi_dir", "direction tuning")
+  plt_dir2 <- plt_post_prior(post, prior, "direction_bias", "Hori-Vert Pref") 
+  
+  
+  plt <-  (plt_cW + plt_sW) / (plt_dis + plt_dir + plt_dir2) +
     plot_layout(guides = "collect") & theme(legend.position = "bottom")
   
   return(plt)
 }
   
-plt_post_prior <- function(var, xtitle, post, prior) {
+plt_post_prior <- function(post, prior, var, xtitle) {
   
   prior_var = paste("prior", var, sep = "_")
   
@@ -151,20 +152,20 @@ plot_init_sel <- function(m, d) {
 plot_model_spatial <- function(m, d) {
   
   m %>% 
-    spread_draws(p_floor[block], phi_dis[block], phi_dir[block]) %>%
+    spread_draws(p_floor[block], phi_dis[block], phi_dir[block], direction_bias[block]) %>%
     mutate(block = as_factor(block),
            block = fct_recode(block, feature = "1", conjunction = "2")) %>%
     ungroup() -> post
   
   m %>% spread_draws(u[block, person],) %>%
-    mutate(param = block %% 3,
-           param = if_else(param == 0, 3, param),
-           block = (block / 3),
+    mutate(param = block %% 4,
+           param = if_else(param == 0, 4, param),
+           block = (block / 4),
            block = ceiling(block),
            block = as_factor(block),
            block = fct_recode(block, feature = "1", conjunction = "2"),
            param = as_factor(param),
-           param = fct_recode(param, phi_dir = "1", "phi_dis" = "2", "p_floor" = "3")) %>%
+           param = fct_recode(param, phi_dir = "1", phi_dis = "2", p_floor = "3", direction = "4")) %>%
     rename(uz = "u") -> post_u
   
   full_join(post %>%
@@ -178,6 +179,7 @@ plot_model_spatial <- function(m, d) {
 
     
   distances <- seq(0, 1, 0.025)
+  angles <- seq(0, 2*pi, 0.1)
   
   # draw distance tuning figure for foxed effect
     pmap_dfr(select(post, block, phi_dis, p_floor), 
@@ -198,7 +200,29 @@ plot_model_spatial <- function(m, d) {
       geom_ribbon(aes(ymin = lower97, ymax = upper97, fill = block), alpha = 0.5) +
       geom_ribbon(aes(ymin = lower53, ymax = upper53, fill = block), alpha = 0.7) +
       scale_x_continuous("distance to target") +
-      scale_y_continuous("weighting") -> plt_dis
+      scale_y_continuous("weighting") +
+      ggtitle("fixed effects") -> plt_dis
+    
+    pmap_dfr(select(post, block, direction_bias), 
+             function(direction_bias, a, block) tibble(a=a, block = block,
+                                                         q = (1 + direction_bias*cos(4*a))/(direction_bias+1)),
+             a = angles) %>%
+      group_by(block, a) %>%
+      median_hdci(q, .width = c(0.53, 0.97)) %>%
+      select(-q, -.point, -.interval) %>%
+      unite("interval", .lower, .upper) %>%
+      pivot_wider(names_from = ".width", values_from = "interval") %>%
+      separate(`0.53`, c("lower53", "upper53"), sep  = "_", convert = T)  %>%
+      separate(`0.97`, c("lower97", "upper97"), sep  = "_", convert = T) -> q_direction
+    
+    # plot fixed effect distance -> weight function HDPI
+    q_direction %>%
+      ggplot(aes(a)) +
+      geom_ribbon(aes(ymin = lower97, ymax = upper97, fill = block), alpha = 0.5) +
+      geom_ribbon(aes(ymin = lower53, ymax = upper53, fill = block), alpha = 0.7) +
+      scale_x_continuous("distance to target") +
+      scale_y_continuous("weighting") +
+      ggtitle("fixed effects") -> plt_dir
     
     # now plot indiv prox fall offs:
     pmap_dfr(select(post_u, block, phi_dis, p_floor , person), 
@@ -208,10 +232,11 @@ plot_model_spatial <- function(m, d) {
       ggplot(aes(x = t, y = q, colour = block, group = interaction(block, person))) + 
       geom_path(alpha = 0.5) +
       scale_x_continuous("distance to target") +
-      scale_y_continuous("weighting") -> plt_dis_p
+      scale_y_continuous("weighting") +
+      ggtitle("indiv. differences") -> plt_dis_p
     
     
     
-     plt_dis + plt_dis_p
+     plt_dis + plt_dis_p + plt_dir
   
 }

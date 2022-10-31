@@ -18,14 +18,7 @@ dc <- read_csv("../../data/clarke2020/clarke_2020_qjep.csv") %>%
 
 # for testing
 #write_csv(dc, 'subset_clarke.csv')
-#dc <- read_csv('subset_clarke.csv')
-
-dc %>% mutate(x = as.vector(rescale(x, to = c(0.01, 0.99))),
-              y = as.vector(rescale(y, to = c(0.01, 0.99)))) -> dc 
-
-#dc_summary <- dc %>%
-#  group_by(person, block) %>%
-#  summarise(n = n())
+dc <- read_csv('subset_clarke.csv')
 
 d_stim <- dc %>% select(person, block, trial, id, x, y, class) %>%
   arrange(person, block, trial) 
@@ -34,16 +27,12 @@ d_found <- dc %>% filter(found > 0) %>%
   arrange(person, block, trial, found) 
 
 
-#d_found %>% filter(block == 1, trial == 2, person == 1) %>%
-#  ggplot(aes(x, y)) + 
-#  geom_label(aes(label = id, colour = as.factor(class))) + 
-#  geom_path(data = d_found %>% filter(block == 1, trial == 2, person == 1, found>0),size = 1)
 
 d_list <- prep_data_for_stan(d_found, d_stim)
 
-saveRDS(d_list, 'clarke_stan.rds')
+#saveRDS(d_list, 'clarke_stan.rds')
 
-m <- stan("../../models/foraging_model_multilevel.stan", data = d_list, 
+m <- stan("../../models/foraging_model_no_init_sel.stan", data = d_list, 
           chains = 4, iter = 1000)
 summary(m)
 
@@ -51,6 +40,10 @@ saveRDS(m, 'clarke_model.rds')
 
 # plotting
 source("../../functions/plot_model.R")
+
+library(ggdark)
+
+theme_set(dark_theme_bw())
 
 plot_model_fixed(m, dc)
 plot_model_spatial(m, dc)
