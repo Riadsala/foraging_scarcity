@@ -30,7 +30,7 @@ for (pp in 1:length(files)) {
 
 write_csv(d, "ps300.csv")
 
-d %>% group_by(person, file_name, trial, block) %>% 
+d %>% group_by(person, file_name, trialNo, block) %>% 
   summarise(end_trial = unique(end_trial)) -> dend
 
 write_csv(dend, "space_bar_times.csv")
