@@ -37,7 +37,7 @@ m <- stan("../../models/foraging_model_no_init_sel.stan", data = d_list,
 summary(m)
 
 saveRDS(m, 'clarke_model.rds')
-
+m <- readRDS("clarke_model.rds")
 # plotting
 source("../../functions/plot_model.R")
 
