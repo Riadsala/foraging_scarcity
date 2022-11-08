@@ -12,7 +12,7 @@ sim_foraging_people <- function(n_people = 10,
   sig_d <- check_and_rep_param(sig_d, n_conditions)
   sig_theta <- check_and_rep_param(sig_theta, n_conditions)
   n_trials_per_cond <- check_and_rep_param(n_trials_per_cond, n_conditions)
-  
+
   # generate random effects
   dpeeps <- tibble(person = rep(1:n_people, n_conditions),
                    block  = rep(1:n_conditions, each = n_people),
@@ -24,13 +24,11 @@ sim_foraging_people <- function(n_people = 10,
                    sd_theta = phi_d) 
     
   dpeeps <- pmap_df(dpeeps, gen_random_fx)
-  
 
   d <- pmap_dfr(dpeeps, sim_foraging_person, 
                                n_trials_per_cond = n_trials_per_cond,
                 n_targ_class = n_targ_class, n_targ_per_class = n_targ_per_class, 
-                targ_class_weights
-                )
+                targ_class_weights)
   return(d)
   
 }
@@ -55,7 +53,7 @@ sim_foraging_person <- function(person = 1,
                                 b_stick, sig_d, sig_theta,
                                     block = 1,
                                     n_trials_per_cond = 10,
-                                    n_targ_class = 3, n_targ_per_class = 2, 
+                                    n_targ_class = 2, n_targ_per_class, 
                                     targ_class_weights) {
   
   
@@ -78,7 +76,7 @@ sim_foraging_person <- function(person = 1,
 
 
 sim_foraging_trial <- function(trl = 1, 
-                               n_targ_class = 2, n_targ_per_class = 10, 
+                               n_targ_class = 2, n_targ_per_class = c(5, 15), 
                                targ_class_weights = c(0.5, 0.5),
                                b_stick = 0, 
                                sig_d = 0, sig_theta = 0)  

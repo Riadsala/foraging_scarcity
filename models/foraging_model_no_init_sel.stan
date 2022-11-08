@@ -1,14 +1,12 @@
 functions{
 
-
-
   vector standarise_weights(vector w, int n_targets, vector remaining_items) {
 
     /* set weights of found items to 0 and divide by the sum of 
     remaining weights so that they sum to 1 */
     vector[n_targets] w_s = w .* remaining_items;  
     w_s = w_s / sum(w_s);
-    return w_s;
+    return(w_s);
   }
 
   vector compute_spatial_weights(int n, int n_targets, int kk, int ll, int ii,
@@ -28,10 +26,10 @@ functions{
 
       if (n == 2) {
         // for the second selected target, weight by distance from the first
-       w = w .* exp(-(phi_dis + u[1+3*(kk-1), ll]) * D) .* (1 + dir_bias*cos(4*A))/(dir_bias+1);
+       //w = w .* exp(-(phi_dis + u[1+3*(kk-1), ll]) * D) .* (1 + dir_bias*cos(4*A))/(dir_bias+1);
       } else {
         // for all later targets, also weight by direciton
-        w = w .* exp(-(phi_dis + u[1+3*(kk-1), ll]) * D - (phi_dir + u[2+3*(kk-1), ll]) * E) .* (1 + dir_bias*cos(4*A))/(dir_bias+1);
+       // w = w .* exp(-(phi_dis + u[1+3*(kk-1), ll]) * D - (phi_dir + u[2+3*(kk-1), ll]) * E) .* (1 + dir_bias*cos(4*A))/(dir_bias+1);
       
     }
      // apply shelf..
@@ -150,6 +148,7 @@ model {
   vector[n_targets] weights;  // class weight for teach target
   vector[n_targets] m; // does this target match the previous target?
   vector[n_classes] ucW; // class weights with random effects included
+  vector[n_targets] spatial_weights;
 
   int ll; // participant tracker
   int trl = 0; // counter for trial number
@@ -182,18 +181,18 @@ model {
   }
 
   // priors for random effects - stick/switch weights
-  sig_switch ~ normal(0, 0.1);
+  sig_switch ~ normal_lpdf(0, 0.1);
   for (ii in 1:K) { 
     target += normal_lpdf(bS[ii] | 0, prior_sd_bS);
     for (obs in 1:L) {
-      u_stick[ii, obs] ~ normal(0, sig_switch);
+      u_stick[ii, obs] ~ normal_lpdf(0, sig_switch);
     }
   }
   
   // spatial parameters (use covariance matrix)
-  sig_b ~ normal(0, 1);
+  sig_b ~ normal_lpdf(0, 1);
   L_u ~ lkj_corr_cholesky(1.5); // LKJ prior for the correlation matrix
-  to_vector(z_u) ~ normal(0, 1);
+  to_vector(z_u) ~ normal_lpdf(0, 1);
 
   //////////////////////////////////////////////////
   // // step through data row by row and define LLH
@@ -218,7 +217,7 @@ model {
     }
 
     // apply spatial weighting
-    vector[n_targets] spatial_weights = compute_spatial_weights(trial_start[ii], n_targets, kk, ll, ii,
+    spatial_weights = compute_spatial_weights(trial_start[ii], n_targets, kk, ll, ii,
                                  phi_dis[kk], phi_dir[kk], p_floor[kk], direction_bias[kk], u, D[ii], E[ii], A[ii],
                                  itemX[trl], itemY[trl]);
 
@@ -254,5 +253,5 @@ generated quantities {
   real prior_phi_dis = normal_rng(prior_mu_phidis, prior_sd_phidis);
   real prior_phi_dir = normal_rng(prior_mu_phidir, prior_sd_phidir);
   real prior_p_floor = normal_rng(prior_mu_floor, prior_sd_floor);
-  real prior_direction_bias = normal(-2, 3);
+  real prior_direction_bias = normal_rng(-2, 3);
 }

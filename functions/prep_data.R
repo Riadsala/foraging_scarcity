@@ -160,11 +160,11 @@ prep_data_for_stan <- function(df, ds) {
   
   # correct (x, y) so that neither ever = 0 or 1
   # as this causes problems for Beta distributions
-  df %>% mutate(x = as.vector(rescale(x, to = c(0.01, 0.99))),
-                y = as.vector(rescale(y, to = c(0.01, 0.99)))) -> df
+  df %>% mutate(x = as.vector(scales::rescale(x, to = c(0.01, 0.99))),
+                y = as.vector(scales::rescale(y, to = c(0.01, 0.99)))) -> df
   
-  ds %>% mutate(x = as.vector(rescale(x, to = c(0.01, 0.99))),
-                y = as.vector(rescale(y, to = c(0.01, 0.99)))) -> ds
+  ds %>% mutate(x = as.vector(scales::rescale(x, to = c(0.01, 0.99))),
+                y = as.vector(scales::rescale(y, to = c(0.01, 0.99)))) -> ds
   
   
   # extract stimulus parameters
