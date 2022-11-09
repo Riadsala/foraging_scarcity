@@ -40,7 +40,7 @@ compute_inter_targ_distances <- function(Y, df, ds) {
   distances <- array()
   
   for (ii in 1:length(Y)) {
-    
+  
     if (df$found[ii]==1) {
       
       #starting a new trial, so get relevant data
@@ -58,6 +58,7 @@ compute_inter_targ_distances <- function(Y, df, ds) {
       
       distances <- rbind(distances, sqrt(x^2 + y^2))
     }
+
   }
   
   distances <-  distances[-1,]

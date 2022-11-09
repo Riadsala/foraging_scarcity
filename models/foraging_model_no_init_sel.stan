@@ -181,18 +181,18 @@ model {
   }
 
   // priors for random effects - stick/switch weights
-  sig_switch ~ normal_lpdf(0, 0.1);
+  sig_switch ~ normal(0, 0.1);
   for (ii in 1:K) { 
     target += normal_lpdf(bS[ii] | 0, prior_sd_bS);
     for (obs in 1:L) {
-      u_stick[ii, obs] ~ normal_lpdf(0, sig_switch);
+      u_stick[ii, obs] ~ normal(0, sig_switch);
     }
   }
   
   // spatial parameters (use covariance matrix)
-  sig_b ~ normal_lpdf(0, 1);
+  sig_b ~ normal(0, 1);
   L_u ~ lkj_corr_cholesky(1.5); // LKJ prior for the correlation matrix
-  to_vector(z_u) ~ normal_lpdf(0, 1);
+  to_vector(z_u) ~ normal(0, 1);
 
   //////////////////////////////////////////////////
   // // step through data row by row and define LLH
