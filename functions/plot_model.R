@@ -1,13 +1,13 @@
 library(tidybayes)
 
 
-plot_model_fixed <- function(m,d)
+plot_model_fixed <- function(m,d, cl)
 {
   
   m %>% recover_types(d$found) %>%
     spread_draws(cW[block, class], bS[block], p_floor[block], phi_dis[block], phi_dir[block], direction_bias[block]) %>%
     mutate(block = as_factor(block),
-           block = fct_recode(block, feature = "1", conjunction = "2"),
+           block = fct_recode(block, scarce = "1", equal = "2"),
            class = as_factor(class)) %>%
     ungroup() -> post
   
@@ -49,10 +49,10 @@ plot_model_fixed <- function(m,d)
   # plot proximity and direction effects
   plt_dis <- plt_post_prior(post, prior, "phi_dis", "proximity tuning")
   plt_dir <- plt_post_prior(post, prior, "phi_dir", "direction tuning")
-  plt_dir2 <- plt_post_prior(post, prior, "direction_bias", "Hori-Vert Pref") 
+ # plt_dir2 <- plt_post_prior(post, prior, "direction_bias", "Hori-Vert Pref") 
   
   
-  plt <-  (plt_cW + plt_sW) / (plt_dis + plt_dir + plt_dir2) +
+  plt <-  (plt_cW + plt_sW) / (plt_dis + plt_dir) +
     plot_layout(guides = "collect") & theme(legend.position = "bottom")
   
   return(plt)
@@ -154,7 +154,7 @@ plot_model_spatial <- function(m, d) {
   m %>% 
     spread_draws(p_floor[block], phi_dis[block], phi_dir[block], direction_bias[block]) %>%
     mutate(block = as_factor(block),
-           block = fct_recode(block, feature = "1", conjunction = "2")) %>%
+           block = fct_recode(block, scarce = "1", equal = "2")) %>%
     ungroup() -> post
   
   m %>% spread_draws(u[block, person],) %>%

@@ -24,17 +24,17 @@ functions{
 
     } else {
 
-      if (n == 2) {
+     // if (n == 2) {
         // for the second selected target, weight by distance from the first
-       //w = w .* exp(-(phi_dis + u[1+3*(kk-1), ll]) * D) .* (1 + dir_bias*cos(4*A))/(dir_bias+1);
-      } else {
+       w = w .* exp(-(phi_dis + u[1+3*(kk-1), ll]) * D) ;//.* (1 + dir_bias*cos(4*A))/(dir_bias+1);
+      //} else {
         // for all later targets, also weight by direciton
        // w = w .* exp(-(phi_dis + u[1+3*(kk-1), ll]) * D - (phi_dir + u[2+3*(kk-1), ll]) * E) .* (1 + dir_bias*cos(4*A))/(dir_bias+1);
       
-    }
+   // }
      // apply shelf..
     // ****** where should this operation go? unclear to me
-    w = w + exp(p_floor + u[3+3*(kk-1), ll]);
+   // w = w + exp(p_floor + u[3+3*(kk-1), ll]);
 
   }
 
@@ -97,7 +97,7 @@ parameters {
   sigmas, along with the floor (chance of selectin an 
   item at random)
   */
-  real b[4*K];
+  real b[3*K];
 
   ///////////////////////////////
   // random effects
@@ -114,9 +114,9 @@ parameters {
   /* and now the other parameters 
   proximity weighting, momemtum, and the "floor" parameter
   We will model the correlations between these parameters */
-  vector<lower=0>[4*K] sig_b; // random effect sigma for biases  
-  cholesky_factor_corr[4*K] L_u; // declare L_u to be the Choleski factor of a correlation matrix
-  matrix[4*K,L] z_u;  // random effect matrix
+  vector<lower=0>[3*K] sig_b; // random effect sigma for biases  
+  cholesky_factor_corr[3*K] L_u; // declare L_u to be the Choleski factor of a correlation matrix
+  matrix[3*K,L] z_u;  // random effect matrix
 }
 
 transformed parameters {
@@ -134,10 +134,10 @@ transformed parameters {
 
   // extract params from list of params
   for (ii in 1:K) {
-    phi_dis[ii] = b[1+4*(ii-1)];
-    phi_dir[ii] = b[2+4*(ii-1)];
-    p_floor[ii] = b[3+4*(ii-1)];
-    direction_bias[ii] = inv_logit(b[4+4*(ii-1)]);
+    phi_dis[ii] = b[1+2*(ii-1)];
+    phi_dir[ii] = b[2+2*(ii-1)];
+    //p_floor[ii] = b[3+3*(ii-1)];
+    //direction_bias[ii] = inv_logit(b[4+4*(ii-1)]);
   }
 }
 
@@ -164,10 +164,10 @@ model {
   // priors for fixed effects
   for (ii in 1:K) {
     target += dirichlet_lpdf(cW[ii] |  rep_vector(alpha, n_classes));
-    target += normal_lpdf(b[1+4*(ii-1)] | prior_mu_phidis, prior_sd_phidis);
-    target += normal_lpdf(b[2+4*(ii-1)] | prior_mu_phidir, prior_sd_phidir);
-    target += normal_lpdf(b[3+4*(ii-1)] | prior_mu_floor, prior_sd_floor);
-    target += normal_lpdf(b[4+4*(ii-1)] | -2, 3);
+    target += normal_lpdf(b[1+2*(ii-1)] | prior_mu_phidis, prior_sd_phidis);
+    target += normal_lpdf(b[2+2*(ii-1)] | prior_mu_phidir, prior_sd_phidir);
+   // target += normal_lpdf(b[3+2*(ii-1)] | prior_mu_floor, prior_sd_floor);
+   // target += normal_lpdf(b[4+4*(ii-1)] | -2, 3);
   }
 
   // priors for random effects - class weights

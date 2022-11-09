@@ -61,7 +61,7 @@ sim_foraging_person <- function(person = 1,
   trls <- 1:n_trials_per_cond[block]
   
   d <- map_df(trls, sim_foraging_trial, 
-              n_targ_class =  n_targ_class, n_targ_per_class = n_targ_per_class,
+              n_targ_class =  n_targ_class, n_targ_per_class = n_targ_per_class[[block]],
               targ_class_weights = targ_class_weights[[block]],
               b_stick = b_stick, sig_d = sig_d, sig_theta = sig_theta) %>%
     mutate(condition = block)
