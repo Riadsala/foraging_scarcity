@@ -16,7 +16,7 @@ source("../functions/get_run_info.R")
 ######################################################
 # first of all we want to generate some synthetic data
 ######################################################
-cond_labels <- c("scare", "equal")
+cond_labels <- c("equal", "equal-bias", "scarce", "scarce-bias")
 
 n_people <- 10
 n_conditions <- 4

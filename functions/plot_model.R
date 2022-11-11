@@ -1,5 +1,6 @@
 library(tidybayes)
-
+options(ggplot2.discrete.colour = ggthemes::ptol_pal()(4),
+        ggplot2.discrete.fill = ggthemes::ptol_pal()(4))
 
 plot_model_fixed <- function(m,d, cl)
 {
@@ -7,9 +8,10 @@ plot_model_fixed <- function(m,d, cl)
   m %>% recover_types(d$found) %>%
     spread_draws(cW[block, class], bS[block], p_floor[block], phi_dis[block], phi_dir[block], direction_bias[block]) %>%
     mutate(block = as_factor(block),
-           block = fct_recode(block, scarce = "1", equal = "2"),
            class = as_factor(class)) %>%
     ungroup() -> post
+  
+  levels(post$block) <- cl
   
   m %>% recover_types(d$found) %>%
     spread_draws(prior_cW[class], prior_sW, prior_phi_dis, prior_phi_dir, prior_p_floor, prior_direction_bias) %>%
@@ -25,12 +27,13 @@ plot_model_fixed <- function(m,d, cl)
     geom_rect(data = prior %>% 
                 median_hdci(prior_cW, .width = c(0.53, 0.97)),
               aes(xmin = -Inf, xmax = Inf, ymin = .lower, ymax = .upper), 
-              fill = "white", alpha = 0.25) +
+              fill = "grey", alpha = 0.25) +
     stat_pointinterval(aes(class, cW, colour = block), 
                        .width = my_widths,
                        position = position_dodge(0.2)) +
     geom_hline(yintercept = 1/n_classes, linetype = 2) +
-    scale_y_continuous("class weights", limits = c(0, 1))  -> plt_cW
+    scale_y_continuous("class weights", limits = c(0, 1)) +
+    theme(legend.position = "none") -> plt_cW
   
   # plot stick-switch param
   post  %>%
@@ -40,11 +43,12 @@ plot_model_fixed <- function(m,d, cl)
                 mutate(.lower = boot::inv.logit(.lower),
                        .upper = boot::inv.logit(.upper)),
               aes(ymin = -Inf, ymax = Inf, xmin = .lower, xmax = .upper), 
-              fill = "white", alpha = 0.25) + 
+              fill = "grey", alpha = 0.25) + 
   geom_vline(xintercept = 0.5, colour = "black", linetype= 2) +
     stat_pointinterval(aes(boot::inv.logit(bS), block, colour = block), .width = my_widths) +
     geom_vline(xintercept = 0.5, linetype = 2) +
-    scale_x_continuous("stick probability", limits = c(0, 1))  -> plt_sW
+    scale_x_continuous("stick probability", limits = c(0, 1))  +
+    theme(legend.position = "none") -> plt_sW
   
   # plot proximity and direction effects
   plt_dis <- plt_post_prior(post, prior, "phi_dis", "proximity tuning")
@@ -53,7 +57,7 @@ plot_model_fixed <- function(m,d, cl)
   
   
   plt <-  (plt_cW + plt_sW) / (plt_dis + plt_dir) +
-    plot_layout(guides = "collect") & theme(legend.position = "bottom")
+    plot_layout(guides = "collect") 
   
   return(plt)
 }
@@ -69,7 +73,7 @@ plt_post_prior <- function(post, prior, var, xtitle) {
       geom_rect(data = prior %>% 
                   median_hdci(exp(get(prior_var)), .width = c(0.53, 0.97)),
                 aes(ymin = -Inf, ymax = Inf, xmin = .lower, xmax = .upper), 
-                fill = "white", alpha = 0.25) +  
+                fill = "grey", alpha = 0.25) +  
       geom_density(aes(exp(get(var)), fill = block), alpha = 0.5) +
       scale_x_continuous(xtitle) +
       coord_cartesian(xlim = c(0, 0.1))-> plt
@@ -80,7 +84,7 @@ plt_post_prior <- function(post, prior, var, xtitle) {
       geom_rect(data = prior %>% 
                   median_hdci(get(prior_var), .width = c(0.53, 0.97)),
                 aes(ymin = -Inf, ymax = Inf, xmin = .lower, xmax = .upper), 
-                fill = "white", alpha = 0.25) +  
+                fill = "grey", alpha = 0.25) +  
       geom_density(aes(get(var), fill = block), alpha = 0.5) +
       scale_x_continuous(xtitle) -> plt
     
