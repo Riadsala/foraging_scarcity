@@ -18,8 +18,8 @@ source("../functions/get_run_info.R")
 ######################################################
 cond_labels <- c("equal", "equal-bias", "scarce", "scarce-bias")
 
-n_people <- 10
-n_conditions <- 4
+n_people <- 12
+n_conditions <- 6
 n_trials_per_cond <- 4
 n_targ_per_class <- list(c(10, 10), c(10, 10), c(5, 15), c(5, 15))
 n_targ_class <- 2
@@ -28,7 +28,7 @@ targ_class_weights <- list(c(1,1), c(2,1), c(1,1), c(2,1))
 
 b_stick <- 1
 sig_d <- 15
-sig_theta <- -1
+sig_theta <- -2
 
 phi_stick <- 0.2
 phi_d <- 2

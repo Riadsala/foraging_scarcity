@@ -229,9 +229,9 @@ prep_data_for_stan <- function(df, ds) {
     alpha = 2,
     prior_sd_bS = 1,
     prior_mu_phidis = 15,
-    prior_sd_phidis = 5,
+    prior_sd_phidis = 4,
     prior_mu_phidir = 0,
-    prior_sd_phidir = 2,
+    prior_sd_phidir = 3,
     prior_mu_floor = -2,
     prior_sd_floor = 2)  
   
