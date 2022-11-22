@@ -82,7 +82,7 @@ sim_foraging_trial <- function(trl = 1,
                                sig_d = 0, sig_theta = 0)  
 {
   
-  # n_tclass is the number of different target classes
+  # n_class is the number of different target classes
   # n_per_type is the number of target's per class
   n_targ_per_class <- check_and_rep_param(n_targ_per_class, n_targ_class)
   

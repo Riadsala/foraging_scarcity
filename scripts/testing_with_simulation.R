@@ -2,8 +2,6 @@ library(tidyverse)
 library(rstan)
 library(patchwork)
 
-
-
 options(mc.cores = parallel::detectCores())
 
 # set global ggplot theme
@@ -18,22 +16,25 @@ source("../functions/get_run_info.R")
 ######################################################
 cond_labels <- c("equal", "equal-bias", "scarce", "scarce-bias")
 
-n_people <- 12
-n_conditions <- 6
-n_trials_per_cond <- 4
+n_people <- 20
+
+n_trials_per_cond <- 10
 n_targ_per_class <- list(c(10, 10), c(10, 10), c(5, 15), c(5, 15))
 n_targ_class <- 2
 
-targ_class_weights <- list(c(1,1), c(2,1), c(1,1), c(2,1))
+targ_class_weights <- list(c(1,1), c(3,2), c(1,1), c(3,2))
+
 
 b_stick <- 1
 sig_d <- 15
-sig_theta <- -2
+sig_theta <- -1
 
 phi_stick <- 0.2
 phi_d <- 2
 
 phi_theta <- 1
+
+n_conditions <- length(n_targ_per_class)
 
 d <- sim_foraging_people(n_people = n_people,
                          n_conditions = n_conditions,
@@ -58,7 +59,6 @@ d %>% group_by(person, condition) %>%
 d %>% modelr::data_grid(person, trial, condition) %>% 
   rename(pp = "person", trl = "trial", blk = "condition") -> d_trls
 
-
 d_runs <- pmap_df(d_trls, get_run_info, d)
 
 d_runs %>% group_by(person, block) %>%
@@ -66,6 +66,13 @@ d_runs %>% group_by(person, block) %>%
             mean_num_run = mean(n_runs),
             .groups = "drop") %>%
   full_join(sim_params) -> d_runs
+
+d_runs %>% select(person, block, mean_max_run, mean_num_run) %>%
+  pivot_longer(-c(person, block), names_to = "run_statistic", values_to = "value") %>%
+  mutate(block = as_factor(block)) %>%
+  ggplot(aes(block, value, fill = run_statistic)) + 
+  geom_boxplot() +
+  facet_wrap(~run_statistic)
 
 ######################################################
 # now prepare data for stan model
