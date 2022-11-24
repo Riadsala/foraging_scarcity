@@ -16,8 +16,8 @@ source("../functions/get_run_info.R")
 ######################################################
 cond_labels <- c("equal", "scarce")
 
-n_people <- 10
-n_trials_per_cond <- 12
+n_people <- 8
+n_trials_per_cond <- 6
 
 n_targ_class <- 2
 n_targ_per_class <- list(c(10, 10), c(5, 15))
@@ -106,7 +106,7 @@ saveRDS(m, "../scratch/tmp.model")
 # plot model
 ######################################################
     
-source("../functions/plot_model.R")
+source("../functions/plot_model_rr.R")
     
 plot_model_fixed(m, d, cond_labels)    
 

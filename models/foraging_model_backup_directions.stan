@@ -10,7 +10,7 @@ functions{
   }
 
   vector compute_spatial_weights(int n, int n_targets, int kk, int ll, int ii,
-                                 real phi_dis, real phi_dir, 
+                                 real phi_dis, real phi_dir, real p_floor, real dir_bias,
                                  matrix u, vector D, vector E, vector A, 
                                  vector itemX, vector itemY) {
 
@@ -24,14 +24,19 @@ functions{
 
     } else {
 
-      if (n == 2) {
+     // if (n == 2) {
         // for the second selected target, weight by distance from the first
-        w = w .* exp(-(phi_dis + u[1+2*(kk-1), ll]) * D);
-      } else {
+       w = w .* exp(-(phi_dis + u[1+2*(kk-1), ll]) * D) ;//.* (1 + dir_bias*cos(4*A))/(dir_bias+1);
+      //} else {
         // for all later targets, also weight by direciton
-       w = w .* exp(-(phi_dis + u[1+2*(kk-1), ll]) * D - (phi_dir + u[2+2*(kk-1), ll]) * E);
-      }
-    }
+       w = w .* exp(-(phi_dis + u[1+2*(kk-1), ll]) * D - (phi_dir + u[2+2*(kk-1), ll]) * E);// .* (1 + dir_bias*cos(4*A))/(dir_bias+1);
+      
+   // }
+     // apply shelf..
+    // ****** where should this operation go? unclear to me
+   // w = w + exp(p_floor + u[3+3*(kk-1), ll]);
+
+  }
 
   return(w);
 
@@ -119,6 +124,8 @@ transformed parameters {
   // extract params from list of params
   real phi_dis[K]; // distance tuning
   real phi_dir[K]; // direction tuning
+  real p_floor[K]; // probabiltiy floor
+  real direction_bias[K]; // prefer hori-vert over oblique
 
   // this transform random effects so that they have the correlation
   // matrix specified by the correlation matrix above
@@ -129,6 +136,8 @@ transformed parameters {
   for (ii in 1:K) {
     phi_dis[ii] = b[1+2*(ii-1)];
     phi_dir[ii] = b[2+2*(ii-1)];
+    p_floor[ii] =0;// b[3+3*(ii-1)];
+    direction_bias[ii] = 0;// inv_logit(b[4+4*(ii-1)]);
   }
 }
 
@@ -157,6 +166,8 @@ model {
     target += dirichlet_lpdf(cW[ii] |  rep_vector(alpha, n_classes));
     target += normal_lpdf(b[1+2*(ii-1)] | prior_mu_phidis, prior_sd_phidis);
     target += normal_lpdf(b[2+2*(ii-1)] | prior_mu_phidir, prior_sd_phidir);
+   // target += normal_lpdf(b[3+2*(ii-1)] | prior_mu_floor, prior_sd_floor);
+   // target += normal_lpdf(b[4+4*(ii-1)] | -2, 3);
   }
 
   // priors for random effects - class weights
@@ -207,7 +218,7 @@ model {
 
     // apply spatial weighting
     spatial_weights = compute_spatial_weights(trial_start[ii], n_targets, kk, ll, ii,
-                                 phi_dis[kk], phi_dir[kk], u, D[ii], E[ii], A[ii],
+                                 phi_dis[kk], phi_dir[kk], p_floor[kk], direction_bias[kk], u, D[ii], E[ii], A[ii],
                                  itemX[trl], itemY[trl]);
 
     // set the weight of each target to be its class weight
