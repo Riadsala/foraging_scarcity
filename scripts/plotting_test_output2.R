@@ -7,7 +7,7 @@ library(patchwork)
 options(mc.cores = parallel::detectCores())
 
 # set global ggplot theme
-theme_set(ggthemes::theme_tufte())
+theme_set(ggthemes::theme_solarized_2())
 
 source("../functions/sim_foraging_data.R")
 source("../functions/prep_data.R")
@@ -19,7 +19,7 @@ source("../functions/get_run_info.R")
 cond_labels <- c("equal", "equal-bias", "scarce", "scarce-bias")
 
 
-m <- readRDS("tmp.model")
+m <- readRDS("../scratch/tmp.model")
 
 ######################################################
 # plot model

@@ -2,7 +2,7 @@ sim_foraging_people <- function(n_people = 10,
                     n_conditions = 2,
                     n_trials_per_cond = 10,
                     n_targ_class = 3, n_targ_per_class = 2, 
-                    targ_class_weights,
+                    targ_class_weights, phi_class_weights,
                     b_stick = 0, phi_stick = 1,
                     sig_d = 0, phi_d = 5,
                     sig_theta = 0, phi_theta = 1) {
@@ -16,6 +16,8 @@ sim_foraging_people <- function(n_people = 10,
   # generate random effects
   dpeeps <- tibble(person = rep(1:n_people, n_conditions),
                    block  = rep(1:n_conditions, each = n_people),
+                   mu_cw = rep(targ_class_weights, each = n_people),
+                   sd_cw = phi_class_weights,
                    mu_stick = rep(b_stick, each = n_people),
                    sd_stick = phi_stick,
                    mu_d = rep(sig_d, each = n_people),
@@ -27,18 +29,22 @@ sim_foraging_people <- function(n_people = 10,
 
   d <- pmap_dfr(dpeeps, sim_foraging_person, 
                                n_trials_per_cond = n_trials_per_cond,
-                n_targ_class = n_targ_class, n_targ_per_class = n_targ_per_class, 
-                targ_class_weights)
+                n_targ_class = n_targ_class, n_targ_per_class = n_targ_per_class)
   return(d)
   
 }
 
 gen_random_fx <- function(person, block, 
+                          mu_cw, sd_cw,
                           mu_stick, sd_stick,  
                           mu_d, sd_d, 
                           mu_theta, sd_theta) {
   
+  mu_cw[1] <- mu_cw[1] + rnorm(1, 0, sd_cw)
+  mu_cw[1] <- if_else(mu_cw[1]<0, 0, mu_cw[1])
+  
   dout <- tibble(person, block,
+                 targ_class_weights = list(mu_cw),
                  b_stick = rnorm(1, mu_stick, sd_stick),
                  sig_d = rnorm(1, mu_d, sd_d),
                  sig_theta = rnorm(1, mu_theta, sd_theta))
@@ -51,27 +57,24 @@ gen_random_fx <- function(person, block,
 
 sim_foraging_person <- function(person = 1,
                                 b_stick, sig_d, sig_theta,
-                                    block = 1,
-                                    n_trials_per_cond = 10,
-                                    n_targ_class = 2, n_targ_per_class, 
-                                    targ_class_weights) {
+                                block = 1,
+                                n_trials_per_cond = 10,
+                                n_targ_class = 2, n_targ_per_class, 
+                                targ_class_weights) {
   
   
- 
   trls <- 1:n_trials_per_cond[block]
   
   d <- map_df(trls, sim_foraging_trial, 
               n_targ_class =  n_targ_class, n_targ_per_class = n_targ_per_class[[block]],
-              targ_class_weights = targ_class_weights[[block]],
+              targ_class_weights = targ_class_weights,
               b_stick = b_stick, sig_d = sig_d, sig_theta = sig_theta) %>%
     mutate(condition = block)
-  
   
   d %>% mutate(person = person) %>% 
     relocate(person, condition) -> d
   
   return(d)
-  
 }
 
 
@@ -196,6 +199,7 @@ sim_foraging_trial <- function(trl = 1,
   
   # add in sim params to d_trial
   d_trial %>% mutate(
+    class_weights = list(targ_class_weights),
     b_stick = b_stick, 
     sig_d = sig_d, sig_theta = sig_theta) -> d_trial
   

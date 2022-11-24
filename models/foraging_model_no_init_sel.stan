@@ -26,10 +26,10 @@ functions{
 
      // if (n == 2) {
         // for the second selected target, weight by distance from the first
-       w = w .* exp(-(phi_dis + u[1+3*(kk-1), ll]) * D) ;//.* (1 + dir_bias*cos(4*A))/(dir_bias+1);
+       w = w .* exp(-(phi_dis + u[1+2*(kk-1), ll]) * D) ;//.* (1 + dir_bias*cos(4*A))/(dir_bias+1);
       //} else {
         // for all later targets, also weight by direciton
-       // w = w .* exp(-(phi_dis + u[1+3*(kk-1), ll]) * D - (phi_dir + u[2+3*(kk-1), ll]) * E) .* (1 + dir_bias*cos(4*A))/(dir_bias+1);
+       w = w .* exp(-(phi_dis + u[1+2*(kk-1), ll]) * D - (phi_dir + u[2+2*(kk-1), ll]) * E);// .* (1 + dir_bias*cos(4*A))/(dir_bias+1);
       
    // }
      // apply shelf..
@@ -97,7 +97,7 @@ parameters {
   sigmas, along with the floor (chance of selectin an 
   item at random)
   */
-  real b[3*K];
+  real b[2*K];
 
   ///////////////////////////////
   // random effects
@@ -114,9 +114,9 @@ parameters {
   /* and now the other parameters 
   proximity weighting, momemtum, and the "floor" parameter
   We will model the correlations between these parameters */
-  vector<lower=0>[3*K] sig_b; // random effect sigma for biases  
-  cholesky_factor_corr[3*K] L_u; // declare L_u to be the Choleski factor of a correlation matrix
-  matrix[3*K,L] z_u;  // random effect matrix
+  vector<lower=0>[2*K] sig_b; // random effect sigma for biases  
+  cholesky_factor_corr[2*K] L_u; // declare L_u to be the Choleski factor of a correlation matrix
+  matrix[2*K,L] z_u;  // random effect matrix
 }
 
 transformed parameters {
@@ -129,15 +129,15 @@ transformed parameters {
 
   // this transform random effects so that they have the correlation
   // matrix specified by the correlation matrix above
-  matrix[3*K,L] u;
+  matrix[2*K,L] u;
   u = diag_pre_multiply(sig_b, L_u) * z_u; 
 
   // extract params from list of params
   for (ii in 1:K) {
     phi_dis[ii] = b[1+2*(ii-1)];
     phi_dir[ii] = b[2+2*(ii-1)];
-    //p_floor[ii] = b[3+3*(ii-1)];
-    //direction_bias[ii] = inv_logit(b[4+4*(ii-1)]);
+    p_floor[ii] =0;// b[3+3*(ii-1)];
+    direction_bias[ii] = 0;// inv_logit(b[4+4*(ii-1)]);
   }
 }
 
@@ -252,6 +252,6 @@ generated quantities {
   real prior_sW = normal_rng(0, prior_sd_bS);
   real prior_phi_dis = normal_rng(prior_mu_phidis, prior_sd_phidis);
   real prior_phi_dir = normal_rng(prior_mu_phidir, prior_sd_phidir);
-  real prior_p_floor = normal_rng(prior_mu_floor, prior_sd_floor);
-  real prior_direction_bias = normal_rng(-2, 3);
+ real prior_p_floor = normal_rng(prior_mu_floor, prior_sd_floor);
+ real prior_direction_bias = normal_rng(-2, 3);
 }

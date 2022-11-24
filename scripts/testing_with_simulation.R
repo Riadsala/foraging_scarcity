@@ -14,24 +14,23 @@ source("../functions/get_run_info.R")
 ######################################################
 # first of all we want to generate some synthetic data
 ######################################################
-cond_labels <- c("equal", "equal-bias", "scarce", "scarce-bias")
+cond_labels <- c("equal", "scarce")
 
-n_people <- 20
+n_people <- 10
+n_trials_per_cond <- 12
 
-n_trials_per_cond <- 10
-n_targ_per_class <- list(c(10, 10), c(10, 10), c(5, 15), c(5, 15))
 n_targ_class <- 2
-
-targ_class_weights <- list(c(1,1), c(3,2), c(1,1), c(3,2))
-
+n_targ_per_class <- list(c(10, 10), c(5, 15))
+targ_class_weights <- list(c(1,1), c(2,1))
 
 b_stick <- 1
 sig_d <- 15
-sig_theta <- -1
+sig_theta <- -2
 
+
+phi_class_weights <- 0.05
 phi_stick <- 0.2
 phi_d <- 2
-
 phi_theta <- 1
 
 n_conditions <- length(n_targ_per_class)
@@ -41,15 +40,16 @@ d <- sim_foraging_people(n_people = n_people,
                          n_trials_per_cond = n_trials_per_cond,
                          n_targ_class = n_targ_class,
                          n_targ_per_class = n_targ_per_class,
-                         targ_class_weights = targ_class_weights,
+                         targ_class_weights = targ_class_weights, phi_class_weights = phi_class_weights,
                          b_stick = b_stick, sig_d = sig_d, sig_theta = sig_theta, # fixed effects
                          phi_stick = phi_stick, phi_d = phi_d, phi_theta = phi_theta) # random effects)
 # 
-# write_csv(d, "../scratch/sim_data.csv")
-# d <- read_csv("../scratch/sim_data.csv")
+write_csv(d, "../scratch/sim_data.csv")
+d <- read_csv("../scratch/sim_data.csv")
 
 d %>% group_by(person, condition) %>%
-  summarise(b_stick = unique(b_stick),
+  summarise(class_weights = unique(class_weights),
+    b_stick = unique(b_stick),
             sig_d = unique(sig_d),
             sig_theta = unique(sig_theta)) -> sim_params
 
@@ -86,10 +86,10 @@ d_found <- d %>% filter(found > 0) %>%
   arrange(person, condition, trial, found) %>%
   rename(block = "condition")
 
- d_found %>% filter(block == 1, trial == 1) %>%
+ d_found %>% filter(person == 1, block == 1, trial == 1) %>%
    ggplot(aes(x, y)) + 
-   geom_label(aes(label = id, colour = as.factor(class))) + 
-   geom_path(data = d_found %>% filter(block == 1, trial == 1, found>0),size = 1)
+   geom_label(aes(label = found, colour = as.factor(class))) + 
+   geom_path(data = d_found %>% filter(person == 1, block == 1, trial == 1, found>0),size = 1)
 
 d_list <- prep_data_for_stan(d_found, d_stim)
 
@@ -109,3 +109,4 @@ saveRDS(m, "../scratch/tmp.model")
 source("../functions/plot_model.R")
     
 plot_model_fixed(m, d, cond_labels)    
+
