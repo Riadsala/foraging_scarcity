@@ -16,18 +16,18 @@ source("../functions/get_run_info.R")
 ######################################################
 cond_labels <- c("equal", "scarce")
 
-n_people <- 8
-n_trials_per_cond <- 6
+n_people <- 36
+n_trials_per_cond <- 5
 
 n_targ_class <- 2
 n_targ_per_class <- list(c(10, 10), c(5, 15))
-targ_class_weights <- list(c(1,1), c(2,1))
+targ_class_weights <- list(c(1,1), c(2,1)) # compared to approx 3:1 (75%) in Tagu & Kristjansson (2021)
 
 b_stick <- 1
-sig_d <- 15
-sig_theta <- -2
+sig_d <- 20
+sig_theta <- -1
 
-
+# fix sigmas to be based on CompBio paper
 phi_class_weights <- 0.05
 phi_stick <- 0.2
 phi_d <- 2
