@@ -2,6 +2,7 @@ library(tidyverse)
 library(rstan)
 library(tidybayes)
 library(patchwork)
+options(mc.cores = parallel::detectCores())
 
 source("../functions/parse_pavlovia_data_polygons.R")
 source("../functions/prep_data.R")
@@ -14,52 +15,53 @@ files <- dir(folder, ".csv")
 
 
 # first make a dataframe of all found targets and save
-d <- tibble()
-d_new <- tibble()
-for (pp in 1:length(files)) {
+
+d_new <- parse_exp_data(read_csv(paste0(folder, files[pp]), 
+                                   show_col_types = FALSE))
+d_found <- d_new$found
+d_stim <- d_new$stim
   
-  d_new <- parse_exp_data(read_csv(paste0(folder, files[pp]), 
-                          show_col_types = FALSE))$found
+rm(d_new)
+
+# remove distractor clicks (as these will no appear in final pilot data)
+
+d_found <- filter(d_found, vertices != 6)
+d_stim <- filter(d_stim, vertices != 6)
+
+# 
+# d %>% group_by(person, trialNo, vertices) %>%
+#   summarise(n = n(), .groups = "drop") %>%
+#   group_by(person, vertices) %>%
+#   summarise(mean_found = mean(n)) -> df
+
+d_found %>% rename(trial = trialNo, class = vertices) %>%
+  mutate(block = 1,
+         class = as.numeric(as_factor(class))) -> d_found
+
+
+d_stim %>% rename(trial = trialNo, class = vertices) %>%
+  mutate(block = 1,
+         class = as.numeric(as_factor(class))) -> d_stim
   
-  d_new <- mutate(d_new, file_name = str_remove(files[pp], ".csv"))
-  
-  d <- rbind(d, d_new)
-  
-}
+
+######################################################
+# now prepare data for stan model
+######################################################
 
 
-write_csv(d, "polygon_pilot_data.csv")
+d_found %>% filter(person == 1, block == 1, trial == 1) %>%
+  ggplot(aes(x, y)) + 
+  geom_label(aes(label = found, colour = as.factor(class))) + 
+  geom_path(data = d_found %>% filter(person == 1, block == 1, trial == 1, found>0),size = 1)
 
-d %>% group_by(person, trialNo, vertices) %>%
-  summarise(n = n(), .groups = "drop") %>%
-  group_by(person, vertices) %>%
-  summarise(mean_found = mean(n)) -> df
-
-
-ggplot(df, aes(as.factor(vertices), mean_found, colour = as.factor(vertices))) + 
-  geom_jitter() + theme_bw()
+d_list <- prep_data_for_stan(d_found, d_stim)
 
 
-#d %>% group_by(person, file_name, trialNo) %>% 
-#  summarise(end_trial = unique(end_trial)) -> dend
 
-#write_csv(dend, "space_bar_times.csv")
+m <- stan("../models/foraging_model_no_init_sel.stan", data = d_list, 
+          chains = 1, iter = 1000)
 
 
-for (pp in 1:length(files)) {
-  d <- parse_exp_data(read_csv(paste0("../data/Pavlovia/", files[pp]),
-                               show_col_types = FALSE))
-  
-  
-  if (nrow(d$found) > 500){
-  d_list <- prep_data_for_stan(d$found, d$stim)
-  m <- stan("../models/foraging_model.stan", data = d_list,
-             chains = 4, iter = 500)
-  
-  
-  saveRDS(m, paste0("models/", str_remove(files[pp], ".csv"), ".model"))
-  }
-}
 
 
 w <- spread_draws(m, 
