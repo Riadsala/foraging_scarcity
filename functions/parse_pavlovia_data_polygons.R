@@ -8,12 +8,19 @@ parse_exp_data <- function(dr) {
   
   # parse x y and class
   dr %>%
-    select(trialNo, contains(c("_x", "_y"))) %>%
+    select(trialNo, 137:176) %>% # these are the relevant columns for x and y positions
     pivot_longer(-c(trialNo), names_to = "label", values_to = "z") %>%
-    separate(label, into = c("id", "d")) %>%
-    pivot_wider(c(trialNo, id), names_from = "d", values_from = "z") %>%
-    mutate(id = parse_number(id)) -> d_stim
-    
+    mutate(id = parse_number(label)) %>%
+    mutate(z = str_replace_all(z, "\\[|\\]", ""),
+           z = str_squish(z)) %>%
+    separate(z, into = c("x", "y"), sep = " ") %>%
+    mutate(intermediate = row_number(),
+           trialNoReal = ceiling(intermediate/40),
+           x = as.numeric(x),
+           y = as.numeric(y)) %>%
+    select(trialNo, trialNoReal, id, x, y) -> d_stim
+
+
  # add in number of vertices
   vertices_8 <- c(1:10)
   vertices_7 <- c(11:20)
@@ -37,9 +44,10 @@ parse_exp_data <- function(dr) {
     rename(found  = "mouse.clicked_name", end_trial = "key_resp.rt") %>%
     separate(found, into = as.character(1:40), sep = "," ) %>%
     pivot_longer(-c(trialNo, end_trial), names_to = "found", values_to = "id") %>%
-    mutate(id = if_else(id == "\"polygon\"", "\"polygon_1\"", id),
-           id = if_else(id == "[\"polygon\"", "\"polygon_1\"", id),
-           id = if_else(id == "\"polygon\"]", "\"polygon_1\"", id),
+    mutate(id = str_replace_all(id, "\\[|\\]", ""),
+           id = str_replace_all(id, "\\'", ""),
+           id = str_squish(id),
+           id = if_else(id == "polygon", "polygon_1", id),
            id = parse_number(id),
            found = as.numeric(found)) %>%
     filter(is.finite(id)) %>%
@@ -78,6 +86,16 @@ parse_exp_data <- function(dr) {
   }
   
   rm(dm)
+  
+  # removing unhelpful trial numbers
+  d_stim <- d_stim %>%
+    select(-trialNo) %>%
+    rename(trialNo = trialNoReal) 
+    
+  
+  d_found <- d_found %>%
+    select(-trialNo) %>%
+    rename(trialNo = trialNoReal)
   
   return(list(stim = d_stim, found = d_found))
   
