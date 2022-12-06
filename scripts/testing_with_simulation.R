@@ -29,9 +29,9 @@ sig_theta <- -1
 
 # fix sigmas to be based on CompBio paper
 phi_class_weights <- 0.05
-phi_stick <- 0.2
-phi_d <- 2
-phi_theta <- 1
+phi_stick <- 0.5
+phi_d <- 5
+phi_theta <- 0.5
 
 n_conditions <- length(n_targ_per_class)
 
@@ -98,7 +98,7 @@ d_list <- prep_data_for_stan(d_found, d_stim)
 ######################################################
 
 m <- stan("../models/foraging_model_no_init_sel.stan", data = d_list, 
-           chains = 4, iter = 1000)
+           chains = 1, iter = 1000)
 
 saveRDS(m, "../scratch/tmp.model")
     
