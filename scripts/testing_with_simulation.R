@@ -2,7 +2,7 @@ library(tidyverse)
 library(rstan)
 library(patchwork)
 
-options(mc.cores = parallel::detectCores())
+options(mc.cores = 8)
 
 # set global ggplot theme
 theme_set(ggthemes::theme_tufte())
@@ -100,7 +100,7 @@ d_list <- prep_data_for_stan(d_found, d_stim)
 m <- stan("../models/foraging_model_no_init_sel.stan", data = d_list, 
            chains = 1, iter = 1000)
 
-saveRDS(m, "../scratch/tmp.model")
+saveRDS(m, "../scratch/sensiv_sim.model")
     
 ######################################################
 # plot model

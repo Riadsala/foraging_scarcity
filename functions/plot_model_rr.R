@@ -21,6 +21,8 @@ plot_model_fixed <- function(m,d, cl)
   n_classes <- length(unique(post$class))
   my_widths <- c(0.53, 0.97)
   
+  dat_gt =tibble(x1 = c(0, 1.5), y1 = c(2/3, 1/3), x2 = c(1.5, 3), y2 = c(2/3, 1/3))
+  
   # plot class weights
   post %>%
     ggplot() + 
@@ -32,7 +34,8 @@ plot_model_fixed <- function(m,d, cl)
                        .width = my_widths,
                        position = position_dodge(0.2)) +
     geom_hline(yintercept = 1/n_classes, linetype = 2) +
-    geom_hline(yintercept = 3/5, linetype = 2) +
+    geom_segment(data = dat_gt,
+                 aes(x=x1, y=y1, xend=x2, yend=y2), linetype = 2) +
     scale_y_continuous("class weights", limits = c(0, 1)) +
     theme(legend.position = "none") -> plt_cW
   
@@ -45,16 +48,15 @@ plot_model_fixed <- function(m,d, cl)
                        .upper = boot::inv.logit(.upper)),
               aes(ymin = -Inf, ymax = Inf, xmin = .lower, xmax = .upper), 
               fill = "grey", alpha = 0.25) + 
-    geom_vline(xintercept = 0.5, colour = "black", linetype= 2) +
     geom_vline(xintercept = boot::inv.logit(1), colour = "black", linetype= 2) +
     stat_pointinterval(aes(boot::inv.logit(bS), block, colour = block), .width = my_widths) +
-    geom_vline(xintercept = 0.5, linetype = 2) +
+    #geom_vline(xintercept = 0.5, linetype = 2) +
     scale_x_continuous("stick probability", limits = c(0, 1))  +
     theme(legend.position = "none") -> plt_sW
   
   # plot proximity and direction effects
-  plt_dis <- plt_post_prior(post, prior, "phi_dis", "proximity tuning")
-  plt_dir <- plt_post_prior(post, prior, "phi_dir", "direction tuning")
+  plt_dis <- plt_post_prior(post, prior, "phi_dis", "proximity tuning", 20)
+  plt_dir <- plt_post_prior(post, prior, "phi_dir", "direction tuning", -1)
  # plt_dir2 <- plt_post_prior(post, prior, "direction_bias", "Hori-Vert Pref") 
   
   
@@ -64,7 +66,7 @@ plot_model_fixed <- function(m,d, cl)
   return(plt)
 }
   
-plt_post_prior <- function(post, prior, var, xtitle) {
+plt_post_prior <- function(post, prior, var, xtitle, gt) {
   
   prior_var = paste("prior", var, sep = "_")
   
@@ -88,6 +90,7 @@ plt_post_prior <- function(post, prior, var, xtitle) {
                 aes(ymin = -Inf, ymax = Inf, xmin = .lower, xmax = .upper), 
                 fill = "grey", alpha = 0.25) +  
       geom_density(aes(get(var), fill = block), alpha = 0.5) +
+      geom_vline(xintercept = gt, linetype = 2, colour = "black") +
       scale_x_continuous(xtitle) -> plt
     
   }
