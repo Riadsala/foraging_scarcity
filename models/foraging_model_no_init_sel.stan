@@ -99,7 +99,7 @@ parameters {
   ///////////////////////////////
 
   // first of all, random effects for the class weights
-  matrix<lower = 0>[n_classes, K] sig_cw; // random effect sigma for class weights 
+  real<lower = 0> sig_cw; // random effect sigma for class weights 
   matrix[n_classes, K*L] u_cw;
 
   // now random effects for stick/switch rates
@@ -160,11 +160,12 @@ model {
   }
 
   // priors for random effects - class weights
+  target += normal_lpdf(sig_cw | 0, 0.50);
+
   for (ii in 1:K) {
-    for (jj in 1:n_classes) {
-      target += normal_lpdf(sig_cw[jj, ii] | 0, 0.50);
+    for (jj in 1:n_classes) {      
       for (obs in 1:L) {
-        u_cw[jj, ii + (obs-1)*K] ~ normal(0, sig_cw[jj, ii]);
+        u_cw[jj, ii + (obs-1)*K] ~ normal(0, sig_cw);
       }
     }
   }
