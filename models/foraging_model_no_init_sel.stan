@@ -160,7 +160,7 @@ model {
   }
 
   // priors for random effects - class weights
-  target += normal_lpdf(sig_cw | 0, 0.50);
+  target += normal_lpdf(sig_cw | 0, 1);
 
   for (ii in 1:K) {
     for (jj in 1:n_classes) {      

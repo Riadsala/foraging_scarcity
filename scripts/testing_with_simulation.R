@@ -21,7 +21,7 @@ n_trials_per_cond <- 5
 
 n_targ_class <- 2
 n_targ_per_class <- list(c(10, 10), c(5, 15))
-targ_class_weights <- list(c(1,1), c(2,1)) # compared to approx 3:1 (75%) in Tagu & Kristjansson (2021)
+targ_class_weights <- list(c(1,1), c(3,2)) # compared to approx 3:1 (75%) in Tagu & Kristjansson (2021)
 
 b_stick <- 1
 sig_d <- 20
@@ -98,7 +98,7 @@ d_list <- prep_data_for_stan(d_found, d_stim)
 ######################################################
 
 m <- stan("../models/foraging_model_no_init_sel.stan", data = d_list, 
-           chains = 1, iter = 1000)
+           chains = 4, iter = 1000)
 
 saveRDS(m, "../scratch/sensiv_sim.model")
     

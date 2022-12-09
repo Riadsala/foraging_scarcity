@@ -102,13 +102,16 @@ sim_foraging_trial <- function(trl = 1,
   n <- sum(n_targ_per_class)
   
   # set up dataframe for storing things
-  d_trial <- tibble(
-    trial = trl,
+  d_trial <- tibble( x = rep(c(-0.4, -0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3), each = 5),
+                     y = rep(c(0.4, 0.2, 0, -0.2, -0.4), times = 8)) %>%
+    sample_frac(0.5) %>%
+    mutate(
+      trial = trl,
     id = 1:sum(n),
-    x  = runif(n),
-    y = runif(n),
     class = rep(1:n_targ_class, n_targ_per_class),
-    found = -1)
+    found = -1)  %>%
+    mutate(x = x + runif(n(), -0.02, 0.02), 
+           y = y + runif(n(), -0.05, 0.05))
   
   # pick a first point at random, 
   # b is based only on the targ_class_weights
@@ -122,7 +125,6 @@ sim_foraging_trial <- function(trl = 1,
       prox = 0,
       b = targ_class_weights[class]) %>%
     mutate(bs = b/sum(b))
-  
 
   
   # pick a first point at random
