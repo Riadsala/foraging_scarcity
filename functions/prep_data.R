@@ -226,14 +226,13 @@ prep_data_for_stan <- function(df, ds) {
     A = phi,
     E = theta,
     Z = df$person,
-    alpha = 2,
+    prior_sd_bAvP = 1,
     prior_sd_bS = 1,
     prior_mu_phidis = 15,
     prior_sd_phidis = 4,
     prior_mu_phidir = 0,
-    prior_sd_phidir = 3,
-    prior_mu_floor = -2,
-    prior_sd_floor = 2)  
+    prior_sd_phidir = 3
+)  
   
   return(d_list)
   

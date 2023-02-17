@@ -6,22 +6,19 @@ plot_model_fixed <- function(m,d, cl)
 {
   
   m %>% recover_types(d$found) %>%
-    spread_draws(cW[block, class], bS[block], phi_dis[block], phi_dir[block]) %>%
-    mutate(block = as_factor(block),
-           class = as_factor(class)) %>%
+    spread_draws(bAvB[block], bS[block], phi_dis[block], phi_dir[block]) %>%
+    mutate(block = as_factor(block)) %>%
     ungroup() -> post
   
   levels(post$block) <- cl
   
   m %>% recover_types(d$found) %>%
-    spread_draws(prior_cW[class], prior_sW, prior_phi_dis, prior_phi_dir) %>%
-    mutate(class = as_factor(class)) %>%
+    spread_draws(prior_cW, prior_sW, prior_phi_dis, prior_phi_dir) %>%
     ungroup() -> prior
   
-  n_classes <- length(unique(post$class))
   my_widths <- c(0.53, 0.97)
   
-  dat_gt =tibble(x1 = c(0, 1.5), y1 = c(2/3, 1/3), x2 = c(1.5, 3), y2 = c(2/3, 1/3))
+  dat_gt <- tibble(x1 = c(0, 1.5), y1 = c(1/2, 3/5), x2 = c(1.5, 3), y2 = c(1/2, 3/5))
   
   # plot class weights
   post %>%
@@ -30,10 +27,9 @@ plot_model_fixed <- function(m,d, cl)
                 median_hdci(prior_cW, .width = c(0.53, 0.97)),
               aes(xmin = -Inf, xmax = Inf, ymin = .lower, ymax = .upper), 
               fill = "grey", alpha = 0.25) +
-    stat_pointinterval(aes(class, cW, colour = block), 
+    stat_pointinterval(aes(block, boot::inv.logit(bAvB), colour = block), 
                        .width = my_widths,
                        position = position_dodge(0.2)) +
-    geom_hline(yintercept = 1/n_classes, linetype = 2) +
     geom_segment(data = dat_gt,
                  aes(x=x1, y=y1, xend=x2, yend=y2), linetype = 2) +
     scale_y_continuous("class weights", limits = c(0, 1)) +
