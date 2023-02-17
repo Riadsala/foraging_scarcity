@@ -10,26 +10,29 @@ source("../functions/prep_data.R")
 
 options(mc.cores = parallel::detectCores())
 
-folder = "../data/polygon pilot Dec 2022/"
+folder = "../data/polygon pilot Feb 2023/"
 files <- dir(folder, ".csv")
 
 
 # first make a dataframe of all found targets and save
-#d <- tibble()
-#d_new <- tibble()
+d_found <- tibble()
+d_stim <- tibble()
 
-#for (pp in 1:length(files)) {
+for (pp in 1:length(files)) {
 
-pp <- 2 # for testing
+pp <- pp 
   
 d_new <- parse_exp_data(read_csv(paste0(folder, files[pp]), 
                                    show_col_types = FALSE))
-d_found <- d_new$found
-d_stim <- d_new$stim
-  
-#rm(d_new)
+d_found_pp <- d_new$found
+d_stim_pp <- d_new$stim
 
-#}
+d_found <- rbind(d_found, d_found_pp)
+d_stim <- rbind(d_stim, d_stim_pp)
+  
+rm(d_new, d_found_pp, d_stim_pp)
+
+}
 
 # remove distractor clicks (as these will no appear in final pilot data)
 
@@ -57,6 +60,7 @@ d_found %>% filter(person == 1, block == 1, trial == 1) %>%
   ggplot(aes(x, y)) + 
   geom_label(aes(label = found, colour = as.factor(class))) + 
   geom_path(data = d_found %>% filter(person == 1, block == 1, trial == 1, found>0),size = 1)
+
 
 d_list <- prep_data_for_stan(d_found, d_stim)
 

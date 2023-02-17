@@ -97,6 +97,14 @@ parse_exp_data <- function(dr) {
     select(-trialNo) %>%
     rename(trialNo = trialNoReal)
   
+  # add in exp name (useful for working out conditions later)
+  
+  d_stim <- d_stim %>%
+    mutate(expName = dr$expName[1])
+  
+  d_found <- d_found %>%
+    mutate(expName = dr$expName[1])
+  
   return(list(stim = d_stim, found = d_found))
   
   
