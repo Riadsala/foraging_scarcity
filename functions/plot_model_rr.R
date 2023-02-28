@@ -18,7 +18,7 @@ plot_model_fixed <- function(m,d, cl)
   
   my_widths <- c(0.53, 0.97)
   
-  dat_gt <- tibble(x1 = c(0, 1.5), y1 = c(1/2, 3/5), x2 = c(1.5, 3), y2 = c(1/2, 3/5))
+ #dat_gt <- tibble(x1 = c(0, 1.5), y1 = c(1/2, 3/5), x2 = c(1.5, 3), y2 = c(1/2, 3/5))
   
   # plot class weights
   post %>%
@@ -30,8 +30,8 @@ plot_model_fixed <- function(m,d, cl)
     stat_pointinterval(aes(block, boot::inv.logit(bAvB), colour = block), 
                        .width = my_widths,
                        position = position_dodge(0.2)) +
-    geom_segment(data = dat_gt,
-                 aes(x=x1, y=y1, xend=x2, yend=y2), linetype = 2) +
+   # geom_segment(data = dat_gt,
+   #              aes(x=x1, y=y1, xend=x2, yend=y2), linetype = 2) +
     scale_y_continuous("class weights", limits = c(0, 1)) +
     theme(legend.position = "none") -> plt_cW
   
@@ -44,7 +44,7 @@ plot_model_fixed <- function(m,d, cl)
                        .upper = boot::inv.logit(.upper)),
               aes(ymin = -Inf, ymax = Inf, xmin = .lower, xmax = .upper), 
               fill = "grey", alpha = 0.25) + 
-    geom_vline(xintercept = boot::inv.logit(1), colour = "black", linetype= 2) +
+   # geom_vline(xintercept = boot::inv.logit(1), colour = "black", linetype= 2) +
     stat_pointinterval(aes(boot::inv.logit(bS), block, colour = block), .width = my_widths) +
     #geom_vline(xintercept = 0.5, linetype = 2) +
     scale_x_continuous("stick probability", limits = c(0, 1))  +

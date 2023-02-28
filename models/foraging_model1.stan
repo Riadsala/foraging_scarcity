@@ -11,8 +11,7 @@ functions{
 
   vector compute_spatial_weights(int n, int n_targets, int kk, int ll, int ii,
                                  real phi_dis, real phi_dir, 
-                                 matrix u, vector D, vector E, vector A, 
-                                 vector itemX, vector itemY) {
+                                 matrix u, vector D, vector E, vector A) {
 
     vector[n_targets] w;
 
@@ -29,10 +28,9 @@ functions{
         w = w .* exp(-(phi_dis + u[3+4*(kk-1), ll]) * D);
       } else {
         // for all later targets, also weight by direciton
-       w = w .* exp(-(phi_dis + u[3+4*(kk-1), ll]) * D - (phi_dir + u[4+4*(kk-1), ll]) * E);
+        w = w .* exp(-(phi_dis + u[3+4*(kk-1), ll]) * D - (phi_dir + u[4+4*(kk-1), ll]) * E);
       }
     }
-
     return(w);
   }
 }
@@ -49,14 +47,12 @@ data {
 
   int <lower = 1> Y[N]; // target IDs - which target was selected here? This is what we predict
   
-  vector[n_targets] itemX[n_trials]; // x postiions of each target in each trial
-  vector[n_targets] itemY[n_trials]; // y position
   vector<lower = 0>[n_targets] D[N]; // distance measures
-  vector[n_targets] E[N]; // direction measures (relative)
+  vector<lower = 0>[n_targets] E[N]; // direction measures (relative)
   vector[n_targets] A[N]; // direction measures (absolute)
 
   int <lower = 1, upper = K> X[n_trials]; // trial features (ie, which condition are we in)
-  int <lower = 1, upper = n_classes> targ_class[n_trials, n_targets]; // target class, one row per trial
+  matrix<lower = -1, upper = 1>[n_trials, n_targets] targ_class; // target class, one row per trial
   vector<lower = -1, upper = 1>[n_targets] S[N]; // stick/switch (does this targ match prev targ) 
   int <lower = 1, upper = L> Z[N]; // random effect levels 
   
@@ -116,13 +112,11 @@ transformed parameters {
 
 model {
 
-  print("here");
-
   // some counters and index variables, etc.
   vector[n_targets] remaining_items; // binary vector that tracks which targets have been found
   vector[n_targets] weights;  // class weight for teach target
   vector[n_targets] m; // does this target match the previous target?
-  vector[n_classes] ucW; // class weights with random effects included
+  //real ucW; // class weights with random effects included
   vector[n_targets] spatial_weights;
 
   int ll; // participant tracker
@@ -164,24 +158,27 @@ model {
       // as we're at the start of a new trial, reset the remaining_items tracker
       remaining_items = rep_vector(1, n_targets);
 
-      // new trial, so update the class weights to take random effects into account
-      ucW[1] = inv_logit(bAvB[kk] + u[1+4*(kk-1), ll]);
-      ucW[2] = 1 - ucW[1];
+     
     }
+
+     // update the class weights to take random effects into account
+      // set the weight of each target to be its class weight
+      weights = (bAvB[kk] + u[1+4*(kk-1), ll]) * to_vector(targ_class[trl]) ;
 
     // apply spatial weighting
     spatial_weights = compute_spatial_weights(trial_start[ii], n_targets, kk, ll, ii,
-                                 phi_dis[kk], phi_dir[kk], u, D[ii], E[ii], A[ii],
-                                 itemX[trl], itemY[trl]);
+                                 phi_dis[kk], phi_dir[kk], u, D[ii], E[ii], A[ii]);
 
-    // set the weight of each target to be its class weight
-    weights = ucW[targ_class[trl]] .* spatial_weights;
 
-    if (trial_start[ii] > 1) {
+    if (trial_start[ii] == 1) {
+      weights = inv_logit(weights);
+      } else {
       // check which targets match the previously selected target
       // this is precomputed in S[ii]
-      weights = weights .* inv_logit((bS[kk] + u[2+4*(kk-1), ll]) * S[ii]); 
+      weights = inv_logit(weights + (bS[kk] + u[2+4*(kk-1), ll]) * S[ii]); 
     }
+
+    weights = weights .* spatial_weights;
 
     // remove already-selected items, and standarise to sum = 1
     weights = standarise_weights(weights, n_targets, remaining_items);

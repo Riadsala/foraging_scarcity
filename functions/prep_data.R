@@ -83,7 +83,8 @@ compute_inter_sel_direction <- function(Y, df, ds) {
     #starting a new trial, so get relevant data
     trl_dat = filter(ds, 
                      person == df$person[ii],
-                     trial == df$trial[ii])
+                     trial == df$trial[ii],
+                     block == df$block[ii])
     
     if (df$found[ii] %in% c(1, 2)) {
       
@@ -101,7 +102,8 @@ compute_inter_sel_direction <- function(Y, df, ds) {
         d_prev_targ <- filter(df, 
                               person == df$person[ii],
                               trial == df$trial[ii],
-                              found == df$found[ii] - 2)
+                              found == (df$found[ii] - 2),
+                              block == df$block[ii])
         
         phi = atan2((d_targ$y -  d_prev_targ$y), (d_targ$x -  d_prev_targ$x)) * 180/pi
         phi = (atan2((trl_dat$y - d_targ$y), (trl_dat$x - d_targ$x)) * 180/pi) - phi 

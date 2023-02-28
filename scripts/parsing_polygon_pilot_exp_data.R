@@ -18,10 +18,8 @@ files <- dir(folder, ".csv")
 d_found <- tibble()
 d_stim <- tibble()
 
-for (pp in 1:length(files)) {
+for (pp in 1:length(files)) { 
 
-pp <- pp 
-  
 d_new <- parse_exp_data(read_csv(paste0(folder, files[pp]), 
                                    show_col_types = FALSE))
 d_found_pp <- d_new$found
@@ -36,19 +34,34 @@ rm(d_new, d_found_pp, d_stim_pp)
 
 # remove distractor clicks (as these will no appear in final pilot data)
 
-d_found <- filter(d_found, vertices != 6)
-d_stim <- filter(d_stim, vertices != 6)
+trials_with_6 <- d_found %>% group_by(person, expName, trialNo) %>%
+  summarise(click6 = sum(vertices==6)) %>%
+  filter(click6>0) %>%
+  unite(cond, person, expName, trialNo)
+
+d_found %>%
+  unite(cond, person, expName, trialNo, remove=F) %>%
+  filter(!(cond %in% trials_with_6$cond)) %>%
+  select(-cond) -> d_found
+
+  d_stim %>%
+    unite(cond, person, expName, trialNo, remove=F) %>%
+  filter(!(cond %in% trials_with_6$cond)) %>%
+    select(-cond) -> d_stim
 
 # 
 
 d_found %>% rename(trial = trialNo, class = vertices) %>%
-  mutate(block = 1,
-         class = as.numeric(as_factor(class))) -> d_found
+  mutate(expName = str_remove(expName, "foraging_expt_polygons_"),
+         block = as_factor(expName),
+         class = as.numeric(as_factor(class)))  -> d_found
 
 
 d_stim %>% rename(trial = trialNo, class = vertices) %>%
-  mutate(block = 1,
-         class = as.numeric(as_factor(class))) -> d_stim
+  filter(class != 6) %>%
+           mutate(expName = str_remove(expName, "foraging_expt_polygons_"),
+                  block = as_factor(expName),
+         class = as.numeric(as_factor(class)))-> d_stim
   
 
 ######################################################
@@ -56,18 +69,26 @@ d_stim %>% rename(trial = trialNo, class = vertices) %>%
 ######################################################
 
 
-d_found %>% filter(person == 1, block == 1, trial == 1) %>%
-  ggplot(aes(x, y)) + 
-  geom_label(aes(label = found, colour = as.factor(class))) + 
-  geom_path(data = d_found %>% filter(person == 1, block == 1, trial == 1, found>0),size = 1)
+# d_found %>% filter(person == 1, block == 1, trial == 1) %>%
+  # ggplot(aes(x, y)) + 
+  # geom_label(aes(label = found, colour = as.factor(class))) + 
+  # geom_path(data = d_found %>% filter(person == 1, block == 1, trial == 1, found>0),size = 1)
+  # 
+
 
 
 d_list <- prep_data_for_stan(d_found, d_stim)
 
+d_list$targ_class <- d_list$targ_class-1
 
-
-m <- stan("../models/foraging_model_no_init_sel.stan", data = d_list, 
+m <- stan("../../foraging_spatial/models/foraging_model1_nonml.stan", data = d_list, 
           chains = 1, iter = 1000)
 
 
+blks_labels <- levels(d_found$block)
+
+source("../functions/plot_model_rr.R")
+
+
+plot_model_fixed(m, d_found, blks_labels)
         
