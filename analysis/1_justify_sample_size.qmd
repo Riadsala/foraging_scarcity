@@ -57,7 +57,7 @@ d <- sim_foraging_people(n_people = n_people,
                          b_stick = b_stick, sig_d = sig_d, sig_theta = sig_theta, # fixed effects
                          phi_stick = phi_stick, phi_d = phi_d, phi_theta = phi_theta) # random effects)
 # 
-write_csv(d, "../scratch/sim_data.csv")
+write_csv(d %>% mutate(x = round(x, 3), y = round(y, 3)), "../scratch/sim_data.csv")
 ```
 
 Read in pre-generated data
@@ -70,6 +70,8 @@ d %>% group_by(person, condition) %>%
     b_stick = unique(b_stick),
             sig_d = unique(sig_d),
             sig_theta = unique(sig_theta)) -> sim_params
+
+knitr::kable(sim_params)
 ```
 
 ## Summary Statistics
@@ -121,7 +123,7 @@ d_found <- d %>% filter(found > 0) %>%
 
 The code below runs the model. However, to make it easier to compile this document, this is pre-computed.
 
-```{r eval = FALSE}
+```{r}
 d_list <- prep_data_for_stan(d_found, d_stim)
 saveRDS(d_list, "../scratch/sensiv_sim.d_list")
 ```
@@ -148,7 +150,7 @@ m <- readRDS("../scratch/sensiv_sim.model")
 
 ## Posterior Probabilities
 
-```{r}
+```{r fig.height=3.5}
 ######################################################
 # plot model
 ######################################################
