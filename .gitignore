@@ -7,3 +7,4 @@ scripts/.Rhistory
 *.rds
 *.rds
 scripts/clarke/clarke_model.rds
+1_justify_sample_size_files

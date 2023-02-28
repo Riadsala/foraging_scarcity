@@ -1,0 +1,162 @@
+---
+title: "1_Justify_Sample_Size"
+format: html
+editor: visual
+---
+
+```{r}
+library(tidyverse)
+library(rstan)
+library(patchwork)
+
+options(mc.cores = 8)
+
+# set global ggplot theme
+theme_set(theme_bw())
+
+source("../functions/sim_foraging_data.R")
+source("../functions/prep_data.R")
+source("../functions/get_run_info.R")
+```
+
+## Simulate Data
+
+```{r}
+######################################################
+# first of all we want to generate some synthetic data
+######################################################
+cond_labels <- c("equal", "scarce")
+
+n_people <- 36
+n_trials_per_cond <- 5
+
+n_targ_class <- 2
+n_targ_per_class <- list(c(10, 10), c(5, 15))
+targ_class_weights <- list(c(1,1), c(3,2)) # compared to approx 3:1 (75%) in Tagu & Kristjansson (2021)
+
+b_stick <- 1
+sig_d <- 20
+sig_theta <- -2
+
+# fix sigmas to be based on CompBio paper
+phi_class_weights <- 0.05
+phi_stick <- 0.5
+phi_d <- 5
+phi_theta <- 0.5
+
+n_conditions <- length(n_targ_per_class)
+```
+
+```{r eval = FALSE}
+d <- sim_foraging_people(n_people = n_people,
+                         n_conditions = n_conditions,
+                         n_trials_per_cond = n_trials_per_cond,
+                         n_targ_class = n_targ_class,
+                         n_targ_per_class = n_targ_per_class,
+                         targ_class_weights = targ_class_weights, phi_class_weights = phi_class_weights,
+                         b_stick = b_stick, sig_d = sig_d, sig_theta = sig_theta, # fixed effects
+                         phi_stick = phi_stick, phi_d = phi_d, phi_theta = phi_theta) # random effects)
+# 
+write_csv(d, "../scratch/sim_data.csv")
+```
+
+Read in pre-generated data
+
+```{r}
+d <- read_csv("../scratch/sim_data.csv")
+
+d %>% group_by(person, condition) %>%
+  summarise(class_weights = unique(class_weights),
+    b_stick = unique(b_stick),
+            sig_d = unique(sig_d),
+            sig_theta = unique(sig_theta)) -> sim_params
+```
+
+## Summary Statistics
+
+```{r}
+######################################################
+# check summary stats
+######################################################
+d %>% modelr::data_grid(person, trial, condition) %>% 
+  rename(pp = "person", trl = "trial", blk = "condition") -> d_trls
+
+d_runs <- pmap_df(d_trls, get_run_info, d)
+
+d_runs %>% group_by(person, block) %>%
+  summarise(mean_max_run = mean(max_run_length),
+            mean_num_run = mean(n_runs),
+            .groups = "drop") %>%
+  full_join(sim_params) -> d_runs
+
+d_runs %>% select(person, block, mean_max_run, mean_num_run) %>%
+  pivot_longer(-c(person, block), names_to = "run_statistic", values_to = "value") %>%
+  mutate(block = as_factor(block)) %>%
+  ggplot(aes(block, value, fill = run_statistic)) + 
+  geom_boxplot() +
+  facet_wrap(~run_statistic)
+
+```
+
+## Running the model
+
+```{r}
+######################################################
+# now prepare data for stan model
+######################################################
+
+d_stim <- d %>% select(person, block="condition", trial, id, x, y, class) %>%
+  arrange(person, block, trial, id) %>%
+  filter(class > 0)
+
+d_found <- d %>% filter(found > 0) %>% 
+  arrange(person, condition, trial, found) %>%
+  rename(block = "condition")
+
+ d_found %>% filter(person == 1, block == 1, trial == 1) %>%
+   ggplot(aes(x, y)) + 
+   geom_label(aes(label = found, colour = as.factor(class))) + 
+   geom_path(data = d_found %>% filter(person == 1, block == 1, trial == 1, found>0), size = 1)
+```
+
+The code below runs the model. However, to make it easier to compile this document, this is pre-computed.
+
+```{r eval = FALSE}
+d_list <- prep_data_for_stan(d_found, d_stim)
+saveRDS(d_list, "../scratch/sensiv_sim.d_list")
+```
+
+```{r eval=FALSE}
+
+d_list <- readRDS("../scratch/sensiv_sim.d_list")
+
+######################################################
+# run model
+######################################################
+
+m <- stan("../models/foraging_model_multilevel.stan", data = d_list, 
+           chains = 4, iter = 1000)
+
+saveRDS(m, "../scratch/sensiv_sim.model")
+```
+
+Here we load in the model we fit earlier
+
+```{r}
+m <- readRDS("../scratch/sensiv_sim.model")
+```
+
+## Posterior Probabilities
+
+```{r}
+######################################################
+# plot model
+######################################################
+
+# functions for plotting the model are in this script: 
+source("../functions/plot_model_rr.R")    
+
+# plot the model
+plot_model_fixed(m, d, cond_labels, gt = 1)    
+ggsave("../plots/sensiv_sim.pdf", width = 8, height = 3)
+```

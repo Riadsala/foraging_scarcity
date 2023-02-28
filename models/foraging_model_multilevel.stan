@@ -116,8 +116,6 @@ transformed parameters {
 
 model {
 
-  print("here");
-
   // some counters and index variables, etc.
   vector[n_targets] remaining_items; // binary vector that tracks which targets have been found
   vector[n_targets] weights;  // class weight for teach target

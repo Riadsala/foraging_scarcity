@@ -1,9 +1,11 @@
 library(tidybayes)
+
 options(ggplot2.discrete.colour = ggthemes::ptol_pal()(4),
         ggplot2.discrete.fill = ggthemes::ptol_pal()(4))
 
-plot_model_fixed <- function(m,d, cl)
+plot_model_fixed <- function(m, d, cl, gt=NULL)
 {
+  # gt is a list with our groundtruth sim parameters. 
   
   m %>% recover_types(d$found) %>%
     spread_draws(bAvB[block], bS[block], phi_dis[block], phi_dir[block]) %>%
@@ -18,22 +20,19 @@ plot_model_fixed <- function(m,d, cl)
   
   my_widths <- c(0.53, 0.97)
   
- #dat_gt <- tibble(x1 = c(0, 1.5), y1 = c(1/2, 3/5), x2 = c(1.5, 3), y2 = c(1/2, 3/5))
-  
+ 
   # plot class weights
   post %>%
     ggplot() + 
     geom_rect(data = prior %>% 
-                median_hdci(prior_cW, .width = c(0.53, 0.97)),
-              aes(xmin = -Inf, xmax = Inf, ymin = .lower, ymax = .upper), 
-              fill = "grey", alpha = 0.25) +
-    stat_pointinterval(aes(block, boot::inv.logit(bAvB), colour = block), 
-                       .width = my_widths,
-                       position = position_dodge(0.2)) +
-   # geom_segment(data = dat_gt,
-   #              aes(x=x1, y=y1, xend=x2, yend=y2), linetype = 2) +
-    scale_y_continuous("class weights", limits = c(0, 1)) +
-    theme(legend.position = "none") -> plt_cW
+                median_hdci(prior_cW, .width = c(0.53, 0.97)) %>%
+              mutate(.lower = boot::inv.logit(.lower),
+                     .upper = boot::inv.logit(.upper)),
+              aes(ymin = -Inf, ymax = Inf, xmin = .lower, xmax = .upper), 
+              fill = "orange", alpha = 0.25) +
+    geom_density(aes(boot::inv.logit(bAvB), fill = block), alpha = 0.5) +
+    scale_x_continuous("class weights") +
+    theme(legend.position = "bottom") -> plt_cW
   
   # plot stick-switch param
   post  %>%
@@ -43,12 +42,11 @@ plot_model_fixed <- function(m,d, cl)
                 mutate(.lower = boot::inv.logit(.lower),
                        .upper = boot::inv.logit(.upper)),
               aes(ymin = -Inf, ymax = Inf, xmin = .lower, xmax = .upper), 
-              fill = "grey", alpha = 0.25) + 
-   # geom_vline(xintercept = boot::inv.logit(1), colour = "black", linetype= 2) +
-    stat_pointinterval(aes(boot::inv.logit(bS), block, colour = block), .width = my_widths) +
+              fill = "orange", alpha = 0.25) + 
+    geom_density(aes(boot::inv.logit(bS), fill = block, alpha = 0.5)) +
     #geom_vline(xintercept = 0.5, linetype = 2) +
-    scale_x_continuous("stick probability", limits = c(0, 1))  +
-    theme(legend.position = "none") -> plt_sW
+    scale_x_continuous("stick probability")  +
+    theme(legend.position = "bottom") -> plt_sW
   
   # plot proximity and direction effects
   plt_dis <- plt_post_prior(post, prior, "phi_dis", "proximity tuning", 20)
@@ -56,8 +54,16 @@ plot_model_fixed <- function(m,d, cl)
  # plt_dir2 <- plt_post_prior(post, prior, "direction_bias", "Hori-Vert Pref") 
   
   
-  plt <-  (plt_cW + plt_sW) / (plt_dis + plt_dir) +
-    plot_layout(guides = "collect") 
+  if (!is.null(gt)) {
+    # if we have groundtruth, annotate our plt
+    plt_cW + geom_vline(xintercept = c(0.5, 0.6), linetype = 2) -> plt_cW
+    
+    plt_sW + geom_vline(xintercept = boot::inv.logit(1), 
+                        colour = "black", linetype= 2) -> plt_sW
+  }
+  
+  plt <- plt_cW + plt_sW + plt_dis + plt_dir +
+    plot_layout(guides = "collect", ncol = 4)  & theme(legend.position = 'bottom')
   
   return(plt)
 }
@@ -73,7 +79,7 @@ plt_post_prior <- function(post, prior, var, xtitle, gt) {
       geom_rect(data = prior %>% 
                   median_hdci(exp(get(prior_var)), .width = c(0.53, 0.97)),
                 aes(ymin = -Inf, ymax = Inf, xmin = .lower, xmax = .upper), 
-                fill = "grey", alpha = 0.25) +  
+                fill = "orange", alpha = 0.25) +  
       geom_density(aes(exp(get(var)), fill = block), alpha = 0.5) +
       scale_x_continuous(xtitle) +
       coord_cartesian(xlim = c(0, 0.1))-> plt
@@ -84,7 +90,7 @@ plt_post_prior <- function(post, prior, var, xtitle, gt) {
       geom_rect(data = prior %>% 
                   median_hdci(get(prior_var), .width = c(0.53, 0.97)),
                 aes(ymin = -Inf, ymax = Inf, xmin = .lower, xmax = .upper), 
-                fill = "grey", alpha = 0.25) +  
+                fill = "orange", alpha = 0.25) +  
       geom_density(aes(get(var), fill = block), alpha = 0.5) +
       geom_vline(xintercept = gt, linetype = 2, colour = "black") +
       scale_x_continuous(xtitle) -> plt
