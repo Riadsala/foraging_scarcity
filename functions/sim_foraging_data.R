@@ -1,14 +1,22 @@
+#################################################################
+#
+# List of Functions in this script
+# 
+# < fill in>
+# convert_class_weights_to_pA - converts a ratio to a proportion
+#################################################################
+
 sim_foraging_people <- function(n_people = 10,
                     n_conditions = 2,
                     n_trials_per_cond = 10,
                     n_targ_class = 3, n_targ_per_class = 2, 
                     targ_class_weights, phi_class_weights,
-                    b_stick = 0, phi_stick = 1,
+                    bS = 0, phi_stick = 1,
                     sig_d = 0, phi_d = 5,
                     sig_theta = 0, phi_theta = 1) {
   
   ## if some params have been specified as a constant, replicate over conditions.
-  b_stick <- check_and_rep_param(b_stick, n_conditions)
+  bS <- check_and_rep_param(bS, n_conditions)
   sig_d <- check_and_rep_param(sig_d, n_conditions)
   sig_theta <- check_and_rep_param(sig_theta, n_conditions)
   n_trials_per_cond <- check_and_rep_param(n_trials_per_cond, n_conditions)
@@ -18,7 +26,7 @@ sim_foraging_people <- function(n_people = 10,
                    block  = rep(1:n_conditions, each = n_people),
                    mu_cw = rep(targ_class_weights, each = n_people),
                    sd_cw = phi_class_weights,
-                   mu_stick = rep(b_stick, each = n_people),
+                   mu_stick = rep(bS, each = n_people),
                    sd_stick = phi_stick,
                    mu_d = rep(sig_d, each = n_people),
                    sd_d = phi_d,
@@ -45,7 +53,7 @@ gen_random_fx <- function(person, block,
   
   dout <- tibble(person, block,
                  targ_class_weights = list(mu_cw),
-                 b_stick = rnorm(1, mu_stick, sd_stick),
+                 bS = rnorm(1, mu_stick, sd_stick),
                  sig_d = rnorm(1, mu_d, sd_d),
                  sig_theta = rnorm(1, mu_theta, sd_theta))
   
@@ -56,19 +64,18 @@ gen_random_fx <- function(person, block,
 
 
 sim_foraging_person <- function(person = 1,
-                                b_stick, sig_d, sig_theta,
+                                bS, sig_d, sig_theta,
                                 block = 1,
                                 n_trials_per_cond = 10,
                                 n_targ_class = 2, n_targ_per_class, 
                                 targ_class_weights) {
-  
   
   trls <- 1:n_trials_per_cond[block]
   
   d <- map_df(trls, sim_foraging_trial, 
               n_targ_class =  n_targ_class, n_targ_per_class = n_targ_per_class[[block]],
               targ_class_weights = targ_class_weights,
-              b_stick = b_stick, sig_d = sig_d, sig_theta = sig_theta) %>%
+              bS = bS, sig_d = sig_d, sig_theta = sig_theta) %>%
     mutate(condition = block)
   
   d %>% mutate(person = person) %>% 
@@ -81,7 +88,7 @@ sim_foraging_person <- function(person = 1,
 sim_foraging_trial <- function(trl = 1, 
                                n_targ_class = 2, n_targ_per_class = c(5, 15), 
                                targ_class_weights = c(0.5, 0.5),
-                               b_stick = 0, 
+                               bS = 0, 
                                sig_d = 0, sig_theta = 0)  
 {
   
@@ -94,7 +101,7 @@ sim_foraging_trial <- function(trl = 1,
 
   targ_class_weights <- targ_class_weights / sum(targ_class_weights)
   
-  # b_stick is the stick v switch preference
+  # bS is the stick v switch preference
   # sig_d and sig_theta define the spatial bias
   # trl is the trial number
   
@@ -107,11 +114,25 @@ sim_foraging_trial <- function(trl = 1,
     sample_frac(0.5) %>%
     mutate(
       trial = trl,
-    id = 1:sum(n),
+    id = 1:n,
     class = rep(1:n_targ_class, n_targ_per_class),
     found = -1)  %>%
-    mutate(x = x + runif(n(), -0.02, 0.02), 
-           y = y + runif(n(), -0.05, 0.05))
+    mutate(x = x + runif(n(), -0.02, 0.02),
+           y = y + runif(n(), -0.05, 0.05),
+           x = x - min(x),
+           y = y - min(y),
+           x = x/max(x),
+           y = y/max(y))
+
+  # d_trial <-
+  #   tibble(
+  #     trial = trl,
+  #     id = 1:n,
+  #     x  = runif(n),
+  #     y = runif(n),
+  #     class = rep(1:n_targ_class, n_targ_per_class),
+  #     found = -1)
+  # 
   
   # pick a first point at random, 
   # b is based only on the targ_class_weights
@@ -173,7 +194,7 @@ sim_foraging_trial <- function(trl = 1,
     
     d_remain %>% 
       mutate(
-        b = targ_class_weights[class] * boot::inv.logit(b_stick * match_prev),
+        b = targ_class_weights[class] * boot::inv.logit(bS * match_prev),
         b = b * prox) %>%
       mutate(bs = b/sum(b)) -> d_remain
     
@@ -201,9 +222,12 @@ sim_foraging_trial <- function(trl = 1,
   
   # add in sim params to d_trial
   d_trial %>% mutate(
-    class_weights = list(targ_class_weights),
-    b_stick = b_stick, 
+    bA = boot::logit(targ_class_weights[[1]]),
+    bS = bS, 
     sig_d = sig_d, sig_theta = sig_theta) -> d_trial
+  
+  # order by found
+  d_trial %>% arrange(found) -> d_trial
   
   return(d_trial)
 }
@@ -216,4 +240,13 @@ check_and_rep_param <- function(p, r) {
   }
   
   return(p)
+}
+
+convert_class_weights_to_pA <- function(cW) {
+  
+  pA <- map_dbl(targ_class_weights,  
+                function(x) sum(x[[1]]/sum(x)))
+  
+  return(pA)
+  
 }

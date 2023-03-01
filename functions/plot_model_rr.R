@@ -138,7 +138,6 @@ sample_beta <- function(c, .draw, dim, a, b) {
                 z = dbeta(x, shape1 = a, shape2 = b)))
 }
 
-
 plot_init_sel <- function(m, d) {
   
   # now to lambdas

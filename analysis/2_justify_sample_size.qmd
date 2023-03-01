@@ -4,7 +4,7 @@ format: html
 editor: visual
 ---
 
-```{r}
+```{r setup}
 library(tidyverse)
 library(rstan)
 library(patchwork)
@@ -21,13 +21,13 @@ source("../functions/get_run_info.R")
 
 ## Simulate Data
 
-```{r}
+```{r sim_params}
 ######################################################
 # first of all we want to generate some synthetic data
 ######################################################
 cond_labels <- c("equal", "scarce")
 
-n_people <- 12
+n_people <- 18
 n_trials_per_cond <- 5
 
 n_targ_class <- 2
@@ -51,14 +51,14 @@ phi_theta <- 0.5
 n_conditions <- length(n_targ_per_class)
 ```
 
-```{r eval = FALSE}
+```{r sim_data, eval=FALSE}
 d <- sim_foraging_people(n_people = n_people,
                          n_conditions = n_conditions,
                          n_trials_per_cond = n_trials_per_cond,
                          n_targ_class = n_targ_class,
                          n_targ_per_class = n_targ_per_class,
                          targ_class_weights = targ_class_weights, phi_class_weights = phi_class_weights,
-                         b_stick = b_stick, sig_d = sig_d, sig_theta = sig_theta, # fixed effects
+                         bS = b_stick, sig_d = sig_d, sig_theta = sig_theta, # fixed effects
                          phi_stick = phi_stick, phi_d = phi_d, phi_theta = phi_theta) # random effects)
 # 
 write_csv(d %>% mutate(x = round(x, 3), y = round(y, 3)), "../scratch/sim_data.csv")
@@ -66,21 +66,22 @@ write_csv(d %>% mutate(x = round(x, 3), y = round(y, 3)), "../scratch/sim_data.c
 
 Read in pre-generated data
 
-```{r}
+```{r summarise_sim_data}
 d <- read_csv("../scratch/sim_data.csv")
 
 d %>% group_by(person, condition) %>%
-  summarise(class_weights = unique(class_weights),
+  summarise(bA = unique(bA),
     b_stick = unique(b_stick),
             sig_d = unique(sig_d),
-            sig_theta = unique(sig_theta)) -> sim_params
+            sig_theta = unique(sig_theta),
+    .groups = "drop") -> sim_params
 
-knitr::kable(sim_params)
+knitr::kable(round(sim_params, 3))
 ```
 
 ## Summary Statistics
 
-```{r}
+```{r compute_run_stats}
 ######################################################
 # check summary stats
 ######################################################
@@ -106,41 +107,39 @@ d_runs %>% select(person, block, mean_max_run, mean_num_run) %>%
 
 ## Running the model
 
-```{r}
+```{r set_up_data}
 ######################################################
 # now prepare data for stan model
 ######################################################
 
-d_stim <- d %>% select(person, block="condition", trial, id, x, y, class) %>%
-  arrange(person, block, trial, id) %>%
+d_stim <- d %>% select(person, condition, trial, id, x, y, class) %>%
+  arrange(person, condition, trial, id) %>%
   filter(class > 0)
 
 d_found <- d %>% filter(found > 0) %>% 
-  arrange(person, condition, trial, found) %>%
-  rename(block = "condition")
+  arrange(person, condition, trial, found) 
 
- d_found %>% filter(person == 1, block == 1, trial == 1) %>%
+ d_found %>% filter(person == 1, condition == 1, trial == 1) %>%
    ggplot(aes(x, y)) + 
    geom_label(aes(label = found, colour = as.factor(class))) + 
-   geom_path(data = d_found %>% filter(person == 1, block == 1, trial == 1, found>0), size = 1)
+   geom_path(data = d_found %>% filter(person == 1, condition == 1, trial == 1, found>0), size = 1)
 ```
 
 The code below runs the model. However, to make it easier to compile this document, this is pre-computed.
 
-```{r eval=FALSE}
+```{r create_stan_list, eval=FALSE}
 d_list <- prep_data_for_stan(d_found, d_stim)
 saveRDS(d_list, "../scratch/sensiv_sim.d_list")
 ```
 
-```{r eval=FALSE}
-
+```{r fit_model, eval=FALSE}
 d_list <- readRDS("../scratch/sensiv_sim.d_list")
 
 ######################################################
 # run model
 ######################################################
 
-m <- stan("../models/foraging_model_multilevel.stan", data = d_list, 
+m <- stan("../models/foraging_model1.stan", data = d_list, 
            chains = 4, iter = 1000)
 
 saveRDS(m, "../scratch/sensiv_sim.model")
@@ -154,7 +153,7 @@ m <- readRDS("../scratch/sensiv_sim.model")
 
 ## Posterior Probabilities
 
-```{r fig.height=3.5}
+```{r plot_model_post, fig.height=3.5}
 ######################################################
 # plot model
 ######################################################

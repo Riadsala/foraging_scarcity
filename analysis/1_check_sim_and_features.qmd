@@ -1,0 +1,139 @@
+---
+title: "1 Checking Simulation and Features"
+format: html
+editor: visual
+---
+
+```{r}
+library(tidyverse)
+library(rstan)
+library(patchwork)
+
+options(mc.cores = 8)
+
+# set global ggplot theme
+theme_set(theme_bw())
+
+source("../functions/sim_foraging_data.R")
+source("../functions/prep_data.R")
+source("../functions/get_run_info.R")
+
+```
+
+# Single Trial Simulations
+
+```{r}
+######################################################
+
+n_trials_per_cond <- 1
+
+n_targ_class <- 2
+n_targ_per_class <- list(c(10, 10))
+ # A is 3x preferable over B 
+
+# calculate 
+bS <- 1
+sig_d <- 15
+sig_theta <- -2
+```
+
+```{r}
+# function to plot trials
+plot_item_selections <- function(d) 
+{
+  
+  d %>% arrange(found) %>%
+    mutate(class = as_factor(class)) %>%
+    ggplot(aes(x, y, colour = class, label = found)) + 
+    geom_point(size = 3) + geom_label() + 
+    geom_path(aes( group = 1), colour = "black")
+  
+}
+```
+
+
+## A large classweight
+
+```{r}
+targ_class_weights <- c(30,1)
+d <- sim_foraging_trial(trl = 1, 
+                   n_targ_class = 2, n_targ_per_class = c(10, 10), 
+                   targ_class_weights = targ_class_weights,
+                               bS = bS, 
+                               sig_d = sig_d, sig_theta = sig_theta)  
+
+
+
+plot_item_selections(d) + ggtitle("preference for class 1")
+rle(d$class)
+```
+# Even class and pref for switching
+
+```{r}
+
+targ_class_weights <- c(1,1)
+bS = -10
+
+d <- sim_foraging_trial(trl = 1, 
+                        n_targ_class = 2, n_targ_per_class = c(10, 10), 
+                        targ_class_weights = targ_class_weights,
+                        bS = bS, 
+                        sig_d = sig_d, sig_theta = sig_theta) 
+
+plot_item_selections(d) + ggtitle("preference for switching")
+rle(d$class)
+```
+
+# Even class and pref for sticking
+
+```{r}
+bS = 10
+
+d <- sim_foraging_trial(trl = 1, 
+                        n_targ_class = 2, n_targ_per_class = c(10, 10), 
+                        targ_class_weights = targ_class_weights,
+                        bS = bS, 
+                        sig_d = sig_d, sig_theta = sig_theta) 
+
+plot_item_selections(d) + ggtitle("preference for sticking")
+
+rle(d$class)
+```
+
+## Typical class values, no spatial effects
+
+```{r}
+bS = 1
+sig_d = 0
+sig_theta = 0
+
+d <- sim_foraging_trial(trl = 1, 
+                        n_targ_class = 2, n_targ_per_class = c(10, 10), 
+                        targ_class_weights = targ_class_weights,
+                        bS = bS, 
+                        sig_d = sig_d, sig_theta = sig_theta) 
+
+plot_item_selections(d) + ggtitle("removed spatial effects")
+
+rle(d$class)
+```
+
+## Really strong proximity effect
+
+```{r}
+
+sig_d = 50
+
+d <- sim_foraging_trial(trl = 1, 
+                        n_targ_class = 2, n_targ_per_class = c(10, 10), 
+                        targ_class_weights = targ_class_weights,
+                        bS = bS, 
+                        sig_d = sig_d, sig_theta = sig_theta) 
+
+plot_item_selections(d) + ggtitle("Strong Proximity effect")
+
+rle(d$class)
+```
+
+# Multipe Trial Simulations
+

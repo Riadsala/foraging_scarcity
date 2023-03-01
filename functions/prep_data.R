@@ -1,4 +1,3 @@
-
 compute_inter_targ_directions <- function(Y, df, ds) {
   
   directions <- array()
@@ -69,7 +68,6 @@ compute_inter_targ_distances <- function(Y, df, ds) {
   
 }
 
-
 compute_inter_sel_direction <- function(Y, df, ds) {
   
   # function to compute the angular difference between the 
@@ -83,8 +81,7 @@ compute_inter_sel_direction <- function(Y, df, ds) {
     #starting a new trial, so get relevant data
     trl_dat = filter(ds, 
                      person == df$person[ii],
-                     trial == df$trial[ii],
-                     block == df$block[ii])
+                     trial == df$trial[ii])
     
     if (df$found[ii] %in% c(1, 2)) {
       
@@ -102,8 +99,7 @@ compute_inter_sel_direction <- function(Y, df, ds) {
         d_prev_targ <- filter(df, 
                               person == df$person[ii],
                               trial == df$trial[ii],
-                              found == (df$found[ii] - 2),
-                              block == df$block[ii])
+                              found == df$found[ii] - 2)
         
         phi = atan2((d_targ$y -  d_prev_targ$y), (d_targ$x -  d_prev_targ$x)) * 180/pi
         phi = (atan2((trl_dat$y - d_targ$y), (trl_dat$x - d_targ$x)) * 180/pi) - phi 
@@ -122,43 +118,42 @@ compute_inter_sel_direction <- function(Y, df, ds) {
 }
 
 does_item_match_prev_target <- function(Y, df, targ_class, n_targ_per_class, n_targ_class) {
-  
+
   matching = array()
   trl <- 1
-  
+
   for (ii in 2:length(Y)) {
     if (df$found[ii]==1) {trl = trl + 1}
-    
+
     if (df$class[ii-1]== 0) {
       found_class <- rep(0, n_targ_per_class*n_targ_class)
-      
+
     } else {
       found_class <- targ_class[trl, Y[ii-1]]
-      
+
     }
-    
+
     matching <- rbind(matching, as.numeric(targ_class[trl,] == found_class))
-    
+
   }
-  
+
   matching[which(matching == 0 )] = -1
   matching[which(is.na(matching))] = 0
-  
-  return(matching)
-  
-}
 
+  return(matching)
+
+}
 
 prep_data_for_stan <- function(df, ds) {
   
   # make sure trial ids are unique
-  df %>% mutate(block = as.factor(block),
-                trial = paste(as.numeric(person), as.numeric(block), trial),
+  df %>% mutate(condition = as.factor(condition),
+                trial = paste(as.numeric(person), as.numeric(condition), trial),
                 trial = as.numeric(as_factor(trial))) -> df
   
-  ds %>% mutate(block = as.factor(block),
+  ds %>% mutate(condition = as.factor(condition),
                 class = as.factor(class),
-                trial = paste(as.numeric(person), as.numeric(block), trial),
+                trial = paste(as.numeric(person), as.numeric(condition), trial),
                 trial = as.numeric(as_factor(trial))) -> ds
   
   # correct (x, y) so that neither ever = 0 or 1
@@ -189,7 +184,7 @@ prep_data_for_stan <- function(df, ds) {
   
   
   d_trl <- ds %>% group_by(person, trial) %>% 
-    summarise(condition = unique(block), .groups = "drop")
+    summarise(condition = unique(condition), .groups = "drop")
   # remove trials in which no targets were found
   d_trl <- filter(d_trl, trial %in% (df %>% group_by(trial) %>% 
                                        summarise(n=n(), .groups = "drop"))$trial)
@@ -197,6 +192,7 @@ prep_data_for_stan <- function(df, ds) {
   X <- as.numeric(d_trl$condition)
   
   targ_class = t(array(as.numeric(ds$class), dim = c(n_targ_per_class*n_targ_class, n_trials)))
+  targ_class[which(targ_class==2)] =  -1
   
   # work out which targets match previous target
   matching <- does_item_match_prev_target(Y, df, targ_class, n_targ_per_class, n_targ_class)
@@ -213,7 +209,7 @@ prep_data_for_stan <- function(df, ds) {
   d_list <- list(
     N = nrow(df),
     L = n_people,
-    K = length(unique(ds$block)),
+    K = length(unique(ds$condition)),
     n_trials = n_trials,
     n_targets = n_targ_class*n_targ_per_class,
     n_classes = n_targ_class,
@@ -221,19 +217,17 @@ prep_data_for_stan <- function(df, ds) {
     trial_start = df$found,
     targ_class = targ_class,
     X = array(X),
-    itemX = itemX, 
-    itemY = itemY, 
     S = matching,
     D = distances,
     A = phi,
     E = theta,
     Z = df$person,
-    prior_sd_bAvP = 1,
-    prior_sd_bS = 1,
-    prior_mu_phidis = 15,
-    prior_sd_phidis = 4,
+    prior_sd_bAvP = 1.5,
+    prior_sd_bS = 1.5,
+    prior_mu_phidis = 20,
+    prior_sd_phidis = 5,
     prior_mu_phidir = 0,
-    prior_sd_phidir = 3
+    prior_sd_phidir = 2
 )  
   
   return(d_list)
