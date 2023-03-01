@@ -27,15 +27,19 @@ source("../functions/get_run_info.R")
 ######################################################
 cond_labels <- c("equal", "scarce")
 
-n_people <- 36
+n_people <- 12
 n_trials_per_cond <- 5
 
 n_targ_class <- 2
 n_targ_per_class <- list(c(10, 10), c(5, 15))
 targ_class_weights <- list(c(1,1), c(3,2)) # compared to approx 3:1 (75%) in Tagu & Kristjansson (2021)
 
+pA <- c(
+  targ_class_weights[[1]][1]/sum(targ_class_weights[[1]]), 
+  targ_class_weights[[2]][1]/sum(targ_class_weights[[2]]))
+
 b_stick <- 1
-sig_d <- 20
+sig_d <- 15
 sig_theta <- -2
 
 # fix sigmas to be based on CompBio paper
@@ -123,7 +127,7 @@ d_found <- d %>% filter(found > 0) %>%
 
 The code below runs the model. However, to make it easier to compile this document, this is pre-computed.
 
-```{r}
+```{r eval=FALSE}
 d_list <- prep_data_for_stan(d_found, d_stim)
 saveRDS(d_list, "../scratch/sensiv_sim.d_list")
 ```
@@ -159,6 +163,6 @@ m <- readRDS("../scratch/sensiv_sim.model")
 source("../functions/plot_model_rr.R")    
 
 # plot the model
-plot_model_fixed(m, d, cond_labels, gt = 1)    
+plot_model_fixed(m, d, cond_labels, gt = list(pA = pA, pS = boot::inv.logit(b_stick), sig_d = sig_d, sig_theta = sig_theta))    
 ggsave("../plots/sensiv_sim.pdf", width = 8, height = 3)
 ```

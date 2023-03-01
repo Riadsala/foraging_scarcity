@@ -49,16 +49,16 @@ plot_model_fixed <- function(m, d, cl, gt=NULL)
     theme(legend.position = "bottom") -> plt_sW
   
   # plot proximity and direction effects
-  plt_dis <- plt_post_prior(post, prior, "phi_dis", "proximity tuning", 20)
-  plt_dir <- plt_post_prior(post, prior, "phi_dir", "direction tuning", -1)
+  plt_dis <- plt_post_prior(post, prior, "phi_dis", "proximity tuning", gt$sig_d)
+  plt_dir <- plt_post_prior(post, prior, "phi_dir", "direction tuning", gt$sig_theta)
  # plt_dir2 <- plt_post_prior(post, prior, "direction_bias", "Hori-Vert Pref") 
   
   
   if (!is.null(gt)) {
     # if we have groundtruth, annotate our plt
-    plt_cW + geom_vline(xintercept = c(0.5, 0.6), linetype = 2) -> plt_cW
+    plt_cW + geom_vline(xintercept = gt$pA, linetype = 2) -> plt_cW
     
-    plt_sW + geom_vline(xintercept = boot::inv.logit(1), 
+    plt_sW + geom_vline(xintercept = gt$pS, 
                         colour = "black", linetype= 2) -> plt_sW
   }
   
