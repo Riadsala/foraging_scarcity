@@ -10,7 +10,7 @@ functions{
   }
 
   vector compute_spatial_weights(int n, int n_targets, int kk, int ii,
-                                 real phi_dis, real phi_dir,
+                                 real sigma_dis, real sigma_dir,
                                  vector D, vector E, vector A) {
 
     vector[n_targets] w;
@@ -25,10 +25,10 @@ functions{
 
       if (n == 2) {
         // for the second selected target, weight by distance from the first
-        w = w .* exp(-phi_dis  * D);
+        w = w .* exp(-sigma_dis  * D);
       } else {
         // for all later targets, also weight by direciton
-        w = w .* exp(-phi_dis * D - phi_dir * E);
+        w = w .* exp(-sigma_dis * D - sigma_dir * E);
       }
     }
     return(w);
@@ -56,18 +56,18 @@ data {
   
   real prior_sd_bAvP; // param for class weight prior
   real prior_sd_bS; // prior for sd for bS
-  real prior_mu_phidis;
-  real prior_sd_phidis;
-  real prior_mu_phidir;
-  real prior_sd_phidir;
+  real prior_mu_sigmadis;
+  real prior_sd_sigmadis;
+  real prior_mu_sigmadir;
+  real prior_sd_sigmadir;
 }
 
 parameters {
   // These are all the parameters we want to fit to the data
-  real bAvB[K]; // weights for class A compared to B  
+  real bA[K]; // weights for class A compared to B  
   real bS[K]; // stick-switch rates 
-  real phi_dis[K]; // distance tuning
-  real phi_dir[K]; // direction tuning 
+  real sigma_dis[K]; // distance tuning
+  real sigma_dir[K]; // direction tuning 
 }
 
 transformed parameters {
@@ -93,10 +93,10 @@ model {
 
   // priors for fixed effects
   for (ii in 1:K) {
-    target += normal_lpdf(bAvB[ii]    | 0, prior_sd_bAvP);
+    target += normal_lpdf(bA[ii]    | 0, prior_sd_bAvP);
     target += normal_lpdf(bS[ii]      | 0, prior_sd_bS);
-    target += normal_lpdf(phi_dis[ii] | prior_mu_phidis, prior_sd_phidis);
-    target += normal_lpdf(phi_dir[ii] | prior_mu_phidir, prior_sd_phidir);
+    target += normal_lpdf(sigma_dis[ii] | prior_mu_sigmadis, prior_sd_sigmadis);
+    target += normal_lpdf(sigma_dir[ii] | prior_mu_sigmadir, prior_sd_sigmadir);
   }
 
   //////////////////////////////////////////////////
@@ -120,11 +120,11 @@ model {
     // new trial, so update the class weights to take random effects into account
     // set the weight of each target to be its class weight
      
-    weights = bAvB[kk] * to_vector(targ_class[trl]);
+    weights = bA[kk] * to_vector(targ_class[trl]);
 
     // apply spatial weighting
     spatial_weights = compute_spatial_weights(trial_start[ii], n_targets, kk, ii,
-                                 phi_dis[kk], phi_dir[kk], D[ii], E[ii], A[ii]);
+                                 sigma_dis[kk], sigma_dir[kk], D[ii], E[ii], A[ii]);
 
 
     if (trial_start[ii] == 1) {
@@ -157,7 +157,7 @@ generated quantities {
   // here we  can output our prior distritions
   real prior_cW = normal_rng(0, prior_sd_bAvP);
   real prior_sW = normal_rng(0, prior_sd_bS);
-  real prior_phi_dis = normal_rng(prior_mu_phidis, prior_sd_phidis);
-  real prior_phi_dir = normal_rng(prior_mu_phidir, prior_sd_phidir);
+  real prior_sigma_dis = normal_rng(prior_mu_sigmadis, prior_sd_sigmadis);
+  real prior_sigma_dir = normal_rng(prior_mu_sigmadir, prior_sd_sigmadir);
   real prior_direction_bias = normal_rng(-2, 3);
 }

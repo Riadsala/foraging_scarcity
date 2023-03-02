@@ -103,8 +103,8 @@ transformed parameters {
 
   // extract params from list of params
   for (ii in 1:K) {
-    bA[ii]    = b[1+4*(ii-1)];
-    bS[ii]      = b[2+4*(ii-1)];
+    bA[ii]        = b[1+4*(ii-1)];
+    bS[ii]        = b[2+4*(ii-1)];
     sigma_dis[ii] = b[3+4*(ii-1)];
     sigma_dir[ii] = b[4+4*(ii-1)];
   }
