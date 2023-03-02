@@ -89,6 +89,7 @@ sim_params %>%
   scale_fill_discrete("condition") + 
   facet_wrap(~param, scales="free")
 ```
+
 ## Summary Statistics
 
 Compute and plot some summary run length parameters
@@ -165,7 +166,7 @@ m <- readRDS("../scratch/sensiv_sim.model")
 ######################################################
 
 # functions for plotting the model are in this script: 
-source("../functions/plot_model_rr.R")    
+source("../functions/plot_model.R")    
 
 # plot the model
 plot_model_fixed(m, d, cond_labels, 
@@ -176,17 +177,17 @@ plot_model_fixed(m, d, cond_labels,
 ggsave("../plots/sensiv_sim.pdf", width = 8, height = 2.8)
 ```
 
-Compute posterior probability of a difference 
+Compute posterior probability of a difference
 
 ```{r, fig.height=2.8}
  m %>% recover_types(d$found) %>%
-    spread_draws(bAvB[block], bS[block], phi_dis[block], phi_dir[block]) %>%
+    spread_draws(bA[block], bS[block], sigma_dis[block], sigma_dir[block]) %>%
     mutate(block = as_factor(block)) %>%
     ungroup() -> post
   
 levels(post$block) <- cond_labels 
 
-post %>% pivot_longer(c(bAvB, bS, phi_dis, phi_dir), names_to = "param") %>%
+post %>% pivot_longer(c(bA, bS, sigma_dis, sigma_dir), names_to = "param") %>%
   pivot_wider(names_from = "block", values_from = "value") %>%
   mutate(diff = scarce-equal) -> post
 
@@ -203,5 +204,3 @@ post %>%
   geom_vline(xintercept = 0, linetype = 2) + 
   facet_wrap(~param, scales="free", nrow = 1)
 ```
-
-

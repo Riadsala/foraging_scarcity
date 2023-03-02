@@ -319,7 +319,7 @@ dbl (12): person, condition, x, y, trial, id, class, found, bA, bS, sig_d, s...
 <span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="do">######################################################</span></span>
 <span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="co"># functions for plotting the model are in this script: </span></span>
-<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">"../functions/plot_model_rr.R"</span>)    </span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">"../functions/plot_model.R"</span>)    </span>
 <span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a><span class="co"># plot the model</span></span>
 <span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_model_fixed</span>(m, d, cond_labels, </span>
@@ -341,13 +341,13 @@ dbl (12): person, condition, x, y, trial, id, class, found, bA, bS, sig_d, s...
 <p>Compute posterior probability of a difference</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a> m <span class="sc">%&gt;%</span> <span class="fu">recover_types</span>(d<span class="sc">$</span>found) <span class="sc">%&gt;%</span></span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">spread_draws</span>(bAvB[block], bS[block], phi_dis[block], phi_dir[block]) <span class="sc">%&gt;%</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">spread_draws</span>(bA[block], bS[block], sigma_dis[block], sigma_dir[block]) <span class="sc">%&gt;%</span></span>
 <span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">block =</span> <span class="fu">as_factor</span>(block)) <span class="sc">%&gt;%</span></span>
 <span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ungroup</span>() <span class="ot">-&gt;</span> post</span>
 <span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a><span class="fu">levels</span>(post<span class="sc">$</span>block) <span class="ot">&lt;-</span> cond_labels </span>
 <span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>post <span class="sc">%&gt;%</span> <span class="fu">pivot_longer</span>(<span class="fu">c</span>(bAvB, bS, phi_dis, phi_dir), <span class="at">names_to =</span> <span class="st">"param"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>post <span class="sc">%&gt;%</span> <span class="fu">pivot_longer</span>(<span class="fu">c</span>(bA, bS, sigma_dis, sigma_dir), <span class="at">names_to =</span> <span class="st">"param"</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> <span class="st">"block"</span>, <span class="at">values_from =</span> <span class="st">"value"</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">diff =</span> scarce<span class="sc">-</span>equal) <span class="ot">-&gt;</span> post</span>
 <span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a></span>
@@ -364,20 +364,20 @@ dbl (12): person, condition, x, y, trial, id, class, found, bA, bS, sig_d, s...
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">bAvB</td>
-<td style="text-align: right;">1.0000</td>
+<td style="text-align: left;">bA</td>
+<td style="text-align: right;">1.000</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">bS</td>
-<td style="text-align: right;">0.6925</td>
+<td style="text-align: right;">0.706</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">phi_dir</td>
-<td style="text-align: right;">0.7305</td>
+<td style="text-align: left;">sigma_dir</td>
+<td style="text-align: right;">0.703</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">phi_dis</td>
-<td style="text-align: right;">0.9110</td>
+<td style="text-align: left;">sigma_dis</td>
+<td style="text-align: right;">0.920</td>
 </tr>
 </tbody>
 </table>
@@ -400,37 +400,37 @@ dbl (12): person, condition, x, y, trial, id, class, found, bA, bS, sig_d, s...
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">bAvB</td>
-<td style="text-align: right;">0.388</td>
-<td style="text-align: right;">0.172</td>
-<td style="text-align: right;">0.586</td>
+<td style="text-align: left;">bA</td>
+<td style="text-align: right;">0.393</td>
+<td style="text-align: right;">0.200</td>
+<td style="text-align: right;">0.588</td>
 <td style="text-align: right;">0.97</td>
 <td style="text-align: left;">median</td>
 <td style="text-align: left;">hdci</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">bS</td>
-<td style="text-align: right;">0.084</td>
-<td style="text-align: right;">-0.305</td>
-<td style="text-align: right;">0.474</td>
+<td style="text-align: right;">0.081</td>
+<td style="text-align: right;">-0.283</td>
+<td style="text-align: right;">0.408</td>
 <td style="text-align: right;">0.97</td>
 <td style="text-align: left;">median</td>
 <td style="text-align: left;">hdci</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">phi_dir</td>
-<td style="text-align: right;">0.134</td>
-<td style="text-align: right;">-0.372</td>
-<td style="text-align: right;">0.628</td>
+<td style="text-align: left;">sigma_dir</td>
+<td style="text-align: right;">0.135</td>
+<td style="text-align: right;">-0.406</td>
+<td style="text-align: right;">0.607</td>
 <td style="text-align: right;">0.97</td>
 <td style="text-align: left;">median</td>
 <td style="text-align: left;">hdci</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">phi_dis</td>
-<td style="text-align: right;">1.551</td>
-<td style="text-align: right;">-0.988</td>
-<td style="text-align: right;">4.023</td>
+<td style="text-align: left;">sigma_dis</td>
+<td style="text-align: right;">1.542</td>
+<td style="text-align: right;">-0.772</td>
+<td style="text-align: right;">4.069</td>
 <td style="text-align: right;">0.97</td>
 <td style="text-align: left;">median</td>
 <td style="text-align: left;">hdci</td>
