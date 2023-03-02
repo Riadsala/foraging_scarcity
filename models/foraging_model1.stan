@@ -73,7 +73,7 @@ parameters {
 
   /* in order to allow for correlations between the
   variables, these are all stored in a list
-  these include bAvB, bS (stick weight), and the two spatial 
+  these include bA, bS (stick weight), and the two spatial 
   sigmas, along with the floor (chance of selectin an 
   item at random)
   */
@@ -91,7 +91,7 @@ parameters {
 transformed parameters {
 
   // extract params from list of params    
-  real bAvB[K]; // weights for class A compared to B  
+  real bA[K]; // weights for class A compared to B  
   real bS[K]; // stick-switch rates 
   real sigma_dis[K]; // distance tuning
   real sigma_dir[K]; // direction tuning
@@ -103,7 +103,7 @@ transformed parameters {
 
   // extract params from list of params
   for (ii in 1:K) {
-    bAvB[ii]    = b[1+4*(ii-1)];
+    bA[ii]    = b[1+4*(ii-1)];
     bS[ii]      = b[2+4*(ii-1)];
     sigma_dis[ii] = b[3+4*(ii-1)];
     sigma_dir[ii] = b[4+4*(ii-1)];
@@ -161,7 +161,7 @@ model {
 
      // update the class weights to take random effects into account
       // set the weight of each target to be its class weight
-      weights = (bAvB[kk] + u[1+4*(kk-1), ll]) * to_vector(targ_class[trl]) ;
+      weights = (bA[kk] + u[1+4*(kk-1), ll]) * to_vector(targ_class[trl]) ;
 
     // apply spatial weighting
     spatial_weights = compute_spatial_weights(trial_start[ii], n_targets, kk, ll, ii,
