@@ -10,7 +10,7 @@ functions{
   }
 
   vector compute_spatial_weights(int n, int n_targets, int kk, int ll, int ii,
-                                 real phi_dis, real phi_dir, 
+                                 real sigma_dis, real sigma_dir, 
                                  matrix u, vector D, vector E, vector A) {
 
     vector[n_targets] w;
@@ -25,10 +25,10 @@ functions{
 
       if (n == 2) {
         // for the second selected target, weight by distance from the first
-        w = w .* exp(-(phi_dis + u[3+4*(kk-1), ll]) * D);
+        w = w .* exp(-(sigma_dis + u[3+4*(kk-1), ll]) * D);
       } else {
         // for all later targets, also weight by direciton
-        w = w .* exp(-(phi_dis + u[3+4*(kk-1), ll]) * D - (phi_dir + u[4+4*(kk-1), ll]) * E);
+        w = w .* exp(-(sigma_dis + u[3+4*(kk-1), ll]) * D - (sigma_dir + u[4+4*(kk-1), ll]) * E);
       }
     }
     return(w);
@@ -93,8 +93,8 @@ transformed parameters {
   // extract params from list of params    
   real bAvB[K]; // weights for class A compared to B  
   real bS[K]; // stick-switch rates 
-  real phi_dis[K]; // distance tuning
-  real phi_dir[K]; // direction tuning
+  real sigma_dis[K]; // distance tuning
+  real sigma_dir[K]; // direction tuning
 
   // this transform random effects so that they have the correlation
   // matrix specified by the correlation matrix above
@@ -105,8 +105,8 @@ transformed parameters {
   for (ii in 1:K) {
     bAvB[ii]    = b[1+4*(ii-1)];
     bS[ii]      = b[2+4*(ii-1)];
-    phi_dis[ii] = b[3+4*(ii-1)];
-    phi_dir[ii] = b[4+4*(ii-1)];
+    sigma_dis[ii] = b[3+4*(ii-1)];
+    sigma_dir[ii] = b[4+4*(ii-1)];
   }
 }
 
@@ -156,9 +156,7 @@ model {
       kk = X[trl]; // get conditions of current target/trial 
 
       // as we're at the start of a new trial, reset the remaining_items tracker
-      remaining_items = rep_vector(1, n_targets);
-
-     
+      remaining_items = rep_vector(1, n_targets);     
     }
 
      // update the class weights to take random effects into account
@@ -167,8 +165,7 @@ model {
 
     // apply spatial weighting
     spatial_weights = compute_spatial_weights(trial_start[ii], n_targets, kk, ll, ii,
-                                 phi_dis[kk], phi_dir[kk], u, D[ii], E[ii], A[ii]);
-
+                                 sigma_dis[kk], sigma_dir[kk], u, D[ii], E[ii], A[ii]);
 
     if (trial_start[ii] == 1) {
       weights = inv_logit(weights);
@@ -200,7 +197,7 @@ generated quantities {
   // here we  can output our prior distritions
   real prior_cW = normal_rng(0, prior_sd_bAvP);
   real prior_sW = normal_rng(0, prior_sd_bS);
-  real prior_phi_dis = normal_rng(prior_mu_phidis, prior_sd_phidis);
-  real prior_phi_dir = normal_rng(prior_mu_phidir, prior_sd_phidir);
+  real prior_sigma_dis = normal_rng(prior_mu_phidis, prior_sd_phidis);
+  real prior_sigma_dir = normal_rng(prior_mu_phidir, prior_sd_phidir);
   real prior_direction_bias = normal_rng(-2, 3);
 }
