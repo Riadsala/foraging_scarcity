@@ -1,5 +1,5 @@
 ---
-title: "1 Justify Sample Size"
+title: "2 Justify Sample Size"
 format: html
 editor: visual
 ---
@@ -8,6 +8,7 @@ editor: visual
 library(tidyverse)
 library(rstan)
 library(patchwork)
+library(tidybayes)
 
 options(mc.cores = 8)
 
@@ -52,6 +53,9 @@ phi_d <- 5
 phi_theta <- 0.5
 
 n_conditions <- length(n_targ_per_class)
+```
+
+```{r run_model, eval=FALSE}
 
 # now simulate data
 d <- sim_foraging_people(n_people = n_people,
@@ -89,7 +93,7 @@ sim_params %>%
 
 Compute and plot some summary run length parameters
 
-```{r compute_run_stats}
+```{r compute_run_stats, fig.height=3}
 ######################################################
 # check summary stats
 ######################################################
@@ -114,7 +118,7 @@ d_runs %>% select(person, block, mean_max_run, mean_num_run) %>%
 
 ## Running the model
 
-```{r set_up_data}
+```{r set_up_data, eval=FALSE}
 ######################################################
 # now prepare data for stan model
 ######################################################
@@ -125,21 +129,16 @@ d_stim <- d %>% select(person, condition, trial, id, x, y, class) %>%
 
 d_found <- d %>% filter(found > 0) %>% 
   arrange(person, condition, trial, found) 
-
- d_found %>% filter(person == 1, condition == 1, trial == 1) %>%
-   ggplot(aes(x, y)) + 
-   geom_label(aes(label = found, colour = as.factor(class))) + 
-   geom_path(data = d_found %>% filter(person == 1, condition == 1, trial == 1, found>0), size = 1)
 ```
 
 The code below runs the model. However, to make it easier to compile this document, this is pre-computed.
 
-```{r create_stan_list}
+```{r create_stan_list, eval=FALSE}
 d_list <- prep_data_for_stan(d_found, d_stim)
 saveRDS(d_list, "../scratch/sensiv_sim.d_list")
 ```
 
-```{r fit_model}
+```{r fit_model, eval=FALSE}
 d_list <- readRDS("../scratch/sensiv_sim.d_list")
 
 ######################################################
@@ -160,7 +159,7 @@ m <- readRDS("../scratch/sensiv_sim.model")
 
 ## Posterior Probabilities
 
-```{r plot_model_post, fig.height=3}
+```{r plot_model_post, fig.height=2.8}
 ######################################################
 # plot model
 ######################################################
@@ -169,6 +168,40 @@ m <- readRDS("../scratch/sensiv_sim.model")
 source("../functions/plot_model_rr.R")    
 
 # plot the model
-plot_model_fixed(m, d, cond_labels, gt = list(pA = pA, pS = boot::inv.logit(b_stick), sig_d = sig_d, sig_theta = sig_theta))    
+plot_model_fixed(m, d, cond_labels, 
+                 gt = list(pA = pA, 
+                           pS = boot::inv.logit(b_stick), 
+                           sig_d = sig_d,
+                           sig_theta = sig_theta))    
 ggsave("../plots/sensiv_sim.pdf", width = 8, height = 2.8)
 ```
+
+Compute posterior probability of a difference 
+
+```{r, fig.height=2.8}
+ m %>% recover_types(d$found) %>%
+    spread_draws(bAvB[block], bS[block], phi_dis[block], phi_dir[block]) %>%
+    mutate(block = as_factor(block)) %>%
+    ungroup() -> post
+  
+levels(post$block) <- cond_labels 
+
+post %>% pivot_longer(c(bAvB, bS, phi_dis, phi_dir), names_to = "param") %>%
+  pivot_wider(names_from = "block", values_from = "value") %>%
+  mutate(diff = scarce-equal) -> post
+
+post %>% group_by(param) %>%
+  summarise(p_diff_gr0 = mean(diff>0)) %>%
+  knitr::kable()
+
+post %>% group_by(param) %>%
+  median_hdci(diff, .width = 0.97) %>%
+  knitr::kable(digits = 3)
+
+post %>%
+  ggplot(aes(diff)) + geom_density(fill = "grey") + 
+  geom_vline(xintercept = 0, linetype = 2) + 
+  facet_wrap(~param, scales="free", nrow = 1)
+```
+
+
