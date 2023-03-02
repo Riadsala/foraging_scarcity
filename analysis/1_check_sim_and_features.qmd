@@ -23,7 +23,6 @@ source("../functions/get_run_info.R")
 # Single Trial Simulations
 
 ```{r}
-######################################################
 
 n_trials_per_cond <- 1
 
@@ -136,4 +135,56 @@ rle(d$class)
 ```
 
 # Multipe Trial Simulations
+
+# Multiple People Simulations
+
+```{r}
+
+n_people <- 5
+n_conditions <- 1
+targ_class_weights <- list(c(1,1))
+# fix sigmas to be based on CompBio paper
+phi_class_weights <- 0.05
+phi_stick <- 0.5
+phi_d <- 5
+phi_theta <- 0.5
+
+ # generate random effects
+dpeeps <- tibble(person = rep(1:n_people, n_conditions),
+                 block  = rep(1:n_conditions, each = n_people),
+                 mu_cw = rep(targ_class_weights, each = n_people),
+                 sd_cw = phi_class_weights,
+                 mu_stick = rep(bS, each = n_people),
+                 sd_stick = phi_stick,
+                 mu_d = rep(sig_d, each = n_people),
+                 sd_d = phi_d,
+                 mu_theta = rep(sig_theta, each = n_people),
+                 sd_theta = phi_d) 
+    
+
+pmap_df(dpeeps, gen_random_fx) %>% knitr::kable()
+
+```
+
+```{r}
+d <- sim_foraging_people(n_people,
+                    n_conditions,
+                    n_trials_per_cond,
+                    n_targ_class = 2, n_targ_per_class = 10, 
+                    targ_class_weights, phi_class_weights,
+                    bS = 0, phi_stick = 1,
+                    sig_d = 0, phi_d = 5,
+                    sig_theta = 0, phi_theta = 1)
+
+d %>% group_by(person, condition) %>%
+  summarise(bA = unique(bA),
+    bS = unique(bS),
+            sig_d = unique(sig_d),
+            sig_theta = unique(sig_theta),
+    .groups = "drop") -> sim_params
+
+round(sim_params,3) %>% knitr::kable()
+
+```
+
 

@@ -176,7 +176,7 @@ The following object is masked from 'package:tidyr':
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="do">######################################################</span></span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>cond_labels <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"equal"</span>, <span class="st">"scarce"</span>)</span>
 <span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>n_people <span class="ot">&lt;-</span> <span class="dv">18</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>n_people <span class="ot">&lt;-</span> <span class="dv">36</span></span>
 <span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>n_trials_per_cond <span class="ot">&lt;-</span> <span class="dv">5</span></span>
 <span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>n_targ_class <span class="ot">&lt;-</span> <span class="dv">2</span></span>
@@ -215,7 +215,7 @@ The following object is masked from 'package:tidyr':
 <div class="cell">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>d <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"../scratch/sim_data.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
-<pre><code>Rows: 3600 Columns: 12
+<pre><code>Rows: 7200 Columns: 12
 ── Column specification ────────────────────────────────────────────────────────
 Delimiter: ","
 dbl (12): person, condition, x, y, trial, id, class, found, bA, bS, sig_d, s...
@@ -247,290 +247,578 @@ dbl (12): person, condition, x, y, trial, id, class, found, bA, bS, sig_d, s...
 <tr class="odd">
 <td style="text-align: right;">1</td>
 <td style="text-align: right;">1</td>
-<td style="text-align: right;">0.000</td>
+<td style="text-align: right;">0.023</td>
 <td style="text-align: right;">1</td>
-<td style="text-align: right;">15.631</td>
-<td style="text-align: right;">-3.983</td>
+<td style="text-align: right;">6.842</td>
+<td style="text-align: right;">-4.410</td>
 </tr>
 <tr class="even">
 <td style="text-align: right;">1</td>
-<td style="text-align: right;">2</td>
-<td style="text-align: right;">0.390</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">13.588</td>
-<td style="text-align: right;">0.875</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">2</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">-0.039</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">14.747</td>
-<td style="text-align: right;">-7.124</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">2</td>
-<td style="text-align: right;">2</td>
-<td style="text-align: right;">0.393</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">21.497</td>
-<td style="text-align: right;">0.710</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">3</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">0.046</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">20.003</td>
-<td style="text-align: right;">-3.538</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">3</td>
-<td style="text-align: right;">2</td>
-<td style="text-align: right;">0.410</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">11.545</td>
-<td style="text-align: right;">-4.775</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">4</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">0.104</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">22.790</td>
-<td style="text-align: right;">1.095</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">4</td>
-<td style="text-align: right;">2</td>
-<td style="text-align: right;">0.395</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">22.407</td>
-<td style="text-align: right;">4.138</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">5</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">0.060</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">20.460</td>
-<td style="text-align: right;">-1.983</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">5</td>
-<td style="text-align: right;">2</td>
-<td style="text-align: right;">0.392</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">19.565</td>
-<td style="text-align: right;">2.466</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">6</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">0.036</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">15.301</td>
-<td style="text-align: right;">-1.838</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">6</td>
-<td style="text-align: right;">2</td>
-<td style="text-align: right;">0.414</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">15.986</td>
-<td style="text-align: right;">-6.097</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">7</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">-0.012</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">3.871</td>
-<td style="text-align: right;">5.658</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">7</td>
-<td style="text-align: right;">2</td>
-<td style="text-align: right;">0.402</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">13.655</td>
-<td style="text-align: right;">-1.553</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">8</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">-0.030</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">16.630</td>
-<td style="text-align: right;">-0.529</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">8</td>
-<td style="text-align: right;">2</td>
-<td style="text-align: right;">0.411</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">9.064</td>
-<td style="text-align: right;">0.262</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">9</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">-0.045</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">9.341</td>
-<td style="text-align: right;">-5.408</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">9</td>
-<td style="text-align: right;">2</td>
-<td style="text-align: right;">0.422</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">13.538</td>
-<td style="text-align: right;">2.795</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">10</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">0.046</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">19.842</td>
-<td style="text-align: right;">0.013</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">10</td>
-<td style="text-align: right;">2</td>
-<td style="text-align: right;">0.426</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">18.016</td>
-<td style="text-align: right;">-1.545</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">11</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">-0.006</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">10.829</td>
-<td style="text-align: right;">-7.189</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">11</td>
-<td style="text-align: right;">2</td>
-<td style="text-align: right;">0.413</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">26.279</td>
-<td style="text-align: right;">-4.337</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">12</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">-0.025</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">8.646</td>
-<td style="text-align: right;">-9.771</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">12</td>
-<td style="text-align: right;">2</td>
-<td style="text-align: right;">0.424</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">20.894</td>
-<td style="text-align: right;">5.031</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">13</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">-0.096</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">10.908</td>
-<td style="text-align: right;">-9.643</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">13</td>
-<td style="text-align: right;">2</td>
-<td style="text-align: right;">0.400</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">6.755</td>
-<td style="text-align: right;">6.844</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">14</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">0.025</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">22.427</td>
-<td style="text-align: right;">-11.584</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">14</td>
-<td style="text-align: right;">2</td>
-<td style="text-align: right;">0.409</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">19.559</td>
-<td style="text-align: right;">-2.879</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">15</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">-0.009</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">11.855</td>
-<td style="text-align: right;">2.504</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">15</td>
 <td style="text-align: right;">2</td>
 <td style="text-align: right;">0.401</td>
 <td style="text-align: right;">1</td>
-<td style="text-align: right;">13.631</td>
-<td style="text-align: right;">4.882</td>
+<td style="text-align: right;">9.618</td>
+<td style="text-align: right;">-1.816</td>
 </tr>
 <tr class="odd">
-<td style="text-align: right;">16</td>
+<td style="text-align: right;">2</td>
 <td style="text-align: right;">1</td>
-<td style="text-align: right;">0.018</td>
+<td style="text-align: right;">-0.167</td>
 <td style="text-align: right;">1</td>
-<td style="text-align: right;">10.847</td>
-<td style="text-align: right;">-7.134</td>
+<td style="text-align: right;">9.237</td>
+<td style="text-align: right;">-7.433</td>
 </tr>
 <tr class="even">
-<td style="text-align: right;">16</td>
 <td style="text-align: right;">2</td>
-<td style="text-align: right;">0.364</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0.417</td>
 <td style="text-align: right;">1</td>
-<td style="text-align: right;">11.520</td>
-<td style="text-align: right;">-9.886</td>
+<td style="text-align: right;">13.909</td>
+<td style="text-align: right;">2.728</td>
 </tr>
 <tr class="odd">
-<td style="text-align: right;">17</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">-0.026</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">22.336</td>
+<td style="text-align: right;">9.948</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0.421</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">8.468</td>
+<td style="text-align: right;">-5.267</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0.027</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">16.635</td>
+<td style="text-align: right;">-1.660</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0.399</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">17.631</td>
+<td style="text-align: right;">2.790</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">-0.019</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">6.496</td>
+<td style="text-align: right;">6.024</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0.428</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">13.883</td>
+<td style="text-align: right;">1.555</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">-0.091</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">11.394</td>
+<td style="text-align: right;">-7.644</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0.423</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">18.588</td>
+<td style="text-align: right;">3.625</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0.048</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">19.846</td>
+<td style="text-align: right;">-6.247</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0.388</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">11.597</td>
+<td style="text-align: right;">-0.619</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">-0.029</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">15.895</td>
+<td style="text-align: right;">-6.915</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0.400</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">7.824</td>
+<td style="text-align: right;">-0.046</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">9</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0.027</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">19.564</td>
+<td style="text-align: right;">-3.011</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">9</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0.390</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">15.930</td>
+<td style="text-align: right;">-1.675</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0.008</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">19.843</td>
+<td style="text-align: right;">-6.332</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0.398</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">17.707</td>
+<td style="text-align: right;">-0.939</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">11</td>
 <td style="text-align: right;">1</td>
 <td style="text-align: right;">0.030</td>
 <td style="text-align: right;">1</td>
-<td style="text-align: right;">21.856</td>
-<td style="text-align: right;">-7.909</td>
+<td style="text-align: right;">13.225</td>
+<td style="text-align: right;">3.976</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">11</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0.425</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">14.663</td>
+<td style="text-align: right;">-0.394</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">12</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">-0.101</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">21.739</td>
+<td style="text-align: right;">-1.162</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">12</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0.398</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">14.892</td>
+<td style="text-align: right;">-1.489</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">13</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0.003</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">14.260</td>
+<td style="text-align: right;">-6.379</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">13</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0.412</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">18.010</td>
+<td style="text-align: right;">3.092</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">14</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">-0.135</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">16.650</td>
+<td style="text-align: right;">-3.188</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">14</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0.383</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">25.475</td>
+<td style="text-align: right;">-7.590</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0.085</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">22.806</td>
+<td style="text-align: right;">5.287</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0.423</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">6.837</td>
+<td style="text-align: right;">-5.108</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">16</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">-0.002</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">18.196</td>
+<td style="text-align: right;">-8.048</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">16</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0.358</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">14.495</td>
+<td style="text-align: right;">2.341</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">17</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">-0.014</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">7.606</td>
+<td style="text-align: right;">-1.419</td>
 </tr>
 <tr class="even">
 <td style="text-align: right;">17</td>
 <td style="text-align: right;">2</td>
-<td style="text-align: right;">0.447</td>
+<td style="text-align: right;">0.406</td>
 <td style="text-align: right;">1</td>
-<td style="text-align: right;">16.667</td>
-<td style="text-align: right;">3.674</td>
+<td style="text-align: right;">18.659</td>
+<td style="text-align: right;">-4.981</td>
 </tr>
 <tr class="odd">
 <td style="text-align: right;">18</td>
 <td style="text-align: right;">1</td>
-<td style="text-align: right;">-0.032</td>
+<td style="text-align: right;">0.027</td>
 <td style="text-align: right;">1</td>
-<td style="text-align: right;">16.127</td>
-<td style="text-align: right;">-0.140</td>
+<td style="text-align: right;">9.715</td>
+<td style="text-align: right;">0.469</td>
 </tr>
 <tr class="even">
 <td style="text-align: right;">18</td>
 <td style="text-align: right;">2</td>
+<td style="text-align: right;">0.422</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">16.423</td>
+<td style="text-align: right;">-7.334</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">19</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0.018</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">5.309</td>
+<td style="text-align: right;">-5.668</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">19</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0.409</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">12.649</td>
+<td style="text-align: right;">-10.690</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0.039</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">21.824</td>
+<td style="text-align: right;">-0.069</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0.401</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">13.066</td>
+<td style="text-align: right;">-7.296</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">21</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">-0.069</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">14.772</td>
+<td style="text-align: right;">-6.178</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">21</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0.395</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">12.098</td>
+<td style="text-align: right;">-10.942</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">22</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0.008</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">18.173</td>
+<td style="text-align: right;">-5.201</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">22</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0.433</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">22.562</td>
+<td style="text-align: right;">1.967</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">23</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">-0.045</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">17.145</td>
+<td style="text-align: right;">1.059</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">23</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0.412</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">22.233</td>
+<td style="text-align: right;">11.254</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">24</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0.017</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">10.612</td>
+<td style="text-align: right;">-4.470</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">24</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0.407</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">19.323</td>
+<td style="text-align: right;">2.044</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">25</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">-0.028</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">19.722</td>
+<td style="text-align: right;">-1.102</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">25</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0.388</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">17.472</td>
+<td style="text-align: right;">-2.354</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">26</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">-0.026</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">15.669</td>
+<td style="text-align: right;">0.196</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">26</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0.384</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">9.758</td>
+<td style="text-align: right;">-6.312</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">27</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">-0.016</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">16.411</td>
+<td style="text-align: right;">-2.113</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">27</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0.413</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">20.698</td>
+<td style="text-align: right;">1.160</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">28</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">-0.126</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">22.649</td>
+<td style="text-align: right;">-0.922</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">28</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0.393</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">13.550</td>
+<td style="text-align: right;">4.510</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">29</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">-0.063</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">12.720</td>
+<td style="text-align: right;">2.586</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">29</td>
+<td style="text-align: right;">2</td>
 <td style="text-align: right;">0.391</td>
 <td style="text-align: right;">1</td>
-<td style="text-align: right;">13.217</td>
-<td style="text-align: right;">-4.163</td>
+<td style="text-align: right;">15.687</td>
+<td style="text-align: right;">-8.836</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">30</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0.029</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">16.745</td>
+<td style="text-align: right;">0.674</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">30</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0.408</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">18.513</td>
+<td style="text-align: right;">-8.454</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">31</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">-0.009</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">11.714</td>
+<td style="text-align: right;">1.398</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">31</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0.375</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">16.812</td>
+<td style="text-align: right;">4.969</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">32</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">-0.065</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">6.505</td>
+<td style="text-align: right;">-5.324</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">32</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0.380</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">14.782</td>
+<td style="text-align: right;">-2.275</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">33</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">-0.069</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">15.333</td>
+<td style="text-align: right;">-13.069</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">33</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0.425</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">15.629</td>
+<td style="text-align: right;">-7.160</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">34</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0.010</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">10.293</td>
+<td style="text-align: right;">-4.171</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">34</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0.384</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">7.965</td>
+<td style="text-align: right;">9.695</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">35</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0.032</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">16.767</td>
+<td style="text-align: right;">-14.956</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">35</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0.433</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">13.754</td>
+<td style="text-align: right;">-4.454</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">36</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">-0.088</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">17.520</td>
+<td style="text-align: right;">-3.000</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">36</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0.396</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">13.863</td>
+<td style="text-align: right;">9.161</td>
 </tr>
 </tbody>
 </table>
@@ -606,27 +894,40 @@ dbl (12): person, condition, x, y, trial, id, class, found, bA, bS, sig_d, s...
 <span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="do">######################################################</span></span>
 <span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>m <span class="ot">&lt;-</span> <span class="fu">stan</span>(<span class="st">"../models/foraging_model1.stan"</span>, <span class="at">data =</span> d_list, </span>
-<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>           <span class="at">chains =</span> <span class="dv">4</span>, <span class="at">iter =</span> <span class="dv">1000</span>)</span>
-<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a><span class="fu">saveRDS</span>(m, <span class="st">"../scratch/sensiv_sim.model"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>           <span class="at">chains =</span> <span class="dv">4</span>, <span class="at">iter =</span> <span class="dv">1000</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in readLines(file, warn = TRUE): incomplete final line found on
+'C:\Users\whone\Documents\GitHub\foraging_rr\models\foraging_model1.stan'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
+Running the chains for more iterations may help. See
+https://mc-stan.org/misc/warnings.html#bulk-ess</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
+Running the chains for more iterations may help. See
+https://mc-stan.org/misc/warnings.html#tail-ess</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">saveRDS</span>(m, <span class="st">"../scratch/sensiv_sim.model"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Here we load in the model we fit earlier</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>m <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="st">"../scratch/sensiv_sim.model"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>m <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="st">"../scratch/sensiv_sim.model"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="posterior-probabilities" class="level2">
 <h2 class="anchored" data-anchor-id="posterior-probabilities">Posterior Probabilities</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="do">######################################################</span></span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="co"># plot model</span></span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="do">######################################################</span></span>
-<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="co"># functions for plotting the model are in this script: </span></span>
-<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">"../functions/plot_model_rr.R"</span>)    </span>
-<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a><span class="co"># plot the model</span></span>
-<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_model_fixed</span>(m, d, cond_labels, <span class="at">gt =</span> <span class="fu">list</span>(<span class="at">pA =</span> pA, <span class="at">pS =</span> boot<span class="sc">::</span><span class="fu">inv.logit</span>(b_stick), <span class="at">sig_d =</span> sig_d, <span class="at">sig_theta =</span> sig_theta))    </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="do">######################################################</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="co"># plot model</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="do">######################################################</span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a><span class="co"># functions for plotting the model are in this script: </span></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">"../functions/plot_model_rr.R"</span>)    </span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a><span class="co"># plot the model</span></span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_model_fixed</span>(m, d, cond_labels, <span class="at">gt =</span> <span class="fu">list</span>(<span class="at">pA =</span> pA, <span class="at">pS =</span> boot<span class="sc">::</span><span class="fu">inv.logit</span>(b_stick), <span class="at">sig_d =</span> sig_d, <span class="at">sig_theta =</span> sig_theta))    </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Warning: `gather_()` was deprecated in tidyr 1.2.0.
 ℹ Please use `gather()` instead.
@@ -636,7 +937,7 @@ dbl (12): person, condition, x, y, trial, id, class, found, bA, bS, sig_d, s...
 <div class="cell-output-display">
 <p><img src="2_justify_sample_size_files/figure-html/plot_model_post-1.png" class="img-fluid" width="672"></p>
 </div>
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="st">"../plots/sensiv_sim.pdf"</span>, <span class="at">width =</span> <span class="dv">8</span>, <span class="at">height =</span> <span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="st">"../plots/sensiv_sim.pdf"</span>, <span class="at">width =</span> <span class="dv">8</span>, <span class="at">height =</span> <span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 

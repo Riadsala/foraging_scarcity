@@ -31,13 +31,14 @@ sim_foraging_people <- function(n_people = 10,
                    mu_d = rep(sig_d, each = n_people),
                    sd_d = phi_d,
                    mu_theta = rep(sig_theta, each = n_people),
-                   sd_theta = phi_d) 
+                   sd_theta = phi_theta) 
     
   dpeeps <- pmap_df(dpeeps, gen_random_fx)
 
   d <- pmap_dfr(dpeeps, sim_foraging_person, 
-                               n_trials_per_cond = n_trials_per_cond,
-                n_targ_class = n_targ_class, n_targ_per_class = n_targ_per_class)
+                n_trials_per_cond = n_trials_per_cond,
+                n_targ_class = n_targ_class, 
+                n_targ_per_class = n_targ_per_class)
   return(d)
   
 }
@@ -47,6 +48,11 @@ gen_random_fx <- function(person, block,
                           mu_stick, sd_stick,  
                           mu_d, sd_d, 
                           mu_theta, sd_theta) {
+  
+  pA <- mu_cw[1]/sum(mu_cw)
+  bA <- boot::logit(pA) + rnorm(1, 0, sd_cw)
+  pA <- boot::inv.logit(bA)
+  mu_cw = c(pA/(1-pA), 1)
   
   mu_cw[1] <- mu_cw[1] + rnorm(1, 0, sd_cw)
   mu_cw[1] <- if_else(mu_cw[1]<0, 0, mu_cw[1])
