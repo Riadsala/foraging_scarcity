@@ -8,14 +8,14 @@ plot_model_fixed <- function(m, d, cl, gt=NULL)
   # gt is a list with our groundtruth sim parameters. 
   
   m %>% recover_types(d$found) %>%
-    spread_draws(bA[block], bS[block], sigma_dis[block], sigma_dir[block]) %>%
+    spread_draws(bAvB[block], bS[block], phi_dis[block], phi_dir[block]) %>%
     mutate(block = as_factor(block)) %>%
     ungroup() -> post
   
   levels(post$block) <- cl
   
   m %>% recover_types(d$found) %>%
-    spread_draws(prior_cW, prior_sW, prior_sigma_dis, prior_sigma_dir) %>%
+    spread_draws(prior_cW, prior_sW, prior_phi_dis, prior_phi_dir) %>%
     ungroup() -> prior
   
   my_widths <- c(0.53, 0.97)
@@ -30,7 +30,7 @@ plot_model_fixed <- function(m, d, cl, gt=NULL)
                      .upper = boot::inv.logit(.upper)),
               aes(ymin = -Inf, ymax = Inf, xmin = .lower, xmax = .upper), 
               fill = "orange", alpha = 0.25) +
-    geom_density(aes(boot::inv.logit(bA), fill = block), alpha = 0.5) +
+    geom_density(aes(boot::inv.logit(bAvB), fill = block), alpha = 0.5) +
     scale_x_continuous("class weights") +
     theme(legend.position = "bottom") -> plt_cW
   
@@ -49,8 +49,8 @@ plot_model_fixed <- function(m, d, cl, gt=NULL)
     theme(legend.position = "bottom") -> plt_sW
   
   # plot proximity and direction effects
-  plt_dis <- plt_post_prior(post, prior, "sigma_dis", "proximity tuning", gt$sig_d)
-  plt_dir <- plt_post_prior(post, prior, "sigma_dir", "direction tuning", gt$sig_theta)
+  plt_dis <- plt_post_prior(post, prior, "phi_dis", "proximity tuning", gt$sig_d)
+  plt_dir <- plt_post_prior(post, prior, "phi_dir", "direction tuning", gt$sig_theta)
  # plt_dir2 <- plt_post_prior(post, prior, "direction_bias", "Hori-Vert Pref") 
   
   

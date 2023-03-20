@@ -75,19 +75,20 @@ d_stim %>% rename(trial = trialNo, class = vertices) %>%
   # geom_path(data = d_found %>% filter(person == 1, block == 1, trial == 1, found>0),size = 1)
   # 
 
-
+d_found <- rename(d_found, condition = "block")
+d_stim <- rename(d_stim, condition = "block")
 
 d_list <- prep_data_for_stan(d_found, d_stim)
 
-d_list$targ_class <- d_list$targ_class-1
+#d_list$targ_class <- d_list$targ_class-1
 
 m <- stan("../../foraging_spatial/models/foraging_model1_nonml.stan", data = d_list, 
           chains = 1, iter = 1000)
 
 
-blks_labels <- levels(d_found$block)
+blks_labels <- levels(d_found$condition)
 
-source("../functions/plot_model_rr.R")
+source("../functions/plot_model.R")
 
 
 plot_model_fixed(m, d_found, blks_labels)
