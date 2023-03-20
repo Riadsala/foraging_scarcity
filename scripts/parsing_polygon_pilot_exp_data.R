@@ -10,7 +10,7 @@ source("../functions/prep_data.R")
 
 options(mc.cores = parallel::detectCores())
 
-folder = "../data/polygon pilot Feb 2023/"
+folder = "../data/polygon pilot March 2023/"
 files <- dir(folder, ".csv")
 
 

@@ -8,7 +8,7 @@ parse_exp_data <- function(dr) {
   
   # parse x y and class
   dr %>%
-    select(trialNo, 137:176) %>% # these are the relevant columns for x and y positions
+    select(trialNo, 144:183) %>% # these are the relevant columns for x and y positions
     pivot_longer(-c(trialNo), names_to = "label", values_to = "z") %>%
     mutate(id = parse_number(label)) %>%
     mutate(z = str_replace_all(z, "\\[|\\]", ""),
@@ -32,7 +32,7 @@ parse_exp_data <- function(dr) {
       id %in% vertices_7 ~ 7,
       id %in% vertices_6 ~ 6
     )) %>%
-    mutate(person = pp) -> d_stim
+    mutate(person = dr$participant[[1]]) -> d_stim
   
   # if key_resp.rt doesn't exist, create it with a load of NAs
   if (!("key_resp.rt" %in% names(dr))) {
