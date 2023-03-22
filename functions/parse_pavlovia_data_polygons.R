@@ -78,7 +78,7 @@ parse_exp_data <- function(dr) {
       d_found <- filter(d_found, !(trialNo %in% to_remove$trialNo & 
                                      id %in% to_remove$id &
                                      found %in% to_remove$found)) %>%
-        mutate(person = pp) %>%
+        mutate(person = dr$participant[[1]]) %>%
         group_by(trialNo) %>%
         mutate(found = row_number()) %>% # making row numbers right again
         ungroup()
