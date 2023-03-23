@@ -32,24 +32,6 @@ rm(d_new, d_found_pp, d_stim_pp)
 
 }
 
-# remove distractor clicks (as these will no appear in final pilot data)
-
-trials_with_6 <- d_found %>% group_by(person, expName, trialNo) %>%
-  summarise(click6 = sum(vertices==6)) %>%
-  filter(click6>0) %>%
-  unite(cond, person, expName, trialNo)
-
-d_found %>%
-  unite(cond, person, expName, trialNo, remove=F) %>%
-  filter(!(cond %in% trials_with_6$cond)) %>%
-  select(-cond) -> d_found
-
-  d_stim %>%
-    unite(cond, person, expName, trialNo, remove=F) %>%
-  filter(!(cond %in% trials_with_6$cond)) %>%
-    select(-cond) -> d_stim
-
-# 
 
 d_found %>% rename(trial = trialNo, class = vertices) %>%
   mutate(expName = str_remove(expName, "foraging_expt_polygons_"),

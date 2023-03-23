@@ -87,15 +87,36 @@ parse_exp_data <- function(dr) {
   
   rm(dm)
   
+  # trying to remove trials with clicks on distractors
+  
+  trials_with_6 <- d_found %>% group_by(trialNo) %>%
+    summarise(click6 = sum(vertices==6)) %>%
+    filter(click6>0) 
+  
+  d_found %>%
+    filter(!(trialNo %in% trials_with_6$trialNo)) -> d_found
+  
+  d_stim %>%
+    filter(!(trialNo %in% trials_with_6$trialNo)) -> d_stim
+  
+  # renumbering trials, any extra ones removed
+  d_found %>%
+    mutate(trials_as_factor = (as.numeric(as.factor(trialNoReal)))) %>%
+    filter(trials_as_factor < 6) -> d_found
+  
+  d_stim %>%
+    mutate(trials_as_factor = (as.numeric(as.factor(trialNoReal)))) %>%
+    filter(trials_as_factor < 6) -> d_stim
+  
   # removing unhelpful trial numbers
   d_stim <- d_stim %>%
-    select(-trialNo) %>%
-    rename(trialNo = trialNoReal) 
+    select(-trialNo, -trialNoReal) %>%
+    rename(trialNo = trials_as_factor) 
     
   
   d_found <- d_found %>%
-    select(-trialNo) %>%
-    rename(trialNo = trialNoReal)
+    select(-trialNo, - trialNoReal) %>%
+    rename(trialNo = trials_as_factor)
   
   # add in exp name (useful for working out conditions later)
   
