@@ -146,6 +146,13 @@ does_item_match_prev_target <- function(Y, df, targ_class, n_targ_per_class, n_t
 
 prep_data_for_stan <- function(df, ds) {
   
+  npeeps <- length(unique(df$person))
+  df$person = as.factor(df$person)
+  levels(df$person) <- 1:npeeps
+  
+  ds$person = as.factor(ds$person)
+  levels(ds$person) <- 1:npeeps
+  
   # make sure trial ids are unique
   df %>% mutate(condition = as.factor(condition),
                 trial = paste(as.numeric(person), as.numeric(condition), trial),
@@ -155,6 +162,8 @@ prep_data_for_stan <- function(df, ds) {
                 class = as.factor(class),
                 trial = paste(as.numeric(person), as.numeric(condition), trial),
                 trial = as.numeric(as_factor(trial))) -> ds
+  
+  
   
   # correct (x, y) so that neither ever = 0 or 1
   # as this causes problems for Beta distributions
@@ -221,7 +230,7 @@ prep_data_for_stan <- function(df, ds) {
     D = distances,
     A = phi,
     E = theta,
-    Z = df$person,
+    Z = as.numeric(df$person),
     prior_sd_bAvP = 1.5,
     prior_sd_bS = 1.5,
     prior_mu_phidis = 20,

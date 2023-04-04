@@ -14,6 +14,12 @@ plot_model_fixed <- function(m, d, cl, gt=NULL)
   
   levels(post$block) <- cl
   
+  post %>% separate(block, into = c("difficulty", "condition"))  -> post
+  
+  # %>%
+  #   mutate(bAvB = if_else(condition == "B", -bAvB, bAvB),
+  #          condition = if_else(condition=="AB", "equal", "scarce"))
+  
   m %>% recover_types(d$found) %>%
     spread_draws(prior_cW, prior_sW, prior_phi_dis, prior_phi_dir) %>%
     ungroup() -> prior
@@ -30,9 +36,10 @@ plot_model_fixed <- function(m, d, cl, gt=NULL)
                      .upper = boot::inv.logit(.upper)),
               aes(ymin = -Inf, ymax = Inf, xmin = .lower, xmax = .upper), 
               fill = "orange", alpha = 0.25) +
-    geom_density(aes(boot::inv.logit(bAvB), fill = block), alpha = 0.5) +
+    geom_density(aes(boot::inv.logit(bAvB), fill = condition), alpha = 0.5) +
     scale_x_continuous("class weights") +
-    theme(legend.position = "bottom") -> plt_cW
+    theme(legend.position = "bottom") +
+    facet_wrap(~difficulty, nrow = 2) -> plt_cW
   
   # plot stick-switch param
   post  %>%
@@ -43,10 +50,11 @@ plot_model_fixed <- function(m, d, cl, gt=NULL)
                        .upper = boot::inv.logit(.upper)),
               aes(ymin = -Inf, ymax = Inf, xmin = .lower, xmax = .upper), 
               fill = "orange", alpha = 0.25) + 
-    geom_density(aes(boot::inv.logit(bS), fill = block, alpha = 0.5)) +
+    geom_density(aes(boot::inv.logit(bS), fill = condition, alpha = 0.5)) +
     #geom_vline(xintercept = 0.5, linetype = 2) +
     scale_x_continuous("stick probability")  +
-    theme(legend.position = "bottom") -> plt_sW
+    theme(legend.position = "bottom") +
+    facet_wrap(~difficulty, nrow = 2) -> plt_sW
   
   # plot proximity and direction effects
   plt_dis <- plt_post_prior(post, prior, "phi_dis", "proximity tuning", gt$sig_d)
@@ -80,9 +88,10 @@ plt_post_prior <- function(post, prior, var, xtitle, gt) {
                   median_hdci(exp(get(prior_var)), .width = c(0.53, 0.97)),
                 aes(ymin = -Inf, ymax = Inf, xmin = .lower, xmax = .upper), 
                 fill = "orange", alpha = 0.25) +  
-      geom_density(aes(exp(get(var)), fill = block), alpha = 0.5) +
+      geom_density(aes(exp(get(var)), fill = condition), alpha = 0.5) +
       scale_x_continuous(xtitle) +
-      coord_cartesian(xlim = c(0, 0.1))-> plt
+      coord_cartesian(xlim = c(0, 0.1)) +
+      facet_wrap(~difficulty, nrow = 2) -> plt
     
   } else {
     post %>% 
@@ -91,9 +100,10 @@ plt_post_prior <- function(post, prior, var, xtitle, gt) {
                   median_hdci(get(prior_var), .width = c(0.53, 0.97)),
                 aes(ymin = -Inf, ymax = Inf, xmin = .lower, xmax = .upper), 
                 fill = "orange", alpha = 0.25) +  
-      geom_density(aes(get(var), fill = block), alpha = 0.5) +
+      geom_density(aes(get(var), fill = condition), alpha = 0.5) +
       geom_vline(xintercept = gt, linetype = 2, colour = "black") +
-      scale_x_continuous(xtitle) -> plt
+      scale_x_continuous(xtitle) +
+      facet_wrap(~difficulty, nrow = 2)-> plt
     
   }
   

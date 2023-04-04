@@ -13,6 +13,8 @@ options(mc.cores = parallel::detectCores())
 folder = "../data/polygon pilot March 2023/"
 files <- dir(folder, ".csv")
 
+# set ggplot2 theme
+theme_set(theme_bw())
 
 # first make a dataframe of all found targets and save
 d_found <- tibble()
@@ -61,11 +63,14 @@ d_found <- rename(d_found, condition = "block")
 d_stim <- rename(d_stim, condition = "block")
 
 d_list <- prep_data_for_stan(d_found, d_stim)
+d_list$prior_mu_phidis <- 10
 
 #d_list$targ_class <- d_list$targ_class-1
 
-m <- stan("../../foraging_spatial/models/foraging_model1_nonml.stan", data = d_list, 
+m <- stan("../../foraging_spatial/models/foraging_model1.stan", data = d_list, 
           chains = 1, iter = 1000)
+
+saveRDS(m, "foraging_pilot.model")
 
 
 blks_labels <- levels(d_found$condition)
