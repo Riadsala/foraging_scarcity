@@ -7,7 +7,7 @@ plot_model_fixed <- function(m, d, cl, gt=NULL)
 {
   # gt is a list with our groundtruth sim parameters. 
   
-  m %>% recover_types(d$found) %>%
+  m %>% recover_types(d) %>%
     spread_draws(bA[block], bS[block], sigma_dis[block], sigma_dir[block]) %>%
     mutate(block = as_factor(block)) %>%
     ungroup() -> post

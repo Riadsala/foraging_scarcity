@@ -166,12 +166,12 @@ m <- readRDS("../scratch/sensiv_sim.model")
 ######################################################
 
 # functions for plotting the model are in this script: 
-source("../functions/plot_model.R")    
+source("../../foraging_spatial/functions/plot_model.R")    
 
 # plot the model
-plot_model_fixed(m, d, cond_labels, 
-                 gt = list(pA = pA, 
-                           pS = boot::inv.logit(b_stick), 
+plot_model_fixed(m, d,
+                 gt = list(bA = pA, 
+                           bS = boot::inv.logit(b_stick), 
                            sig_d = sig_d,
                            sig_theta = sig_theta))    
 ggsave("../plots/sensiv_sim.pdf", width = 8, height = 2.8)
