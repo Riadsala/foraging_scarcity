@@ -146,7 +146,7 @@ d_list <- readRDS("../scratch/sensiv_sim.d_list")
 # run model
 ######################################################
 
-m <- stan("../models/foraging_model1.stan", data = d_list, 
+m <- stan("../models/foraging_model1_nonml.stan", data = d_list, 
            chains = 4, iter = 1000)
 
 saveRDS(m, "../scratch/sensiv_sim.model")

@@ -1,3 +1,5 @@
+// scarcity foraging project
+
 functions{
 
   vector standarise_weights(vector w, int n_targets, vector remaining_items) {
