@@ -31,7 +31,7 @@ First we will simulate data using the parameters below. These are based on the m
 cond_labels <- c("equal", "scarce")
 
 # number of participants should be a multiple of 6 due to counter balancing
-n_people <- 36
+n_people <- 6
 n_trials_per_cond <- 5
 
 n_targ_class <- 2
@@ -55,7 +55,7 @@ phi_theta <- 0.5
 n_conditions <- length(n_targ_per_class)
 ```
 
-```{r run_model, eval=FALSE}
+```{r run_model}
 
 # now simulate data
 d <- sim_foraging_people(n_people = n_people,
@@ -119,7 +119,7 @@ d_runs %>% select(person, block, mean_max_run, mean_num_run) %>%
 
 ## Running the model
 
-```{r set_up_data, eval=FALSE}
+```{r set_up_data}
 ######################################################
 # now prepare data for stan model
 ######################################################
@@ -134,12 +134,12 @@ d_found <- d %>% filter(found > 0) %>%
 
 The code below runs the model. However, to make it easier to compile this document, this is pre-computed.
 
-```{r create_stan_list, eval=FALSE}
+```{r create_stan_list}
 d_list <- prep_data_for_stan(d_found, d_stim)
 saveRDS(d_list, "../scratch/sensiv_sim.d_list")
 ```
 
-```{r fit_model, eval=FALSE}
+```{r fit_model}
 d_list <- readRDS("../scratch/sensiv_sim.d_list")
 
 ######################################################
