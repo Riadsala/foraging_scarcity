@@ -123,6 +123,7 @@ does_item_match_prev_target <- function(Y, df, targ_class, n_targ_per_class, n_t
   trl <- 1
 
   for (ii in 2:length(Y)) {
+    print(ii)
     if (df$found[ii]==1) {trl = trl + 1}
 
     if (df$class[ii-1]== 0) {

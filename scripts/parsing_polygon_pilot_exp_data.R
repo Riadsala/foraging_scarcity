@@ -21,16 +21,16 @@ d_found <- tibble()
 d_stim <- tibble()
 
 for (pp in 1:length(files)) { 
-
-d_new <- parse_exp_data(read_csv(paste0(folder, files[pp]), 
-                                   show_col_types = FALSE))
-d_found_pp <- d_new$found
-d_stim_pp <- d_new$stim
-
-d_found <- rbind(d_found, d_found_pp)
-d_stim <- rbind(d_stim, d_stim_pp)
   
-rm(d_new, d_found_pp, d_stim_pp)
+  d_new <- parse_exp_data(read_csv(paste0(folder, files[pp]), 
+                                     show_col_types = FALSE))
+  d_found_pp <- d_new$found
+  d_stim_pp <- d_new$stim
+  
+  d_found <- rbind(d_found, d_found_pp)
+  d_stim <- rbind(d_stim, d_stim_pp)
+    
+  rm(d_new, d_found_pp, d_stim_pp)
 
 }
 

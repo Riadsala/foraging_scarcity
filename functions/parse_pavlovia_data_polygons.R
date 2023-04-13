@@ -8,19 +8,23 @@ parse_exp_data <- function(dr) {
   
   # parse x y and class
   dr %>%
-    select(trialNo, 144:183) %>% # these are the relevant columns for x and y positions
+    select(trialNo, p1:p20) %>% # these are the relevant columns for x and y positions
     pivot_longer(-c(trialNo), names_to = "label", values_to = "z") %>%
     mutate(id = parse_number(label)) %>%
     mutate(z = str_replace_all(z, "\\[|\\]", ""),
            z = str_squish(z)) %>%
     separate(z, into = c("x", "y"), sep = " ") %>%
     mutate(intermediate = row_number(),
-           trialNoReal = ceiling(intermediate/40),
+           trial = ceiling(intermediate/40),
            x = as.numeric(x),
            y = as.numeric(y)) %>%
-    select(trialNo, trialNoReal, id, x, y) -> d_stim
-
-
+    select(trial, id, x, y) %>%
+    filter(is.finite(trial)) -> d_stim
+  
+  # check that we have sensible d_stim
+  d_stim %>% group_by(trial) %>%
+    summarise(n = n())
+  
  # add in number of vertices
   vertices_8 <- c(1:10)
   vertices_7 <- c(11:20)
