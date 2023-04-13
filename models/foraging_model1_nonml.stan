@@ -27,7 +27,7 @@ functions{
 
       if (n == 2) {
         // for the second selected target, weight by distance from the first
-        w = w .* exp(-phi_dis  * D);
+        w = w .* exp(-phi_dis * D);
       } else {
         // for all later targets, also weight by direciton
         w = w .* exp(-phi_dis * D - phi_dir * E);

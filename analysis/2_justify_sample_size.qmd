@@ -55,7 +55,7 @@ phi_theta <- 0.5
 n_conditions <- length(n_targ_per_class)
 ```
 
-```{r run_model}
+```{r run_model, eval=FALSE}
 
 # now simulate data
 d <- sim_foraging_people(n_people = n_people,
@@ -134,12 +134,12 @@ d_found <- d %>% filter(found > 0) %>%
 
 The code below runs the model. However, to make it easier to compile this document, this is pre-computed.
 
-```{r create_stan_list}
+```{r create_stan_list, eval=FALSE}
 d_list <- prep_data_for_stan(d_found, d_stim)
 saveRDS(d_list, "../scratch/sensiv_sim.d_list")
 ```
 
-```{r fit_model}
+```{r fit_model, eval=FALSE}
 d_list <- readRDS("../scratch/sensiv_sim.d_list")
 
 ######################################################
@@ -179,7 +179,7 @@ ggsave("../plots/sensiv_sim.pdf", width = 8, height = 2.8)
 
 Compute posterior probability of a difference
 
-```{r, fig.height=2.8}
+```{r, fig.height=2.8, eval=FALSE}
  m %>% recover_types(d$found) %>%
     spread_draws(bA[block], bS[block], sigma_dis[block], sigma_dir[block]) %>%
     mutate(block = as_factor(block)) %>%
