@@ -37,16 +37,33 @@ for (pp in 1:length(files)) {
 write_csv(d_found, paste0(savefolder, "d_found.csv"))
 write_csv(d_stim, paste0(savefolder, "d_stim.csv"))
 
-######################################################
-# now prepare data for stan model
-######################################################
+########################################################
+# Some data checking #
+########################################################
 
+# How many trials does each person have?
 
-# d_found %>% filter(person == 1, block == 1, trial == 1) %>%
-  # ggplot(aes(x, y)) + 
-  # geom_label(aes(label = found, colour = as.factor(class))) + 
-  # geom_path(data = d_found %>% filter(person == 1, block == 1, trial == 1, found>0),size = 1)
-  # 
+d_found %>%
+  group_by(person, common, difficulty) %>%
+  summarise(total_trials = length(unique(trial))) -> total_trials
 
+# How many targets of each class did people find?
+
+d_found %>%
+  count(person, common, difficulty, class) -> total_found
+
+# Do hard trials seem easier?
+# Basically always likely to find all targets, though maybe some evidence for greater spread for hard trials
+
+ggplot(total_found, aes(difficulty, n, fill = class)) + geom_boxplot() + facet_grid(~common)
+
+# Number of runs?
+
+d_found %>%
+  group_by(person, common, difficulty, trial) %>%
+  mutate(switch = ifelse(class != lag(class), 1, 0)) %>%
+  summarise(num_switches = sum(switch, na.rm = TRUE)) -> total_switches
+
+ggplot(total_switches, aes(difficulty, num_switches)) + geom_boxplot()                                  
 
         
