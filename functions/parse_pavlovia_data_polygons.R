@@ -90,6 +90,11 @@ parse_exp_data <- function(dr) {
   d_found %>% filter(!(trial %in% to_remove$trial)) %>%
     left_join(d_stim, by = c("participant", "trial", "id")) -> d_found
   
+  # remove trials from d_stim that were scrapped (from d_found)
+  trials_to_keep <- unique(d_found$trial)
+  
+  d_stim %>% filter(trial %in% trials_to_keep) -> d_stim
+  
   # now sort out time info
   # dr %>% select(trialNo, mouse.time) %>%
   #   rename(time  = "mouse.time") %>%
