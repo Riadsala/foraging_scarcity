@@ -5,7 +5,7 @@ source("../functions/prep_data.R")
 
 options(mc.cores = parallel::detectCores())
 
-exptname = "polygon pilot feature conjunction"
+exptname = "polygon pilot white shapes"
 
 folder = paste0("../data/", exptname, "/")
 savefolder = paste0("../output/", exptname, "/")
@@ -53,7 +53,6 @@ d_found %>%
   count(person, common, difficulty, class) -> total_found
 
 # Do hard trials seem easier?
-# Basically always likely to find all targets, though maybe some evidence for greater spread for hard trials
 
 ggplot(total_found, aes(difficulty, n, fill = class)) + geom_boxplot() + facet_grid(~common)
 
