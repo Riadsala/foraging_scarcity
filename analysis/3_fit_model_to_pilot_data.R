@@ -23,7 +23,7 @@ d_list$prior_mu_phidis <- 10
 mod <- cmdstan_model("../models/foraging_model1.stan")
 
 m <- mod$sample(data = d_list, chains = 4, parallel_chains = 4)
-saveRDS(m, (paste0("../output/", experiment, "_foraging_pilot.model"))
+saveRDS(m, (paste0("../output/", experiment, "_foraging_pilot.model")))
 
 
 source("../functions/plot_model.R")
