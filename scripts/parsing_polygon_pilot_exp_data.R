@@ -1,14 +1,14 @@
 library(tidyverse)
-options(mc.cores = parallel::detectCores())
 
 source("../functions/parse_pavlovia_data_polygons.R")
 source("../functions/prep_data.R")
 
-
 options(mc.cores = parallel::detectCores())
 
-folder = "../data/polygon pilot feature conjunction/"
-savefolder = "../output/"
+exptname = "polygon pilot feature conjunction"
+
+folder = paste0("../data/", exptname, "/")
+savefolder = paste0("../output/", exptname, "/")
 
 files <- dir(folder, ".csv")
 
