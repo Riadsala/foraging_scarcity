@@ -1,4 +1,4 @@
-participant,trial,id,found,difficulty,common,x,y,class
+person,trial,id,found,difficulty,common,x,y,class
 3,1,3,1,easy,A,-0.19118544,0.03732093,A
 3,1,20,2,easy,A,-0.0103787,-0.02493495,B
 3,1,4,3,easy,A,-0.09558094,0.24735057,A
