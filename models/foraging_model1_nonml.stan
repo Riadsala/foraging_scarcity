@@ -1,4 +1,4 @@
-// scarcity foraging project
+// spatial foraging project
 
 functions{
 
@@ -44,19 +44,19 @@ data {
   int <lower = 1> n_trials;  // total number of trials (overall)
   int <lower = 1> n_classes; // number of target classes - we assume this is constant over n_trials
   int <lower = 1> n_targets; // total number of targets per trial
-  int <lower = 0, upper = n_targets> trial_start[N]; // = 1 is starting a new trial, 0 otherwise
+  array[N] int <lower = 0, upper = n_targets> trial_start; // = 1 is starting a new trial, 0 otherwise
 
-  int <lower = 1> Y[N]; // target IDs - which target was selected here? This is what we predict
+  array[N] int <lower = 1> Y; // target IDs - which target was selected here? This is what we predict
   
-  vector<lower = 0>[n_targets] D[N]; // distance measures
-  vector<lower = 0>[n_targets] E[N]; // direction measures (relative)
-  vector[n_targets] A[N]; // direction measures (absolute)
+  array[N] vector<lower = 0>[n_targets] D; // distance measures
+  array[N] vector<lower = 0>[n_targets] E; // direction measures (relative)
+  array[N] vector[n_targets] A; // direction measures (absolute)
 
-  int <lower = 1, upper = K> X[n_trials]; // trial features (ie, which condition are we in)
-  int <lower = -1, upper = 1> targ_class[n_trials, n_targets]; // target class, one row per trial
-  vector<lower = -1, upper = 1>[n_targets] S[N]; // stick/switch (does this targ match prev targ) 
+  array[n_trials] int <lower = 1, upper = K> X; // trial features (ie, which condition are we in)
+  array[n_trials, n_targets] int <lower = -1, upper = 1> targ_class; // target class, one row per trial
+  array[N] vector<lower = -1, upper = 1>[n_targets] S; // stick/switch (does this targ match prev targ) 
   
-  real prior_sd_bAvP; // param for class weight prior
+  real prior_sd_bA; // param for class weight prior
   real prior_sd_bS; // prior for sd for bS
   real prior_mu_phidis;
   real prior_sd_phidis;
@@ -66,10 +66,10 @@ data {
 
 parameters {
   // These are all the parameters we want to fit to the data
-  real bA[K]; // weights for class A compared to B  
-  real bS[K]; // stick-switch rates 
-  real phi_dis[K]; // distance tuning
-  real phi_dir[K]; // direction tuning 
+  array[K] real bA; // weights for class A compared to B  
+  array[K] real bS; // stick-switch rates 
+  array[K] real phi_dis; // distance tuning
+  array[K] real phi_dir; // direction tuning 
 }
 
 transformed parameters {
@@ -95,7 +95,7 @@ model {
 
   // priors for fixed effects
   for (ii in 1:K) {
-    target += normal_lpdf(bA[ii]    | 0, prior_sd_bAvP);
+    target += normal_lpdf(bA[ii]      | 0, prior_sd_bA);
     target += normal_lpdf(bS[ii]      | 0, prior_sd_bS);
     target += normal_lpdf(phi_dis[ii] | prior_mu_phidis, prior_sd_phidis);
     target += normal_lpdf(phi_dir[ii] | prior_mu_phidir, prior_sd_phidir);
@@ -114,9 +114,7 @@ model {
       kk = X[trl]; // get conditions of current target/trial 
 
       // as we're at the start of a new trial, reset the remaining_items tracker
-      remaining_items = rep_vector(1, n_targets);
-
-      
+      remaining_items = rep_vector(1, n_targets);    
     }
 
     // new trial, so update the class weights to take random effects into account
@@ -157,7 +155,7 @@ model {
 
 generated quantities {
   // here we  can output our prior distritions
-  real prior_bA = normal_rng(0, prior_sd_bAvP);
+  real prior_bA = normal_rng(0, prior_sd_bA);
   real prior_bS = normal_rng(0, prior_sd_bS);
   real prior_phi_dis = normal_rng(prior_mu_phidis, prior_sd_phidis);
   real prior_phi_dir = normal_rng(prior_mu_phidir, prior_sd_phidir);

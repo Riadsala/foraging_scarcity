@@ -3,7 +3,7 @@ library(tidybayes)
 options(ggplot2.discrete.colour = ggthemes::ptol_pal()(4),
         ggplot2.discrete.fill = ggthemes::ptol_pal()(4))
 
-plot_model_fixed <- function(m, d, cl, gt=NULL)
+plot_model_fixed <- function(m, d, cl, gt=NULL, merge_conditions=FALSE)
 {
   # gt is a list with our groundtruth sim parameters. 
   
@@ -12,7 +12,13 @@ plot_model_fixed <- function(m, d, cl, gt=NULL)
     mutate(condition = as_factor(condition)) %>%
     ungroup() -> post
   
-  levels(post$condition) <- cl
+ if (merge_conditions) {
+   post %>% 
+     separate(condition, c("difficulty", "common")) %>%
+     mutate(condition = if_else(common == "AB", "equal", "scarce"),
+            bA = if_else(common == "A", -bA, bA)) -> post
+   
+ }
   
   #post %>% separate(condition, into = c("difficulty", "condition"))  -> post
   
@@ -39,7 +45,8 @@ plot_model_fixed <- function(m, d, cl, gt=NULL)
     geom_density(aes(boot::inv.logit(bA), fill = condition), alpha = 0.5) +
     scale_x_continuous("class weights", limits = c(0, 1),
                        breaks = c(0, 0.25, 0.5, 0.75, 1), labels = c("0", "0.25", "0.50", "0.75", "1")) +
-    theme(legend.position = "bottom") -> plt_bA
+    theme(legend.position = "bottom") +
+    geom_vline(xintercept = 0.5, linetype = 2) -> plt_bA
   
   # plot stick-switch param
   post  %>%
@@ -51,15 +58,22 @@ plot_model_fixed <- function(m, d, cl, gt=NULL)
               aes(ymin = -Inf, ymax = Inf, xmin = .lower, xmax = .upper), 
               fill = "lightgrey", alpha = 0.5) + 
     geom_density(aes(plogis(bS), fill = condition), alpha = 0.5) +
-    #geom_vline(xintercept = 0.5, linetype = 2) +
     scale_x_continuous("stick probability", limits = c(0, 1),
-                       breaks = c(0, 0.25, 0.5, 0.75, 1), labels = c("0", "0.25", "0.50", "0.75", "1"))  +
-    theme(legend.position = "bottom") -> plt_bS
+                       breaks = c(0, 0.25, 0.5, 0.75, 1),
+                       labels = c("0", "0.25", "0.50", "0.75", "1"))  +
+    theme(legend.position = "bottom")  +
+    geom_vline(xintercept = 0.5, linetype = 2)-> plt_bS
   
   # plot proximity and direction effects
   plt_dis <- plt_post_prior(post, prior, "phi_dis", "proximity tuning", gt$sig_d)
   plt_dir <- plt_post_prior(post, prior, "phi_dir", "direction tuning", gt$sig_theta)
- # plt_dir2 <- plt_post_prior(post, prior, "direction_bias", "Hori-Vert Pref") 
+ #
+  if (merge_conditions) {
+    plt_bA <- plt_bA + facet_wrap(~difficulty)
+    plt_bS <- plt_bS + facet_wrap(~difficulty)
+    plt_dis <- plt_dis + facet_wrap(~difficulty)
+    plt_dir <- plt_dir + facet_wrap(~difficulty)
+  }
   
   
   if (!is.null(gt)) {
@@ -70,8 +84,9 @@ plot_model_fixed <- function(m, d, cl, gt=NULL)
                         colour = "black", linetype= 2) -> plt_bS
   }
   
-  plt <- plt_bA + plt_bS + plt_dis + plt_dir + scale_alpha(guide = 'none') +
-    plot_layout(guides = "collect", ncol = 4)  & theme(legend.position = 'bottom') 
+  plt <- (plt_bA + plt_bS + plt_dis + plt_dir) + scale_alpha(guide = 'none') +
+    plot_layout(guides = "collect", ncol = 2)  & 
+    theme(legend.position = 'bottom', panel.grid = element_blank()                                                     ) 
   
   return(plt)
 }

@@ -1,4 +1,4 @@
-// scarcity foraging project
+// spatial foraging project
 
 functions{
 
@@ -50,7 +50,7 @@ data {
   int <lower = 1> Y[N]; // target IDs - which target was selected here? This is what we predict
   
   vector<lower = 0>[n_targets] D[N]; // distance measures
-  vector<lower = 0>[n_targets] E[N]; // direction measures (relative)
+  vector[n_targets] E[N]; // direction measures (relative)
   vector[n_targets] A[N]; // direction measures (absolute)
 
   int <lower = 1, upper = K> X[n_trials]; // trial features (ie, which condition are we in)
@@ -58,7 +58,7 @@ data {
   vector<lower = -1, upper = 1>[n_targets] S[N]; // stick/switch (does this targ match prev targ) 
   int <lower = 1, upper = L> Z[N]; // random effect levels 
   
-  real prior_sd_bA; // param for class weight prior
+  real prior_sd_bAvP; // param for class weight prior
   real prior_sd_bS; // prior for sd for bS
   real prior_mu_phidis;
   real prior_sd_phidis;
@@ -75,8 +75,8 @@ parameters {
 
   /* in order to allow for correlations between the
   variables, these are all stored in a list
-  these include bA, bS (stick weight), and the two spatial 
-  phis, along with the floor (chance of selectin an 
+  these include bAvB, bS (stick weight), and the two spatial 
+  sigmas, along with the floor (chance of selectin an 
   item at random)
   */
   real b[4*K];
@@ -85,7 +85,7 @@ parameters {
   // random effects
   ///////////////////////////////
  
-  vector<lower=0>[4*K] sig_b; // random effect phi for biases  
+  vector<lower=0>[4*K] sig_b; // random effect sigma for biases  
   cholesky_factor_corr[4*K] L_u; // declare L_u to be the Choleski factor of a correlation matrix
   matrix[4*K,L] z_u;  // random effect matrix
 }
@@ -93,7 +93,7 @@ parameters {
 transformed parameters {
 
   // extract params from list of params    
-  real bA[K]; // weights for class A compared to B  
+  real bAvB[K]; // weights for class A compared to B  
   real bS[K]; // stick-switch rates 
   real phi_dis[K]; // distance tuning
   real phi_dir[K]; // direction tuning
@@ -105,8 +105,8 @@ transformed parameters {
 
   // extract params from list of params
   for (ii in 1:K) {
-    bA[ii]        = b[1+4*(ii-1)];
-    bS[ii]        = b[2+4*(ii-1)];
+    bAvB[ii]    = b[1+4*(ii-1)];
+    bS[ii]      = b[2+4*(ii-1)];
     phi_dis[ii] = b[3+4*(ii-1)];
     phi_dir[ii] = b[4+4*(ii-1)];
   }
@@ -133,7 +133,7 @@ model {
 
   // priors for fixed effects
   for (ii in 1:K) {
-    target += normal_lpdf(b[1+4*(ii-1)] | 0, prior_sd_bA);
+    target += normal_lpdf(b[1+4*(ii-1)] | 0, prior_sd_bAvP);
     target += normal_lpdf(b[2+4*(ii-1)] | 0, prior_sd_bS);
     target += normal_lpdf(b[3+4*(ii-1)] | prior_mu_phidis, prior_sd_phidis);
     target += normal_lpdf(b[4+4*(ii-1)] | prior_mu_phidir, prior_sd_phidir);
@@ -158,16 +158,19 @@ model {
       kk = X[trl]; // get conditions of current target/trial 
 
       // as we're at the start of a new trial, reset the remaining_items tracker
-      remaining_items = rep_vector(1, n_targets);     
+      remaining_items = rep_vector(1, n_targets);
+
+     
     }
 
      // update the class weights to take random effects into account
       // set the weight of each target to be its class weight
-      weights = (bA[kk] + u[1+4*(kk-1), ll]) * to_vector(targ_class[trl]) ;
+      weights = (bAvB[kk] + u[1+4*(kk-1), ll]) * to_vector(targ_class[trl]) ;
 
     // apply spatial weighting
     spatial_weights = compute_spatial_weights(trial_start[ii], n_targets, kk, ll, ii,
                                  phi_dis[kk], phi_dir[kk], u, D[ii], E[ii], A[ii]);
+
 
     if (trial_start[ii] == 1) {
       weights = inv_logit(weights);
@@ -197,8 +200,9 @@ model {
 
 generated quantities {
   // here we  can output our prior distritions
-  real prior_bA = normal_rng(0, prior_sd_bA);
-  real prior_bS = normal_rng(0, prior_sd_bS);
+  real prior_cW = normal_rng(0, prior_sd_bAvP);
+  real prior_sW = normal_rng(0, prior_sd_bS);
   real prior_phi_dis = normal_rng(prior_mu_phidis, prior_sd_phidis);
   real prior_phi_dir = normal_rng(prior_mu_phidir, prior_sd_phidir);
+  real prior_direction_bias = normal_rng(-2, 3);
 }

@@ -1,38 +1,38 @@
 library(tidyverse)
-library(rstan)
+library(cmdstanr)
 library(tidybayes)
 library(patchwork)
 options(mc.cores = parallel::detectCores())
+
+# set ggplot2 theme
+theme_set(theme_bw())
+
 source("../functions/prep_data.R")
 
+experiment <- "polygon pilot feature conjunction"
 
-folder <- "../data/polygon pilot feature conjunction/"
-
-
-d_found <- read_csv(paste0("../output/d_found.csv")) %>% 
+d_found <- read_csv(paste0("../output/", experiment, "/d_found.csv")) %>% 
   rename(person = "participant") %>%
   unite(condition, difficulty, common)
 
-d_stim <- read_csv(paste0("../output/d_stim.csv")) %>% 
+d_stim <- read_csv(paste0("../output/", experiment, "/d_stim.csv")) %>% 
   rename(person = "participant") %>%
   unite(condition, difficulty, common)
 
 d_list <- prep_data_for_stan(d_found, d_stim) 
 d_list$prior_mu_phidis <- 10
 
-#d_list$targ_class <- d_list$targ_class-1
+mod <- cmdstan_model("../models/foraging_model1.stan")
 
-m <- stan("../../foraging_spatial/models/foraging_model1.stan", data = d_list,
-          chains = 1, iter = 1000)
+m <- mod$sample(data = d_list, chains = 4, parallel_chains = 4)
+
+
 
 saveRDS(m, "foraging_pilot.model")
 
 
-
-
-blks_labels <- levels(d_found$condition)
-
 source("../functions/plot_model.R")
 
 
-plot_model_fixed(m, d_found, blks_labels)
+plot_model_fixed(m, d_found, merge_conditions=TRUE)
+
