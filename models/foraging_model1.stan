@@ -200,9 +200,8 @@ model {
 
 generated quantities {
   // here we  can output our prior distritions
-  real prior_cW = normal_rng(0, prior_sd_bA);
-  real prior_sW = normal_rng(0, prior_sd_bS);
+  real prior_bA = normal_rng(0, prior_sd_bA);
+  real prior_bS = normal_rng(0, prior_sd_bS);
   real prior_phi_dis = normal_rng(prior_mu_phidis, prior_sd_phidis);
   real prior_phi_dir = normal_rng(prior_mu_phidir, prior_sd_phidir);
-  real prior_direction_bias = normal_rng(-2, 3);
 }
