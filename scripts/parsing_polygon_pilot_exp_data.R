@@ -11,6 +11,8 @@ source("../functions/prep_data.R")
 options(mc.cores = parallel::detectCores())
 
 folder = "../data/polygon pilot feature conjunction/"
+savefolder = "../output/"
+
 files <- dir(folder, ".csv")
 
 # set ggplot2 theme
@@ -34,8 +36,8 @@ for (pp in 1:length(files)) {
 
 }
 
-write_csv(d_found, paste0(folder, "d_list.csv"))
-write_csv(d_stim, paste0(folder, "d_stim.csv"))
+write_csv(d_found, paste0(savefolder, "d_found.csv"))
+write_csv(d_stim, paste0(savefolder, "d_stim.csv"))
 
 ######################################################
 # now prepare data for stan model
