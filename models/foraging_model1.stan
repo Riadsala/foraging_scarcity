@@ -12,7 +12,7 @@ functions{
   }
 
   vector compute_spatial_weights(int n, int n_targets, int kk, int ll, int ii,
-                                 real sigma_dis, real sigma_dir, 
+                                 real phi_dis, real phi_dir, 
                                  matrix u, vector D, vector E, vector A) {
 
     vector[n_targets] w;
@@ -27,10 +27,10 @@ functions{
 
       if (n == 2) {
         // for the second selected target, weight by distance from the first
-        w = w .* exp(-(sigma_dis + u[3+4*(kk-1), ll]) * D);
+        w = w .* exp(-(phi_dis + u[3+4*(kk-1), ll]) * D);
       } else {
         // for all later targets, also weight by direciton
-        w = w .* exp(-(sigma_dis + u[3+4*(kk-1), ll]) * D - (sigma_dir + u[4+4*(kk-1), ll]) * E);
+        w = w .* exp(-(phi_dis + u[3+4*(kk-1), ll]) * D - (phi_dir + u[4+4*(kk-1), ll]) * E);
       }
     }
     return(w);
@@ -58,7 +58,7 @@ data {
   vector<lower = -1, upper = 1>[n_targets] S[N]; // stick/switch (does this targ match prev targ) 
   int <lower = 1, upper = L> Z[N]; // random effect levels 
   
-  real prior_sd_bAvP; // param for class weight prior
+  real prior_sd_bA; // param for class weight prior
   real prior_sd_bS; // prior for sd for bS
   real prior_mu_phidis;
   real prior_sd_phidis;
@@ -76,7 +76,7 @@ parameters {
   /* in order to allow for correlations between the
   variables, these are all stored in a list
   these include bA, bS (stick weight), and the two spatial 
-  sigmas, along with the floor (chance of selectin an 
+  phis, along with the floor (chance of selectin an 
   item at random)
   */
   real b[4*K];
@@ -85,7 +85,7 @@ parameters {
   // random effects
   ///////////////////////////////
  
-  vector<lower=0>[4*K] sig_b; // random effect sigma for biases  
+  vector<lower=0>[4*K] sig_b; // random effect phi for biases  
   cholesky_factor_corr[4*K] L_u; // declare L_u to be the Choleski factor of a correlation matrix
   matrix[4*K,L] z_u;  // random effect matrix
 }
@@ -95,8 +95,8 @@ transformed parameters {
   // extract params from list of params    
   real bA[K]; // weights for class A compared to B  
   real bS[K]; // stick-switch rates 
-  real sigma_dis[K]; // distance tuning
-  real sigma_dir[K]; // direction tuning
+  real phi_dis[K]; // distance tuning
+  real phi_dir[K]; // direction tuning
 
   // this transform random effects so that they have the correlation
   // matrix specified by the correlation matrix above
@@ -107,8 +107,8 @@ transformed parameters {
   for (ii in 1:K) {
     bA[ii]        = b[1+4*(ii-1)];
     bS[ii]        = b[2+4*(ii-1)];
-    sigma_dis[ii] = b[3+4*(ii-1)];
-    sigma_dir[ii] = b[4+4*(ii-1)];
+    phi_dis[ii] = b[3+4*(ii-1)];
+    phi_dir[ii] = b[4+4*(ii-1)];
   }
 }
 
@@ -133,7 +133,7 @@ model {
 
   // priors for fixed effects
   for (ii in 1:K) {
-    target += normal_lpdf(b[1+4*(ii-1)] | 0, prior_sd_bAvP);
+    target += normal_lpdf(b[1+4*(ii-1)] | 0, prior_sd_bA);
     target += normal_lpdf(b[2+4*(ii-1)] | 0, prior_sd_bS);
     target += normal_lpdf(b[3+4*(ii-1)] | prior_mu_phidis, prior_sd_phidis);
     target += normal_lpdf(b[4+4*(ii-1)] | prior_mu_phidir, prior_sd_phidir);
@@ -167,7 +167,7 @@ model {
 
     // apply spatial weighting
     spatial_weights = compute_spatial_weights(trial_start[ii], n_targets, kk, ll, ii,
-                                 sigma_dis[kk], sigma_dir[kk], u, D[ii], E[ii], A[ii]);
+                                 phi_dis[kk], phi_dir[kk], u, D[ii], E[ii], A[ii]);
 
     if (trial_start[ii] == 1) {
       weights = inv_logit(weights);
@@ -197,9 +197,8 @@ model {
 
 generated quantities {
   // here we  can output our prior distritions
-  real prior_cW = normal_rng(0, prior_sd_bAvP);
-  real prior_sW = normal_rng(0, prior_sd_bS);
-  real prior_sigma_dis = normal_rng(prior_mu_phidis, prior_sd_phidis);
-  real prior_sigma_dir = normal_rng(prior_mu_phidir, prior_sd_phidir);
-  real prior_direction_bias = normal_rng(-2, 3);
+  real prior_bA = normal_rng(0, prior_sd_bA);
+  real prior_bS = normal_rng(0, prior_sd_bS);
+  real prior_phi_dis = normal_rng(prior_mu_phidis, prior_sd_phidis);
+  real prior_phi_dir = normal_rng(prior_mu_phidir, prior_sd_phidir);
 }

@@ -31,7 +31,7 @@ First we will simulate data using the parameters below. These are based on the m
 cond_labels <- c("equal", "scarce")
 
 # number of participants should be a multiple of 6 due to counter balancing
-n_people <- 6
+n_people <- 36
 n_trials_per_cond <- 5
 
 n_targ_class <- 2
@@ -139,14 +139,14 @@ d_list <- prep_data_for_stan(d_found, d_stim)
 saveRDS(d_list, "../scratch/sensiv_sim.d_list")
 ```
 
-```{r fit_model, eval=FALSE}
+```{r fit_model,eval=FALSE}
 d_list <- readRDS("../scratch/sensiv_sim.d_list")
 
 ######################################################
 # run model
 ######################################################
 
-m <- stan("../models/foraging_model1_nonml.stan", data = d_list, 
+m <- stan("../models/foraging_model1.stan", data = d_list, 
            chains = 4, iter = 1000)
 
 saveRDS(m, "../scratch/sensiv_sim.model")
@@ -156,38 +156,42 @@ Here we load in the model we fit earlier
 
 ```{r}
 m <- readRDS("../scratch/sensiv_sim.model")
+
 ```
 
 ## Posterior Probabilities
 
-```{r plot_model_post, fig.height=2.8}
+```{r plot_model_post, fig.height=2.8, fig.width=8}
 ######################################################
 # plot model
 ######################################################
 
 # functions for plotting the model are in this script: 
-source("../../foraging_spatial/functions/plot_model.R")    
+source("../functions/plot_model.R")    
 
 # plot the model
 plot_model_fixed(m, d,
-                 gt = list(bA = pA, 
-                           bS = boot::inv.logit(b_stick), 
+                 cl = c("A", "B"),
+                 gt = list(bA = qlogis(pA), 
+                           bS = b_stick, 
                            sig_d = sig_d,
-                           sig_theta = sig_theta))    
+                           sig_theta = sig_theta))  
+
 ggsave("../plots/sensiv_sim.pdf", width = 8, height = 2.8)
+ggsave("../plots/sensiv_sim.png", width = 8, height = 2.8)
 ```
 
 Compute posterior probability of a difference
 
-```{r, fig.height=2.8, eval=FALSE}
+```{r, fig.height=2.8}
  m %>% recover_types(d$found) %>%
-    spread_draws(bA[block], bS[block], sigma_dis[block], sigma_dir[block]) %>%
+    spread_draws(bA[block], bS[block], phi_dis[block], phi_dir[block]) %>%
     mutate(block = as_factor(block)) %>%
     ungroup() -> post
   
 levels(post$block) <- cond_labels 
 
-post %>% pivot_longer(c(bA, bS, sigma_dis, sigma_dir), names_to = "param") %>%
+post %>% pivot_longer(c(bA, bS, phi_dis, phi_dir), names_to = "param") %>%
   pivot_wider(names_from = "block", values_from = "value") %>%
   mutate(diff = scarce-equal) -> post
 

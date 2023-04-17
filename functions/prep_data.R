@@ -123,7 +123,7 @@ does_item_match_prev_target <- function(Y, df, targ_class, n_targ_per_class, n_t
   trl <- 1
 
   for (ii in 2:length(Y)) {
-    print(ii)
+
     if (df$found[ii]==1) {trl = trl + 1}
 
     if (df$class[ii-1]== 0) {
@@ -232,7 +232,7 @@ prep_data_for_stan <- function(df, ds) {
     A = phi,
     E = theta,
     Z = as.numeric(df$person),
-    prior_sd_bAvP = 1.5,
+    prior_sd_bA = 1.5,
     prior_sd_bS = 1.5,
     prior_mu_phidis = 20,
     prior_sd_phidis = 5,
