@@ -1,7 +1,4 @@
 library(tidyverse)
-library(rstan)
-library(tidybayes)
-library(patchwork)
 options(mc.cores = parallel::detectCores())
 
 source("../functions/parse_pavlovia_data_polygons.R")
@@ -34,7 +31,7 @@ for (pp in 1:length(files)) {
 
 }
 
-write_csv(d_found, paste0(folder, "d_list.csv"))
+write_csv(d_found, paste0(folder, "d_found.csv"))
 write_csv(d_stim, paste0(folder, "d_stim.csv"))
 
 ######################################################
