@@ -10,7 +10,7 @@ source("../functions/prep_data.R")
 
 options(mc.cores = parallel::detectCores())
 
-folder = "../data/polygon pilot feature conjunction April 2023/"
+folder = "../data/polygon pilot feature conjunction/"
 files <- dir(folder, ".csv")
 
 # set ggplot2 theme
@@ -34,19 +34,8 @@ for (pp in 1:length(files)) {
 
 }
 
-
-d_found %>% rename(trial = trialNo, class = vertices) %>%
-  mutate(expName = str_remove(expName, "foraging_expt_polygons_"),
-         block = as_factor(expName),
-         class = as.numeric(as_factor(class)))  -> d_found
-
-
-d_stim %>% rename(trial = trialNo, class = vertices) %>%
-  filter(class != 6) %>%
-           mutate(expName = str_remove(expName, "foraging_expt_polygons_"),
-                  block = as_factor(expName),
-         class = as.numeric(as_factor(class)))-> d_stim
-  
+write_csv(d_found, paste0(folder, "d_list.csv"))
+write_csv(d_stim, paste0(folder, "d_stim.csv"))
 
 ######################################################
 # now prepare data for stan model
@@ -59,26 +48,5 @@ d_stim %>% rename(trial = trialNo, class = vertices) %>%
   # geom_path(data = d_found %>% filter(person == 1, block == 1, trial == 1, found>0),size = 1)
   # 
 
-d_found <- rename(d_found, condition = "block")
-d_stim <- rename(d_stim, condition = "block")
 
-d_list <- prep_data_for_stan(d_found, d_stim)
-d_list$prior_mu_phidis <- 10
-
-#d_list$targ_class <- d_list$targ_class-1
-
- m <- stan("../../foraging_spatial/models/foraging_model1.stan", data = d_list,
-        chains = 1, iter = 1000)
-
- saveRDS(m, "foraging_pilot.model")
-
-
-
-
-blks_labels <- levels(d_found$condition)
-
-source("../functions/plot_model.R")
-
-
-plot_model_fixed(m, d_found, blks_labels)
         

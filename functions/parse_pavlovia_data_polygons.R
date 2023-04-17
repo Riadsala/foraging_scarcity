@@ -1,3 +1,30 @@
+parse_found_sting <- function(participant, found, trial) {
+  
+  found <- str_extract_all(found, "polygon(_[1234]*\\d)*")
+  found <- unlist(found)
+  found <- str_replace(found, "polygon$", "polygon_1")
+  found <- str_remove(found, "polygon_")
+  found <- parse_number(found)
+  
+  # remove 2nd (and 3rd etc) clicks on targets
+  to_remove = as.numeric()
+  
+  if (length(found) > 1) {
+    for (ii in 2:length(found))  {
+      if (found[ii] %in% found[1:(ii-1)]) 
+        to_remove <- append(to_remove, ii)
+    }
+  }
+  
+  if (length(to_remove)>0)  found = found[-to_remove]
+  
+  return(tibble(
+    participant = participant, 
+    trial = trial, 
+    id = found, 
+    found = 1:length(found)))
+}
+
 parse_exp_data <- function(dr) {
   
   # first, remove first NA rows and gunk
@@ -8,128 +35,74 @@ parse_exp_data <- function(dr) {
   
   # parse x y and class
   dr %>%
-    select(trialNo, p1:p20) %>% # these are the relevant columns for x and y positions
-    pivot_longer(-c(trialNo), names_to = "label", values_to = "z") %>%
+    select(expName, participant, trialNo, p1:p20) %>% # these are the relevant columns for x and y positions
+    pivot_longer(-c(expName, participant, trialNo), names_to = "label", values_to = "z") %>%
     mutate(id = parse_number(label)) %>%
     mutate(z = str_replace_all(z, "\\[|\\]", ""),
            z = str_squish(z)) %>%
     separate(z, into = c("x", "y"), sep = " ") %>%
-    mutate(intermediate = row_number(),
-           trial = ceiling(intermediate/40),
+    mutate(
+      participant = parse_integer(participant),
+      intermediate = row_number(),
+           trial = ceiling(intermediate/20), # create a new trial number every 20 targets
            x = as.numeric(x),
            y = as.numeric(y)) %>%
-    select(trial, id, x, y) %>%
-    filter(is.finite(trial)) -> d_stim
+    select(condition = "expName", participant, trial, id, x, y) %>%
+    filter(is.finite(trial)) %>%
+    separate(condition, c("foraging","expt", "polygons", "difficulty", "common")) %>%
+    select(-foraging, -expt, -polygons)  -> d_stim
   
   # check that we have sensible d_stim
-  d_stim %>% group_by(trial) %>%
-    summarise(n = n())
-  
+  # d_stim %>% group_by(trial) %>%
+  #   summarise(n = n())
+
  # add in number of vertices
-  vertices_8 <- c(1:10)
-  vertices_7 <- c(11:20)
-  vertices_6 <- c(21:40)
-  
-  d_stim %>% mutate(
-    vertices = case_when(
-      id %in% vertices_8 ~ 8,
-      id %in% vertices_7 ~ 7,
-      id %in% vertices_6 ~ 6
-    )) %>%
-    mutate(person = dr$participant[[1]]) -> d_stim
-  
-  # if key_resp.rt doesn't exist, create it with a load of NAs
-  if (!("key_resp.rt" %in% names(dr))) {
-    dr %>% mutate(key_resp.rt = NaN) -> dr
-  }
+  d_stim %>%
+    mutate(
+      class = case_when(
+        (common == "A" & id < 16) ~ "A",
+        (common == "A" & id > 15) ~ "B",
+        (common == "B" & id < 6) ~ "A",
+        (common == "B" & id > 5) ~ "B",
+        (common == "AB" & id < 11) ~ "A",
+        (common == "AB" & id > 10) ~ "B")) -> d_stim
+
+ 
+  # # if key_resp.rt doesn't exist, create it with a load of NAs
+  # if (!("key_resp.rt" %in% names(dr))) {
+  #   dr %>% mutate(key_resp.rt = NaN) -> dr
+  # }
   
   # look at the order in which things were clicked
-  dr %>% select(trialNo, mouse.clicked_name, key_resp.rt) %>%
-    rename(found  = "mouse.clicked_name", end_trial = "key_resp.rt") %>%
-    separate(found, into = as.character(1:40), sep = "," ) %>%
-    pivot_longer(-c(trialNo, end_trial), names_to = "found", values_to = "id") %>%
-    mutate(id = str_replace_all(id, "\\[|\\]", ""),
-           id = str_replace_all(id, "\\'", ""),
-           id = str_squish(id),
-           id = if_else(id == "polygon", "polygon_1", id),
-           id = parse_number(id),
-           found = as.numeric(found)) %>%
-    filter(is.finite(id)) %>%
-    left_join(d_stim, by = c("trialNo", "id")) -> d_found
+  dr %>% select(participant, mouse.clicked_name) %>%
+    rename(found  = "mouse.clicked_name") %>%
+    mutate(trial = 1:n(),
+           participant = parse_number(participant)) -> d_found
+  
+  d_found <- pmap_df(d_found, parse_found_sting)
+  
+  # remove any trial with a distracter click
+  d_found %>%
+    group_by(trial) %>%
+    summarise(yes = sum(id > 20)) %>%
+    filter(yes > 0) -> to_remove
+  
+  d_found %>% filter(!(trial %in% to_remove$trial)) %>%
+    left_join(d_stim, by = c("participant", "trial", "id")) -> d_found
   
   # now sort out time info
-  dr %>% select(trialNo, mouse.time) %>%
-    rename(time  = "mouse.time") %>%
-    separate(time, into = as.character(1:40), sep = "," ) %>%
-    pivot_longer(-c(trialNo), names_to = "found", values_to = "time") %>%
-    mutate(time = round(parse_number(time), 3),
-           found = as.numeric(found)) %>%
-    right_join(d_found) -> d_found
-  
+  # dr %>% select(trialNo, mouse.time) %>%
+  #   rename(time  = "mouse.time") %>%
+  #   separate(time, into = as.character(1:40), sep = "," ) %>%
+  #   pivot_longer(-c(trialNo), names_to = "found", values_to = "time") %>%
+  #   mutate(time = round(parse_number(time), 3),
+  #          found = as.numeric(found)) %>%
+  #   right_join(d_found) -> d_found
   
   
   # check for double clicks on targets
-  
-  d_found %>% group_by(trialNo, id) %>%
-    summarise(n = n()) %>%
-    filter(n > 1) -> dm
-  if (nrow(dm) > 0) {
-    for (ii in 1:nrow(dm)) {
-      
-      d_found %>% filter(trialNo == dm$trialNo[ii], id == dm$id[ii]) %>%
-        filter(found != min(found)) -> to_remove
-      
-      d_found <- filter(d_found, !(trialNo %in% to_remove$trialNo & 
-                                     id %in% to_remove$id &
-                                     found %in% to_remove$found)) %>%
-        mutate(person = dr$participant[[1]]) %>%
-        group_by(trialNo) %>%
-        mutate(found = row_number()) %>% # making row numbers right again
-        ungroup()
-    }
-  }
-  
-  rm(dm)
-  
-  # trying to remove trials with clicks on distractors
-  
-  trials_with_6 <- d_found %>% group_by(trialNo) %>%
-    summarise(click6 = sum(vertices==6)) %>%
-    filter(click6>0) 
-  
-  d_found %>%
-    filter(!(trialNo %in% trials_with_6$trialNo)) -> d_found
-  
-  d_stim %>%
-    filter(!(trialNo %in% trials_with_6$trialNo)) -> d_stim
-  
-  # renumbering trials, any extra ones removed
-  d_found %>%
-    mutate(trials_as_factor = (as.numeric(as.factor(trialNoReal)))) %>%
-    filter(trials_as_factor < 6) -> d_found
-  
-  d_stim %>%
-    mutate(trials_as_factor = (as.numeric(as.factor(trialNoReal)))) %>%
-    filter(trials_as_factor < 6) -> d_stim
-  
-  # removing unhelpful trial numbers
-  d_stim <- d_stim %>%
-    select(-trialNo, -trialNoReal) %>%
-    rename(trialNo = trials_as_factor) 
-    
-  
-  d_found <- d_found %>%
-    select(-trialNo, - trialNoReal) %>%
-    rename(trialNo = trials_as_factor)
-  
-  # add in exp name (useful for working out conditions later)
-  
-  d_stim <- d_stim %>%
-    mutate(expName = dr$expName[1])
-  
-  d_found <- d_found %>%
-    mutate(expName = dr$expName[1])
-  
+ 
+
   return(list(stim = d_stim, found = d_found))
   
   
