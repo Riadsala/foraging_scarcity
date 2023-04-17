@@ -3,7 +3,7 @@ library(tidybayes)
 options(ggplot2.discrete.colour = ggthemes::ptol_pal()(4),
         ggplot2.discrete.fill = ggthemes::ptol_pal()(4))
 
-plot_model_fixed <- function(m, d, cl, gt=NULL, merge_conditions=FALSE)
+plot_model_fixed <- function(m, d, cl, gt=NULL, merge_conditions=FALSE, fix_priorNames = FALSE)
 {
   # gt is a list with our groundtruth sim parameters. 
   
@@ -26,9 +26,18 @@ plot_model_fixed <- function(m, d, cl, gt=NULL, merge_conditions=FALSE)
   #   mutate(bA = if_else(condition == "B", -bA, bA),
   #          condition = if_else(condition=="AB", "equal", "scarce"))
   
+  if (fix_priorNames == FALSE) {
   m %>% recover_types(d$found) %>%
     spread_draws(prior_bA, prior_bS, prior_phi_dis, prior_phi_dir) %>%
-    ungroup() -> prior
+    ungroup() -> prior 
+  } else {
+    m %>% recover_types(d$found) %>%
+      spread_draws(prior_cW, prior_sW, prior_phi_dis, prior_phi_dir) %>%
+      ungroup() %>%
+      rename(prior_bA = "prior_cW", prior_bS = "prior_sW") -> prior 
+    
+    
+  }
   
   my_widths <- c(0.53, 0.97)
   

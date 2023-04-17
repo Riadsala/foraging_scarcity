@@ -53,10 +53,10 @@ data {
   vector[n_targets] E[N]; // direction measures (relative)
   vector[n_targets] A[N]; // direction measures (absolute)
 
-  int <lower = 1, upper = K> X[n_trials]; // trial features (ie, which condition are we in)
+  array[n_trials] int <lower = 1, upper = K> X; // trial features (ie, which condition are we in)
   matrix<lower = -1, upper = 1>[n_trials, n_targets] targ_class; // target class, one row per trial
   vector<lower = -1, upper = 1>[n_targets] S[N]; // stick/switch (does this targ match prev targ) 
-  int <lower = 1, upper = L> Z[N]; // random effect levels 
+  array[N] int <lower = 1, upper = L> Z; // random effect levels 
   
   real prior_sd_bA; // param for class weight prior
   real prior_sd_bS; // prior for sd for bS
