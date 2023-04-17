@@ -9,3 +9,4 @@ scripts/.Rhistory
 scripts/clarke/clarke_model.rds
 1_check_sim_and_features_files
 2_justify_sample_size_files
+*.exe
