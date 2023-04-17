@@ -1,4 +1,4 @@
-parse_found_sting <- function(participant, found, trial) {
+parse_found_sting <- function(person, found, trial) {
   
   found <- str_extract_all(found, "polygon(_[1234]*\\d)*")
   found <- unlist(found)
@@ -19,7 +19,7 @@ parse_found_sting <- function(participant, found, trial) {
   if (length(to_remove)>0)  found = found[-to_remove]
   
   return(tibble(
-    participant = participant, 
+    person = person, 
     trial = trial, 
     id = found, 
     found = 1:length(found)))
@@ -42,12 +42,12 @@ parse_exp_data <- function(dr) {
            z = str_squish(z)) %>%
     separate(z, into = c("x", "y"), sep = " ") %>%
     mutate(
-      participant = parse_integer(participant),
+      person = parse_integer(participant),
       intermediate = row_number(),
            trial = ceiling(intermediate/20), # create a new trial number every 20 targets
            x = as.numeric(x),
            y = as.numeric(y)) %>%
-    select(condition = "expName", participant, trial, id, x, y) %>%
+    select(condition = "expName", person, trial, id, x, y) %>%
     filter(is.finite(trial)) %>%
     separate(condition, c("foraging","expt", "polygons", "difficulty", "common")) %>%
     select(-foraging, -expt, -polygons)  -> d_stim
@@ -77,7 +77,8 @@ parse_exp_data <- function(dr) {
   dr %>% select(participant, mouse.clicked_name) %>%
     rename(found  = "mouse.clicked_name") %>%
     mutate(trial = 1:n(),
-           participant = parse_number(participant)) -> d_found
+           person = parse_number(participant)) %>%
+    select(person, found, trial) -> d_found
   
   d_found <- pmap_df(d_found, parse_found_sting)
   
@@ -88,7 +89,7 @@ parse_exp_data <- function(dr) {
     filter(yes > 0) -> to_remove
   
   d_found %>% filter(!(trial %in% to_remove$trial)) %>%
-    left_join(d_stim, by = c("participant", "trial", "id")) -> d_found
+    left_join(d_stim, by = c("person", "trial", "id")) -> d_found
   
   # remove trials from d_stim that were scrapped (from d_found)
   trials_to_keep <- unique(d_found$trial)
@@ -104,9 +105,6 @@ parse_exp_data <- function(dr) {
   #          found = as.numeric(found)) %>%
   #   right_join(d_found) -> d_found
   
-  
-  # check for double clicks on targets
- 
 
   return(list(stim = d_stim, found = d_found))
   
