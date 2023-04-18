@@ -161,7 +161,7 @@ m <- readRDS("../scratch/sensiv_sim.model")
 
 ## Posterior Probabilities
 
-```{r plot_model_post, fig.height=2.8, fig.width=8}
+```{r plot_model_post, fig.height=2.8, fig.width=8, eval=FALSE}
 ######################################################
 # plot model
 ######################################################
