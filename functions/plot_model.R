@@ -12,9 +12,11 @@ plot_model_fixed <- function(m, d, cl, gt=NULL, merge_conditions=FALSE, fix_prio
     mutate(condition = as_factor(condition)) %>%
     ungroup() -> post
   
+  post %>% 
+    separate(condition, c("difficulty", "condition")) -> post
+  
  if (merge_conditions) {
-   post %>% 
-     separate(condition, c("difficulty", "common")) %>%
+   post %>%
      mutate(condition = if_else(common == "AB", "equal", "scarce"),
             bA = if_else(common == "A", -bA, bA)) -> post
    
