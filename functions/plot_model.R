@@ -17,8 +17,8 @@ plot_model_fixed <- function(m, d, cl, gt=NULL, merge_conditions=FALSE, fix_prio
   
  if (merge_conditions) {
    post %>%
-     mutate(condition = if_else(common == "AB", "equal", "scarce"),
-            bA = if_else(common == "A", -bA, bA)) -> post
+     mutate(bA = if_else(condition == "A", -bA, bA),
+       condition = if_else(condition == "AB", "equal", "scarce")) -> post
    
  }
   
