@@ -10,10 +10,14 @@ plot_model_fixed <- function(m, d, cl, gt=NULL, merge_conditions=FALSE, fix_prio
   m %>% recover_types(d) %>%
     spread_draws(bA[condition], bS[condition], phi_dis[condition], phi_dir[condition]) %>%
     mutate(condition = as_factor(condition)) %>%
+    mutate(condition = fct_recode(condition, !!!cl)) %>%
     ungroup() -> post
   
+  if (is.null(gt)) {
   post %>% 
     separate(condition, c("difficulty", "condition")) -> post
+    
+  }
   
  if (merge_conditions) {
    post %>%
@@ -22,11 +26,6 @@ plot_model_fixed <- function(m, d, cl, gt=NULL, merge_conditions=FALSE, fix_prio
    
  }
   
-  #post %>% separate(condition, into = c("difficulty", "condition"))  -> post
-  
-  # %>%
-  #   mutate(bA = if_else(condition == "B", -bA, bA),
-  #          condition = if_else(condition=="AB", "equal", "scarce"))
   
   if (fix_priorNames == FALSE) {
   m %>% recover_types(d$found) %>%

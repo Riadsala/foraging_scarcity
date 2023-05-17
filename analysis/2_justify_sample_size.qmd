@@ -161,7 +161,7 @@ m <- readRDS("../scratch/sensiv_sim.model")
 
 ## Posterior Probabilities
 
-```{r plot_model_post, fig.height=2.8, fig.width=8, eval=FALSE}
+```{r plot_model_post, fig.height=2.8, fig.width=8, eval=TRUE}
 ######################################################
 # plot model
 ######################################################
@@ -171,7 +171,7 @@ source("../functions/plot_model.R")
 
 # plot the model
 plot_model_fixed(m, d,
-                 cl = c("A", "B"),
+                 cl = c(equal = "1", scarce = "2"),
                  gt = list(bA = qlogis(pA), 
                            bS = b_stick, 
                            sig_d = sig_d,
