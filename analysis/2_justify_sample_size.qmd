@@ -177,8 +177,8 @@ plot_model_fixed(m, d,
                            sig_d = sig_d,
                            sig_theta = sig_theta))  
 
-ggsave("../plots/sensiv_sim.pdf", width = 8, height = 2.8)
-ggsave("../plots/sensiv_sim.png", width = 8, height = 2.8)
+ggsave("../plots/sensiv_sim.pdf", width = 8, height = 6)
+ggsave("../plots/sensiv_sim.png", width = 8, height = 6)
 ```
 
 Compute posterior probability of a difference

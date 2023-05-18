@@ -31,7 +31,6 @@ m <- readRDS(paste0("../output/", experiment, "/foraging_pilot.model"))
 
 source("../functions/plot_model.R")
 
-
 plot_model_fixed(m, d_found, merge_conditions=TRUE)
 
 ggsave(ggsave("../plots/pilot_data.pdf", width = 8, height = 4))
