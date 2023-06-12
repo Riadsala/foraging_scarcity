@@ -10,6 +10,7 @@ theme_set(theme_bw())
 source("../functions/prep_data.R")
 
 experiment <- "polygon pilot feature conjunction"
+# experiment <- "polygon pilot March 2023"
 
 d_found <- read_csv(paste0("../output/", experiment, "/d_found.csv")) %>% 
   unite(condition, difficulty, common)
@@ -23,11 +24,13 @@ d_list$prior_mu_phidis <- 10
 mod <- cmdstan_model("../models/foraging_model1.stan")
 
 m <- mod$sample(data = d_list, chains = 4, parallel_chains = 4)
-saveRDS(m, (paste0("../output/", experiment, "_foraging_pilot.model")))
+saveRDS(m, paste0("../output/", experiment, "/foraging_pilot.model"))
 
+
+m <- readRDS(paste0("../output/", experiment, "/foraging_pilot.model"))
 
 source("../functions/plot_model.R")
 
+plot_model_fixed(m, d_found, merge_conditions=TRUE)
 
-plot_model_fixed(m, d_found, merge_conditions=TRUE, fix_priorNames = TRUE)
-
+ggsave(ggsave("../plots/pilot_data.pdf", width = 8, height = 4))

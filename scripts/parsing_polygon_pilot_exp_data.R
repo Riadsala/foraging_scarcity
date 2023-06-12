@@ -5,7 +5,8 @@ source("../functions/prep_data.R")
 
 options(mc.cores = parallel::detectCores())
 
-exptname = "polygon pilot white shapes"
+# exptname <- "polygon pilot white shapes"
+exptname <- "polygon pilot March 2023"
 
 folder = paste0("../data/", exptname, "/")
 savefolder = paste0("../output/", exptname, "/")
