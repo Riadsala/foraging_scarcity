@@ -50,7 +50,6 @@ plot_item_selections <- function(d)
 }
 ```
 
-
 ## A large classweight
 
 ```{r}
@@ -66,6 +65,7 @@ d <- sim_foraging_trial(trl = 1,
 plot_item_selections(d) + ggtitle("preference for class 1")
 rle(d$class)
 ```
+
 # Even class and pref for switching
 
 ```{r}
@@ -186,5 +186,3 @@ d %>% group_by(person, condition) %>%
 round(sim_params,3) %>% knitr::kable()
 
 ```
-
-
