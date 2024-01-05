@@ -4,7 +4,8 @@ format: html
 editor: visual
 ---
 
-```{r setup}
+
+```{r setup, message = FALSE}
 library(tidyverse)
 library(rstan)
 library(patchwork)
@@ -19,6 +20,7 @@ source("../functions/sim_foraging_data.R")
 source("../functions/prep_data.R")
 source("../functions/get_run_info.R")
 ```
+
 
 # Simulate Data
 
@@ -72,7 +74,7 @@ write_csv(d %>% mutate(x = round(x, 3), y = round(y, 3)), "../scratch/sim_data.c
 
 Read in pre-generated data and summarise randomly generated simulation parameters
 
-```{r summarise_sim_data}
+```{r summarise_sim_data, message = FALSE}
 d <- read_csv("../scratch/sim_data.csv")
 
 d %>% group_by(person, condition) %>%
@@ -94,7 +96,7 @@ sim_params %>%
 
 Compute and plot some summary run length parameters
 
-```{r compute_run_stats, fig.height=3}
+```{r compute_run_stats, fig.height=3, message = FALSE}
 ######################################################
 # check summary stats
 ######################################################

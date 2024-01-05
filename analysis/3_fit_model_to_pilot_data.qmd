@@ -1,20 +1,37 @@
+---
+title: "3 Fit model to pilot data"
+format: html
+editor: visual
+---
+
+```{r setup, message = FALSE}
+
 library(tidyverse)
-
-source("../functions/parse_pavlovia_data_polygons.R")
-source("../functions/prep_data.R")
-
+library(cmdstanr)
+library(tidybayes)
+library(patchwork)
 options(mc.cores = parallel::detectCores())
 
-# exptname <- "polygon pilot white shapes"
-exptname <- "polygon pilot March 2023"
+# set ggplot2 theme
+theme_set(theme_bw())
+
+source("../functions/parse_pavlovia_data.R")
+source("../functions/prep_data.R")
+source("../functions/plot_model.R")
+
+exptname <- "pilot feature conjunction"
+
+
+```
+
+# Generating d list and d found
+
+```{r, message = FALSE}
 
 folder = paste0("../data/", exptname, "/")
 savefolder = paste0("../output/", exptname, "/")
 
 files <- dir(folder, ".csv")
-
-# set ggplot2 theme
-theme_set(theme_bw())
 
 # first make a dataframe of all found targets and save
 d_found <- tibble()
@@ -37,6 +54,12 @@ for (pp in 1:length(files)) {
 
 write_csv(d_found, paste0(savefolder, "d_found.csv"))
 write_csv(d_stim, paste0(savefolder, "d_stim.csv"))
+
+```
+
+# Some data checking
+
+```{r, message = FALSE}
 
 ########################################################
 # Some data checking #
@@ -64,6 +87,45 @@ d_found %>%
   mutate(switch = ifelse(class != lag(class), 1, 0)) %>%
   summarise(num_switches = sum(switch, na.rm = TRUE)) -> total_switches
 
-ggplot(total_switches, aes(difficulty, num_switches)) + geom_boxplot()                                  
+ggplot(total_switches, aes(difficulty, num_switches)) + geom_boxplot()   
 
-        
+```
+
+# Read in data
+
+```{r, message = FALSE}
+
+d_found <- read_csv(paste0("../output/", exptname, "/d_found.csv")) %>% 
+  unite(condition, difficulty, common)
+
+d_stim <- read_csv(paste0("../output/", exptname, "/d_stim.csv")) %>% 
+  unite(condition, difficulty, common)
+
+```
+
+# Prepare and fit model
+
+``` {r, eval = FALSE}
+
+d_list <- prep_data_for_stan(d_found, d_stim) 
+d_list$prior_mu_phidis <- 10
+
+mod <- cmdstan_model("../models/foraging_model1.stan")
+
+m <- mod$sample(data = d_list, chains = 4, parallel_chains = 4)
+m$save_object(paste0("../output/", exptname, "/foraging_pilot.RDS"))
+
+
+```
+
+# Plot model
+
+```{r, message = FALSE, warning = FALSE}
+
+m <- readRDS(paste0("../output/", exptname, "/foraging_pilot.RDS"))
+
+plot_model_fixed(m, d_found, merge_conditions = TRUE)
+
+ggsave(ggsave("../plots/pilot_data.pdf", width = 8, height = 4))
+
+```
