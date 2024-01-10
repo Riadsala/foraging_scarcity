@@ -42,6 +42,23 @@ plot_model_fixed <- function(post, m, d, cl = "A", gt=NULL, directions = FALSE)
     facet_wrap(~difficulty) + 
     theme(legend.position = "bottom") -> plt_pA
   
+  # plot difference between class weights
+  
+    post %>% 
+      pivot_longer(c(bA, b_stick, rho_delta, rho_psi), names_to = "param") %>%
+      pivot_wider(names_from = c("condition", "difficulty"), values_from = "value") %>%
+      unnest() %>%
+      mutate(easy = scarce_easy - equal_easy,
+             hard = scarce_hard - equal_hard) %>%
+      pivot_longer(c(easy, hard), names_to = "difficulty") -> post_diff
+    
+    post_diff %>%
+      filter(param == "bA") %>%
+      ggplot(aes(value)) + geom_density(fill = "grey") + 
+      geom_vline(xintercept = 0, linetype = 2) + 
+      facet_wrap(~difficulty, scales="free", nrow = 1) +
+      theme(legend.position = "none") + xlab('class weight difference between equal and scarce conditions') -> plt_pA_diff
+  
   # plot stick-switch param
   post  %>%
     ggplot()  + 
@@ -58,10 +75,7 @@ plot_model_fixed <- function(post, m, d, cl = "A", gt=NULL, directions = FALSE)
   
   # plot proximity and direction effects
   plt_prox    <- plt_post_prior(post, prior, "rho_delta", "proximity tuning", gt$rho_delta)
-  
- # plt_mem    <- plt_post_prior(post, prior, "bM", "one back weighting")
   plt_rel_dir <- plt_post_prior(post, prior, "rho_psi", "direction tuning", gt$rho_psi)
- # plt_dir2 <- plt_post_prior(post, prior, "direction_bias", "Hori-Vert Pref") 
   
   
   if (!is.null(gt)) {
@@ -70,8 +84,6 @@ plot_model_fixed <- function(post, m, d, cl = "A", gt=NULL, directions = FALSE)
     
     plt_pS + geom_vline(xintercept = plogis(gt$b_stick), linetype= 1, colour = "red") -> plt_pS
   }
-  
-  plt <- plt_pA + plt_pS + plt_prox + plt_rel_dir
   
   # add direction plot, if we're using that model
   if (directions) {
@@ -106,8 +118,14 @@ plot_model_fixed <- function(post, m, d, cl = "A", gt=NULL, directions = FALSE)
     plt <- plt / (plt_abs_dir_theta + plt_abs_dir_kappa + plt_dir_dist + plot_layout(widths = c(1,1,2)))
   }
   
-  plt <- plt +
-    plot_layout(guides = "collect")  & theme(legend.position = 'bottom')
+  layout <- "
+  AAABBB
+  CCCDEE
+  "
+  
+  plt <- (plt_pA + plt_pA_diff + plt_pS + plt_prox + plt_rel_dir) + 
+    plot_layout(design = layout, guides = 'collect') &  
+    theme(legend.position = 'bottom', panel.grid = element_blank())
   
   return(plt)
 }
@@ -228,97 +246,3 @@ plot_init_sel <- function(post, d, pp=FALSE) {
    
     return(plt)
 }
-# 
-# plot_model_spatial <- function(m, d) {
-#   
-#   m %>% 
-#     spread_draws( sigma_dis[block], sigma_dir[block]) %>%
-#     mutate(block = as_factor(block),
-#            block = fct_recode(block, scarce = "1", equal = "2")) %>%
-#     ungroup() -> post
-#   
-#   m %>% spread_draws(u[block, person],) %>%
-#     mutate(param = block %% 4,
-#            param = if_else(param == 0, 4, param),
-#            block = (block / 4),
-#            block = ceiling(block),
-#            block = as_factor(block),
-#            block = fct_recode(block, feature = "1", conjunction = "2"),
-#            param = as_factor(param),
-#            param = fct_recode(param, sigma_dir = "1", sigma_dis = "2")) %>%
-#     rename(uz = "u") -> post_u
-#   
-#   full_join(post %>%
-#               pivot_longer(c(sigma_dis, sigma_dir), names_to = "param", values_to = "u"), 
-#             post_u, 
-#             by = c("block", ".chain", ".iteration", ".draw", "param")) %>% 
-#     mutate(uz = u + uz) %>%
-#     group_by(person, block, param) %>%
-#     summarise(uz = mean(uz), .groups = "drop") %>%
-#     pivot_wider(names_from = "param", values_from = "uz") -> post_u
-# 
-#     
-#   distances <- seq(0, 1, 0.025)
-#   angles <- seq(0, 2*pi, 0.1)
-#   
-#   # draw distance tuning figure for foxed effect
-#     pmap_dfr(select(post, block, sigma_dis), 
-#              function(sigma_dis, t, block) tibble(t=t, block = block,
-#                                                        q = exp(-sigma_dis * t)),
-#              t = distances) %>%
-#       group_by(block, t) %>%
-#       median_hdci(q, .width = c(0.53, 0.97)) %>%
-#       select(-q, -.point, -.interval) %>%
-#       unite("interval", .lower, .upper) %>%
-#       pivot_wider(names_from = ".width", values_from = "interval") %>%
-#       separate(`0.53`, c("lower53", "upper53"), sep  = "_", convert = T)  %>%
-#       separate(`0.97`, c("lower97", "upper97"), sep  = "_", convert = T) -> q
-#     
-#     # plot fixed effect distance -> weight function HDPI
-#     q %>%
-#       ggplot(aes(t)) +
-#       geom_ribbon(aes(ymin = lower97, ymax = upper97, fill = block), alpha = 0.5) +
-#       geom_ribbon(aes(ymin = lower53, ymax = upper53, fill = block), alpha = 0.7) +
-#       scale_x_continuous("distance to target") +
-#       scale_y_continuous("weighting") +
-#       ggtitle("fixed effects") -> plt_dis
-#     
-#     pmap_dfr(select(post, block, direction_bias), 
-#              function(direction_bias, a, block) tibble(a=a, block = block,
-#                                                          q = (1 + direction_bias*cos(4*a))/(direction_bias+1)),
-#              a = angles) %>%
-#       group_by(block, a) %>%
-#       median_hdci(q, .width = c(0.53, 0.97)) %>%
-#       select(-q, -.point, -.interval) %>%
-#       unite("interval", .lower, .upper) %>%
-#       pivot_wider(names_from = ".width", values_from = "interval") %>%
-#       separate(`0.53`, c("lower53", "upper53"), sep  = "_", convert = T)  %>%
-#       separate(`0.97`, c("lower97", "upper97"), sep  = "_", convert = T) -> q_direction
-#     
-#     # plot fixed effect distance -> weight function HDPI
-#     q_direction %>%
-#       ggplot(aes(a)) +
-#       geom_ribbon(aes(ymin = lower97, ymax = upper97, fill = block), alpha = 0.5) +
-#       geom_ribbon(aes(ymin = lower53, ymax = upper53, fill = block), alpha = 0.7) +
-#       scale_x_continuous("distance to target") +
-#       scale_y_continuous("weighting") +
-#       ggtitle("fixed effects") -> plt_dir
-#     
-#     # now plot indiv prox fall offs:
-#     pmap_dfr(select(post_u, block, sigma_dis, person), 
-#              function(sigma_dis, t, block, person) tibble(t=t, block = block, person = person,
-#                                                          q = exp(-sigma_dis * t)),
-#              t = distances) %>%
-#       ggplot(aes(x = t, y = q, colour = block, group = interaction(block, person))) + 
-#       geom_path(alpha = 0.5) +
-#       scale_x_continuous("distance to target") +
-#       scale_y_continuous("weighting") +
-#       ggtitle("indiv. differences") -> plt_dis_p
-#     
-#     
-#     
-#      plt_dis + plt_dis_p + plt_dir
-#   
-# }
-
-
