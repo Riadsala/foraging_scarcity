@@ -18,10 +18,9 @@ theme_set(theme_bw())
 source("../functions/parse_pavlovia_data.R")
 source("../functions/prep_data.R")
 source("../functions/plot_model.R")
+source("../functions/post_functions.R")
 
 exptname <- "pilot feature conjunction"
-
-
 ```
 
 # Generating d list and d found
@@ -50,7 +49,6 @@ for (pp in 1:length(files)) {
   rm(d_new, d_found_pp, d_stim_pp)
 
 }
-
 
 write_csv(d_found, paste0(savefolder, "d_found.csv"))
 write_csv(d_stim, paste0(savefolder, "d_stim.csv"))
@@ -94,23 +92,21 @@ ggplot(total_switches, aes(difficulty, num_switches)) + geom_boxplot()
 # Read in data
 
 ```{r, message = FALSE}
+source("../functions/import_data.R")
 
-d_found <- read_csv(paste0("../output/", exptname, "/d_found.csv")) %>% 
-  unite(condition, difficulty, common)
-
-d_stim <- read_csv(paste0("../output/", exptname, "/d_stim.csv")) %>% 
-  unite(condition, difficulty, common)
-
+d <- import_data("hughes2024pilot")
 ```
 
 # Prepare and fit model
 
-``` {r, eval = FALSE}
+```{r, eval = FALSE}
 
-d_list <- prep_data_for_stan(d_found, d_stim) 
-d_list$prior_mu_phidis <- 10
+d_list <- prep_data_for_stan(d$found, d$stim, c("spatial", "item_class")) 
 
-mod <- cmdstan_model("../models/foraging_model1.stan")
+# most priors should be the same for different 1.x model versions
+d_list <- add_priors_to_d_list(d_list)
+
+mod <- cmdstan_model("../models/multi_level/foraging_model1.stan")
 
 m <- mod$sample(data = d_list, chains = 4, parallel_chains = 4)
 m$save_object(paste0("../output/", exptname, "/foraging_pilot.RDS"))
@@ -124,7 +120,18 @@ m$save_object(paste0("../output/", exptname, "/foraging_pilot.RDS"))
 
 m <- readRDS(paste0("../output/", exptname, "/foraging_pilot.RDS"))
 
-plot_model_fixed(m, d_found, merge_conditions = TRUE)
+cl <- unique(d$found$condition)
+
+post <- extract_post(m, d$found, cl)
+
+# we want to merge conditions. Anna will explain why. 
+
+post$fixed %>%
+  separate(condition, into = c("difficulty", "condition")) %>%
+  mutate(bA = if_else(condition == "A", -bA, bA),
+         condition = if_else(condition == "AB", "equal", "scarce")) -> post$fixed
+
+plot_model_fixed(post,m, d$found, cl)  #, merge_conditions = TRUE
 
 ggsave(ggsave("../plots/pilot_data.pdf", width = 8, height = 4))
 

@@ -1,6 +1,155 @@
-compute_inter_targ_directions <- function(Y, df, ds) {
+
+add_priors_to_d_list <- function(dl) {
+  
+  # add in priors
+  priors <- read_csv("../models/multi_level/priors_model1.csv") %>%
+    pivot_longer(-param, names_to = "stat", values_to = "value") %>%
+    mutate(param = paste("prior", stat, param, sep="_")) %>%
+    select(-stat)
+  
+  dl <- append(dl, priors %>% group_by(param) %>% deframe())
+  
+  return(dl)
+  
+}
+
+prep_data_for_stan <- function(df, ds, model_components = "spatial") {
+  
+  # df and ds should match d$found and d$stim, which are output by import_data()
+  # model_components tells us whihc model_components to include
+  
+
+  ###################################################
+  # first, do some processing that everything requires
+  
+  # unsure where to put this... 
+  # remove distracters, as current model ignores them
+   ds %>% 
+     filter(item_class %in% c(1, 2)) -> ds
+  # 
+  # extract stimulus parameters
+  n_people <- length(unique(df$person))
+  n_trials <- length(unique(df$trial))
+  
+  # we will be trying to predict the item IDs, so lets save them as Y
+  Y = as.numeric(df$id)
+  
+  # get condition info
+  # this is a little more complicated than it looks as we may have some missing data
+  d_trl <- ds %>% group_by(person, trial) %>% 
+    summarise(condition = unique(condition), 
+              n_items = n(),
+              .groups = "drop")
+  # remove trials in which no targets were found
+  d_trl <- filter(d_trl, trial %in% (df %>% group_by(trial) %>% 
+                                       summarise(n=n(), .groups = "drop"))$trial)
+  
+  n_targets = unique(d_trl$n_items)
+  
+  X <- as.numeric(d_trl$condition)
+  
+  # add  these to list
+  d_list <- list(
+    N = nrow(df),
+    L = n_people,
+    K = length(unique(ds$condition)),
+    n_trials = n_trials,
+    n_targets = n_targets,
+    Y = Y,
+    X = array(X),
+    Z = df$person,
+    found_order = df$found)  
+  
+  rm(d_trl, X)
+  
+  ###################################################
+  
+  if ("spatial" %in% model_components) {
+  
+    # We are assuming (x, y) are already on some sensible scale
+    
+    # pre-compute direction and distance data
+    spatial <- compute_inter_item_directions_and_distances(Y, df, ds)
+    
+    # pre-compute relative direction data
+    rel_direction <- compute_inter_sel_direction(Y, df, ds) 
+    
+    # rescale x and y to be both in the (0, 1) range
+    ds %>% mutate(x = as.vector(scales::rescale(x, to = c(0.01, 0.99))),
+                  y = as.vector(scales::rescale(y, to = c(0.01, 0.99)))) -> ds
+    
+    # get x y coords of all items
+    ds %>% select(person, trial, id, x) %>%  
+      pivot_wider(names_from = "id", values_from = "x") %>%
+      select(-person, -trial) -> itemX
+    
+    ds %>% select(person, trial, id, y) %>%  
+      pivot_wider(names_from = "id", values_from = "y") %>%
+      select(-person, -trial) -> itemY
+  
+    d_list <- append(d_list, list(item_x = itemX,
+                                  item_y = itemY,
+                                  delta = spatial$distances,
+                                  phi = spatial$directions,
+                                  psi = rel_direction))
+
+    rm(spatial, rel_direction)
+  }
+
+
+  if ("item_class" %in% model_components) { 
+    
+    # Used for categorical model_components, i.e., items are of one class or another
+    # We want to extract the number of classes, the number of targets per class, 
+    # class ID of each item, and whether the ith selected item matches the i-1 selected item
+    
+    n_item_class <- length(unique(ds$item_class))
+    n_item_per_class <- length(unique(ds$id))/n_item_class
+    
+    item_class = t(array(as.numeric(ds$item_class), dim = c(n_item_per_class*n_item_class, n_trials)))
+    item_class[which(item_class==2)] =  -1
+    
+    # work out which targets match previous target
+    matching <- does_item_match_prev_target(Y, df, item_class, n_item_per_class, n_item_class)
+    
+    d_list <- append(d_list, list(n_classes = n_item_class,
+                                  item_class = item_class,
+                                  S = matching))
+  }
+  
+  if ("cts" %in% model_components) {
+    
+    # Used when we have continuous model_components, i.e, the items have model_components vectors that take on a range of values
+    # special exception: circular model_components (colour, orientation) are dealt with separately 
+    
+    # we need to think asbout variable names
+    
+    item_cols <- t(array(as.numeric(ds$col), dim = c(n_targets, n_trials)))
+    
+    d_list <- append(d_list, list(item_colour = item_cols))
+    
+  }
+  
+  if ("circ" %in% model_components) {
+    
+    # Used when we have continuous circular model_components, i.e, values on a colour wheel, orientations
+    # For now, we extract the distance matrix for such model_components
+    
+    col_dist <- compute_inter_item_colour_dist(Y, df, ds)
+    
+    d_list <- append(d_list, list(col_dist = col_dist))
+  }
+  
+  d_list$trial = df$trial
+ 
+  return(d_list)
+  
+}
+
+compute_inter_item_directions_and_distances <- function(Y, df, ds) {
   
   directions <- array()
+  distances <- array()
   
   for (ii in 1:length(Y)) {
     
@@ -11,62 +160,28 @@ compute_inter_targ_directions <- function(Y, df, ds) {
                        person == df$person[ii],
                        trial == df$trial[ii])
       
-      # as first target in trial, distance will be zero
+      # as first target in trial, distance and direction will be 0
+      # these should be NA, but not supported by Stan
       directions <- rbind(directions, rep(0, nrow(trl_dat)))
-      
-    } else {
-      
-      x <- trl_dat$x - trl_dat$x[Y[ii-1]]
-      y <- trl_dat$y - trl_dat$y[Y[ii-1]]
-      
-      phi <- atan2(y, x)
-      
-      directions <- rbind(directions, phi)
-    }
-  }
-  
-  directions <-  directions[-1,]
-  
-  rm(trl_dat)
-  
-  return(directions)
-  
-}
-
-
-compute_inter_targ_distances <- function(Y, df, ds) {
-  
-  distances <- array()
-  
-  for (ii in 1:length(Y)) {
-  
-    if (df$found[ii]==1) {
-      
-      #starting a new trial, so get relevant data
-      trl_dat = filter(ds, 
-                       person == df$person[ii],
-                       trial == df$trial[ii])
-      
-      # as first target in trial, distance will be zero
       distances <- rbind(distances, rep(0, nrow(trl_dat)))
       
     } else {
       
       x <- trl_dat$x - trl_dat$x[Y[ii-1]]
       y <- trl_dat$y - trl_dat$y[Y[ii-1]]
-      
+    
       distances <- rbind(distances, sqrt(x^2 + y^2))
+      directions <- rbind(directions, atan2(y, x))
     }
-
   }
   
+  directions <-  directions[-1,]
   distances <-  distances[-1,]
-  
-  rm(trl_dat)
-  
-  return(distances)
-  
+
+  return(list(directions = directions, 
+              distances  = distances))
 }
+
 
 compute_inter_sel_direction <- function(Y, df, ds) {
   
@@ -91,11 +206,11 @@ compute_inter_sel_direction <- function(Y, df, ds) {
     } else {
       
       d_targ <- df[ii-1,]
-      
-      if ((d_targ$class == 0)) {
-        phi <- rep(0, nrow(trl_dat))
-        
-      } else {
+      # 
+      # if ((d_targ$item_class == 0)) {
+      #   phi <- rep(0, nrow(trl_dat))
+      #   
+      # } else {
         d_prev_targ <- filter(df, 
                               person == df$person[ii],
                               trial == df$trial[ii],
@@ -106,7 +221,7 @@ compute_inter_sel_direction <- function(Y, df, ds) {
         phi = pmin(abs((phi %% 360)), abs((-phi %% 360)))
         phi = phi/180
         #phi[ii] = 1
-      }
+      # }
     }
     theta <- rbind(theta, phi[trl_dat$id])
   }
@@ -117,24 +232,23 @@ compute_inter_sel_direction <- function(Y, df, ds) {
   
 }
 
-does_item_match_prev_target <- function(Y, df, targ_class, n_targ_per_class, n_targ_class) {
+does_item_match_prev_target <- function(Y, df, item_class, n_item_per_class, n_item_class) {
 
   matching = array()
   trl <- 1
 
   for (ii in 2:length(Y)) {
-
     if (df$found[ii]==1) {trl = trl + 1}
 
-    if (df$class[ii-1]== 0) {
-      found_class <- rep(0, n_targ_per_class*n_targ_class)
+    if (df$item_class[ii-1]== 0) {
+      found_class <- rep(0, n_item_per_class*n_item_class)
 
     } else {
-      found_class <- targ_class[trl, Y[ii-1]]
+      found_class <- item_class[trl, Y[ii-1]]
 
     }
 
-    matching <- rbind(matching, as.numeric(targ_class[trl,] == found_class))
+    matching <- rbind(matching, as.numeric(item_class[trl,] == found_class))
 
   }
 
@@ -145,101 +259,3 @@ does_item_match_prev_target <- function(Y, df, targ_class, n_targ_per_class, n_t
 
 }
 
-prep_data_for_stan <- function(df, ds) {
-  
-  npeeps <- length(unique(df$person))
-  df$person = as.factor(df$person)
-  levels(df$person) <- 1:npeeps
-  
-  ds$person = as.factor(ds$person)
-  levels(ds$person) <- 1:npeeps
-  
-  # make sure trial ids are unique
-  df %>% mutate(condition = as.factor(condition),
-                trial = paste(as.numeric(person), as.numeric(condition), trial),
-                trial = as.numeric(as_factor(trial))) -> df
-  
-  ds %>% mutate(condition = as.factor(condition),
-                class = as.factor(class),
-                trial = paste(as.numeric(person), as.numeric(condition), trial),
-                trial = as.numeric(as_factor(trial))) -> ds
-  
-  
-  
-  # correct (x, y) so that neither ever = 0 or 1
-  # as this causes problems for Beta distributions
-  df %>% mutate(x = as.vector(scales::rescale(x, to = c(0.01, 0.99))),
-                y = as.vector(scales::rescale(y, to = c(0.01, 0.99)))) -> df
-  
-  ds %>% mutate(x = as.vector(scales::rescale(x, to = c(0.01, 0.99))),
-                y = as.vector(scales::rescale(y, to = c(0.01, 0.99)))) -> ds
-  
-  
-  # extract stimulus parameters
-  n_people <- length(unique(df$person))
-  n_trials <- length(unique(df$trial))
-  n_targ_class <- length(unique(ds$class))
-  n_targ_per_class <- length(unique(ds$id))/n_targ_class
- 
-  Y = as.numeric(df$id)
-  
-  # pre-compute distance data
-  distances <- compute_inter_targ_distances(Y, df, ds)
-  # pre-compute direction data
-  phi <- compute_inter_targ_directions(Y, df, ds)
-  
-  
-  # pre-compute relative direction data
-  theta <- compute_inter_sel_direction(Y, df, ds) 
-  
-  
-  d_trl <- ds %>% group_by(person, trial) %>% 
-    summarise(condition = unique(condition), .groups = "drop")
-  # remove trials in which no targets were found
-  d_trl <- filter(d_trl, trial %in% (df %>% group_by(trial) %>% 
-                                       summarise(n=n(), .groups = "drop"))$trial)
-  
-  X <- as.numeric(d_trl$condition)
-  
-  targ_class = t(array(as.numeric(ds$class), dim = c(n_targ_per_class*n_targ_class, n_trials)))
-  targ_class[which(targ_class==2)] =  -1
-  
-  # work out which targets match previous target
-  matching <- does_item_match_prev_target(Y, df, targ_class, n_targ_per_class, n_targ_class)
-  
-  # get x y coords of all items
-  ds %>% select(person, trial, id, x) %>%  
-    pivot_wider(names_from = "id", values_from = "x") %>%
-    select(-person, -trial) -> itemX
-  
-  ds %>% select(person, trial, id, y) %>%  
-    pivot_wider(names_from = "id", values_from = "y") %>%
-    select(-person, -trial) -> itemY
-  
-  d_list <- list(
-    N = nrow(df),
-    L = n_people,
-    K = length(unique(ds$condition)),
-    n_trials = n_trials,
-    n_targets = n_targ_class*n_targ_per_class,
-    n_classes = n_targ_class,
-    Y = Y,
-    trial_start = df$found,
-    targ_class = targ_class,
-    X = array(X),
-    S = matching,
-    D = distances,
-    A = phi,
-    E = theta,
-    Z = as.numeric(df$person),
-    prior_sd_bA = 1.5,
-    prior_sd_bS = 1.5,
-    prior_mu_phidis = 20,
-    prior_sd_phidis = 5,
-    prior_mu_phidir = 0,
-    prior_sd_phidir = 2
-)  
-  
-  return(d_list)
-  
-}

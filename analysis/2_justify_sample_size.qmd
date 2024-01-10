@@ -4,7 +4,6 @@ format: html
 editor: visual
 ---
 
-
 ```{r setup, message = FALSE}
 library(tidyverse)
 library(rstan)
@@ -20,7 +19,6 @@ source("../functions/sim_foraging_data.R")
 source("../functions/prep_data.R")
 source("../functions/get_run_info.R")
 ```
-
 
 # Simulate Data
 
