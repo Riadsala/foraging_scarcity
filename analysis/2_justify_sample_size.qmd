@@ -18,11 +18,12 @@ theme_set(theme_bw())
 source("../functions/sim_foraging_data.R")
 source("../functions/prep_data.R")
 source("../functions/get_run_info.R")
+source("../functions/import_data.R")
 ```
 
 # Simulate Data
 
-First we will simulate data using the parameters below. These are based on the model fits from Clarke, Hunt & Hughes (2022, Comp. Bio.) to data from Clarke et al (2022, QJEP) and Tagu & Kristjansson (2021).
+First we will simulate data using the parameters below. These are based on the model fits from Clarke, Hunt & Hughes (2022, Comp. Bio.) to data from Clarke et al (2022, QJEP) and Tagu & Kristjansson (2021). Please see the main manuscript for further justification.
 
 ```{r sim_data}
 ######################################################
@@ -70,7 +71,7 @@ d <- sim_foraging_people(n_people = n_people,
 write_csv(d %>% mutate(x = round(x, 3), y = round(y, 3)), "../scratch/sim_data.csv")
 ```
 
-Read in pre-generated data and summarise randomly generated simulation parameters
+We then read in our pre-generated data and summarise the randomly generated simulation parameters. We can see that the 'scarce' condition has a higher bA value (i.e. a preference for the rarer target type). 
 
 ```{r summarise_sim_data, message = FALSE}
 d <- read_csv("../scratch/sim_data.csv")
@@ -86,13 +87,13 @@ sim_params %>%
   pivot_longer(-c(person, condition), names_to = "param", values_to = "value") %>%
   ggplot(aes(value, fill = as_factor(condition))) + 
   geom_histogram(alpha = 0.25, position = position_identity(), bins = 10) + 
-  scale_fill_discrete("condition") + 
+  scale_fill_discrete("condition", labels = c("equal", "scarce")) + 
   facet_wrap(~param, scales="free")
 ```
 
 ## Summary Statistics
 
-Compute and plot some summary run length parameters
+Here, we compute and plot some summary run length parameters. As expected, we can see a higher mean maximum length of runs (and a correspondingly smaller number of runs) in the 'scarce' condition.
 
 ```{r compute_run_stats, fig.height=3, message = FALSE}
 ######################################################
@@ -112,6 +113,7 @@ d_runs %>% group_by(person, block) %>%
 d_runs %>% select(person, block, mean_max_run, mean_num_run) %>%
   pivot_longer(-c(person, block), names_to = "run_statistic", values_to = "value") %>%
   mutate(block = as_factor(block)) %>%
+  mutate(block = factor(block, labels = c("equal", "scarce"))) %>%
   ggplot(aes(block, value, fill = run_statistic)) + 
   geom_boxplot() +
   facet_wrap(~run_statistic)
@@ -126,73 +128,90 @@ d_runs %>% select(person, block, mean_max_run, mean_num_run) %>%
 
 d_stim <- d %>% select(person, condition, trial, id, x, y, class) %>%
   arrange(person, condition, trial, id) %>%
-  filter(class > 0)
+  filter(class > 0) %>%
+  mutate(class = as.numeric(as_factor(class))) %>%
+  rename(item_class = "class")
 
 d_found <- d %>% filter(found > 0) %>% 
-  arrange(person, condition, trial, found) 
+  arrange(person, condition, trial, found) %>%
+  mutate(class = as.numeric(as_factor(class))) %>%
+  rename(item_class = "class")
+
+d_found <- fix_person_and_trial(d_found)
+d_stim <- fix_person_and_trial(d_stim)
+
 ```
 
 The code below runs the model. However, to make it easier to compile this document, this is pre-computed.
 
 ```{r create_stan_list, eval=FALSE}
-d_list <- prep_data_for_stan(d_found, d_stim)
+d_list <- prep_data_for_stan(d_found, d_stim, c("spatial", "item_class"))
 saveRDS(d_list, "../scratch/sensiv_sim.d_list")
 ```
 
 ```{r fit_model,eval=FALSE}
 d_list <- readRDS("../scratch/sensiv_sim.d_list")
 
+d_list <- add_priors_to_d_list(d_list)
+
 ######################################################
 # run model
 ######################################################
 
-m <- stan("../models/foraging_model1.stan", data = d_list, 
+m <- stan("../models/multi_level/foraging_model1.stan", data = d_list, 
            chains = 4, iter = 1000)
 
-saveRDS(m, "../scratch/sensiv_sim.model")
+saveRDS(m,"../scratch/sensiv_sim.RDS")
+
 ```
 
-Here we load in the model we fit earlier
+Here we load in the model we fit earlier.
 
 ```{r}
-m <- readRDS("../scratch/sensiv_sim.model")
+m <- readRDS("../scratch/sensiv_sim.RDS")
 
 ```
 
 ## Posterior Probabilities
+
+We now plot our model. The figure is available in the main paper, but shows that we are able to recover the simulated parameter values accurately.
 
 ```{r plot_model_post, fig.height=2.8, fig.width=8, eval=TRUE}
 ######################################################
 # plot model
 ######################################################
 
-# functions for plotting the model are in this script: 
-source("../functions/plot_model.R")    
+# functions for extracting the posteriors are here:
+source("../functions/post_functions.R")
 
-# plot the model
-plot_model_fixed(m, d,
-                 cl = c(equal = "1", scarce = "2"),
-                 gt = list(bA = qlogis(pA), 
-                           bS = b_stick, 
-                           sig_d = sig_d,
-                           sig_theta = sig_theta))  
+# functions for plotting the model are in this script: 
+source("../functions/plot_model.R")
+
+cl <- cond_labels
+
+post <- extract_post(m, d_found, cl)
+
+plot_model_fixed(post,m, d_found, cl,                  
+                 gt = list(pA = pA, 
+                           b_stick = b_stick, 
+                           rho_delta = sig_d,
+                           rho_psi = sig_theta))
+
 
 ggsave("../plots/sensiv_sim.pdf", width = 8, height = 6)
 ggsave("../plots/sensiv_sim.png", width = 8, height = 6)
 ```
 
-Compute posterior probability of a difference
+We can then compute the posterior probability of a difference between the different conditions. We can see that the model can detect the predicted bA difference between the equal and scarce conditions: the HDCI does not contain zero.
 
 ```{r, fig.height=2.8}
- m %>% recover_types(d$found) %>%
-    spread_draws(bA[block], bS[block], phi_dis[block], phi_dir[block]) %>%
-    mutate(block = as_factor(block)) %>%
-    ungroup() -> post
-  
-levels(post$block) <- cond_labels 
 
-post %>% pivot_longer(c(bA, bS, phi_dis, phi_dir), names_to = "param") %>%
-  pivot_wider(names_from = "block", values_from = "value") %>%
+post <- post$fixed
+
+levels(post$condition) <- cond_labels 
+
+post %>% pivot_longer(c(bA, b_stick, rho_delta, rho_psi), names_to = "param") %>%
+  pivot_wider(names_from = "condition", values_from = "value") %>%
   mutate(diff = scarce-equal) -> post
 
 post %>% group_by(param) %>%

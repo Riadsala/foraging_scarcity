@@ -20,7 +20,13 @@ source("../functions/get_run_info.R")
 
 ```
 
+In this document, we demonstrate how we set up our simulations, and show some example single trials to demonstrate how different parameters affect the 'behaviour' of the simulation.
+
 # Single Trial Simulations
+
+First, we set up some initial parameters: the number of trials per condition, the number of target classes, the number of targets per class. We also set some initial model parameter values (the stick-switch parameter, the proximity parameter and the relative direction parameter). 
+
+We then set up a simple function to allow us to plot trials.
 
 ```{r}
 
@@ -28,9 +34,8 @@ n_trials_per_cond <- 1
 
 n_targ_class <- 2
 n_targ_per_class <- list(c(10, 10))
- # A is 3x preferable over B 
 
-# calculate 
+# some sample values
 bS <- 1
 sig_d <- 15
 sig_theta <- -2
@@ -52,6 +57,8 @@ plot_item_selections <- function(d)
 
 ## A large classweight
 
+In this simulation, we adjust the class weight values so that the simulation has a preference for the first class over the second class. 
+
 ```{r}
 targ_class_weights <- c(30,1)
 d <- sim_foraging_trial(trl = 1, 
@@ -66,7 +73,9 @@ plot_item_selections(d) + ggtitle("preference for class 1")
 rle(d$class)
 ```
 
-# Even class and pref for switching
+# Even class and preference for switching
+
+In this simulation, there is an even preference for each class, but a strong preference for switching target type.
 
 ```{r}
 
@@ -83,7 +92,9 @@ plot_item_selections(d) + ggtitle("preference for switching")
 rle(d$class)
 ```
 
-# Even class and pref for sticking
+# Even class and preference for sticking
+
+In this simulation, there is an even preference for each class, but a strong preference for sticking with the same target type.
 
 ```{r}
 bS = 10
@@ -100,6 +111,8 @@ rle(d$class)
 ```
 
 ## Typical class values, no spatial effects
+
+Here, we demonstrate a trial where all spatial effects have been removed.
 
 ```{r}
 bS = 1
@@ -119,6 +132,8 @@ rle(d$class)
 
 ## Really strong proximity effect
 
+Here, we demonstrate a trial where proximity is an extremely strong effect.
+
 ```{r}
 
 sig_d = 50
@@ -134,9 +149,9 @@ plot_item_selections(d) + ggtitle("Strong Proximity effect")
 rle(d$class)
 ```
 
-# Multipe Trial Simulations
-
 # Multiple People Simulations
+
+In order to effectively simulate data for power analysis, we need to be able to simulate multiple participants. Here, we first generate a range of plausible random effects, based on sigma values seen in previous work.
 
 ```{r}
 
@@ -165,6 +180,8 @@ dpeeps <- tibble(person = rep(1:n_people, n_conditions),
 pmap_df(dpeeps, gen_random_fx) %>% knitr::kable()
 
 ```
+
+We can then use these to generate simulated data (in this case, for just one condition).
 
 ```{r}
 d <- sim_foraging_people(n_people,
