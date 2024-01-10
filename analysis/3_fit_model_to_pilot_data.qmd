@@ -23,7 +23,11 @@ source("../functions/post_functions.R")
 exptname <- "pilot feature conjunction"
 ```
 
+We now demonstrate fitting our model to a small amount of pilot data (3 participants, each performing 5 trials in all 6 conditions).
+
 # Generating d list and d found
+
+First we read in the data and generate d_list and d_found.
 
 ```{r, message = FALSE}
 
@@ -56,6 +60,8 @@ write_csv(d_stim, paste0(savefolder, "d_stim.csv"))
 ```
 
 # Some data checking
+
+Here we demonstrate some simple data checks: firstly, that we see the expected number of targets of each type in each condition, and secondly, that we empirically see more switches in the easy, feature conjunction (as has been found in previous studies).
 
 ```{r, message = FALSE}
 
@@ -91,6 +97,8 @@ ggplot(total_switches, aes(difficulty, num_switches)) + geom_boxplot()
 
 # Read in data
 
+This prepares the data for modelling.
+
 ```{r, message = FALSE}
 source("../functions/import_data.R")
 
@@ -98,6 +106,8 @@ d <- import_data("hughes2024pilot")
 ```
 
 # Prepare and fit model
+
+Here we prepare and fit the model.
 
 ```{r, eval = FALSE}
 
@@ -115,6 +125,8 @@ m$save_object(paste0("../output/", exptname, "/foraging_pilot.RDS"))
 ```
 
 # Plot model
+
+Finally, we plot the model. Despite the small number of participants, the trend is for the data to be in the direction of our hypotheses.
 
 ```{r, message = FALSE, warning = FALSE}
 
