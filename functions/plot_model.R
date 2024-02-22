@@ -32,6 +32,11 @@ plot_model_fixed <- function(post, m, d, cl = "A", gt=NULL, directions = FALSE){
   if (is.null(gt)) {
   # plot class weights
   post %>%
+    mutate(
+      difficulty = case_match(
+        difficulty,
+        "hard" ~ "conjunction",
+        "easy" ~ "feature")) %>%
     ggplot() + 
     geom_rect(data = prior %>% 
                 median_hdci(prior_bA, .width = c(0.53, 0.97)) %>%
@@ -49,16 +54,16 @@ plot_model_fixed <- function(post, m, d, cl = "A", gt=NULL, directions = FALSE){
       pivot_longer(c(bA, b_stick, rho_delta, rho_psi), names_to = "param") %>%
       pivot_wider(names_from = c("condition", "difficulty"), values_from = "value") %>%
       unnest() %>%
-      mutate(easy = scarce_easy - equal_easy,
-             hard = scarce_hard - equal_hard) %>%
-      pivot_longer(c(easy, hard), names_to = "difficulty") -> post_diff
+      mutate(feature = scarce_easy - equal_easy,
+             conjunction = scarce_hard - equal_hard) %>%
+      pivot_longer(c(feature, conjunction), names_to = "difficulty") -> post_diff
     
     post_diff %>%
       filter(param == "bA") %>%
       ggplot(aes(value)) + geom_density(fill = "grey") + 
       geom_vline(xintercept = 0, linetype = 2) + 
       facet_wrap(~difficulty, scales="free", nrow = 1) +
-      theme(legend.position = "none") + xlab('class weight difference between equal and scarce conditions') -> plt_pA_diff
+      theme(legend.position = "none", text = element_text(size=10)) + xlab('class weight difference between equal & scarce conditions') -> plt_pA_diff
   }
   
   # for sim data
@@ -82,6 +87,11 @@ plot_model_fixed <- function(post, m, d, cl = "A", gt=NULL, directions = FALSE){
   if (is.null(gt)) {
   # plot stick-switch param
   post  %>%
+    mutate(
+      difficulty = case_match(
+        difficulty,
+        "hard" ~ "conjunction",
+        "easy" ~ "feature")) %>%
     ggplot()  + 
     geom_rect(data = prior %>% 
                 median_hdci(prior_b_stick, .width = c(0.53, 0.97)) %>%
@@ -162,8 +172,8 @@ plot_model_fixed <- function(post, m, d, cl = "A", gt=NULL, directions = FALSE){
   # for real data
   if (is.null(gt)) {
   layout <- "
-  AAABBB
-  CCCDEE
+  AAAABBBB
+  CCCCDDEE
   "
   
   plt <- (plt_pA + plt_pA_diff + plt_pS + plt_prox + plt_rel_dir) + 

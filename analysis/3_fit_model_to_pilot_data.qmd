@@ -69,6 +69,17 @@ Here we demonstrate some simple data checks: firstly, that we see the expected n
 # Some data checking #
 ########################################################
 
+# relabelling hard/easy
+
+d_found <- d_found %>%
+  mutate(
+    difficulty = case_match(
+      difficulty,
+      "hard" ~ "conjunction",
+      "easy" ~ "feature"
+    )
+  )
+
 # How many trials does each person have?
 
 d_found %>%
@@ -141,7 +152,7 @@ post <- extract_post(m, d$found, cl)
 post$fixed %>%
   separate(condition, into = c("difficulty", "condition")) %>%
   mutate(bA = if_else(condition == "A", -bA, bA),
-         condition = if_else(condition == "AB", "equal", "scarce")) -> post$fixed
+      condition = if_else(condition == "AB", "equal", "scarce")) -> post$fixed
 
 plot_model_fixed(post,m, d$found, cl)  #, merge_conditions = TRUE
 
