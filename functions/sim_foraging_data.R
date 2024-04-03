@@ -13,7 +13,8 @@ sim_foraging_people <- function(n_people = 10,
                     targ_class_weights, phi_class_weights,
                     bS = 0, phi_stick = 1,
                     sig_d = 0, phi_d = 5,
-                    sig_theta = 0, phi_theta = 1) {
+                    sig_theta = 0, phi_theta = 1,
+                    cond_labels) {
   
   ## if some params have been specified as a constant, replicate over conditions.
   bS <- check_and_rep_param(bS, n_conditions)
@@ -39,6 +40,11 @@ sim_foraging_people <- function(n_people = 10,
                 n_trials_per_cond = n_trials_per_cond,
                 n_targ_class = n_targ_class, 
                 n_targ_per_class = n_targ_per_class)
+  
+  d %>% mutate(
+    condition = factor(condition, labels = cond_labels)
+  ) -> d
+  
   return(d)
   
 }
