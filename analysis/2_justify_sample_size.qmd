@@ -69,7 +69,7 @@ d <- sim_foraging_people(n_people = n_people,
                          bS = b_stick, sig_d = sig_d, sig_theta = sig_theta, # fixed effects
                          phi_stick = phi_stick, phi_d = phi_d, phi_theta = phi_theta,
                          cond_labels) # random effects)
-# 
+
 write_csv(d %>% mutate(x = round(x, 3), y = round(y, 3)), "../scratch/sim_data.csv")
 ```
 
