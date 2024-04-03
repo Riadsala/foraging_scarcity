@@ -10,7 +10,6 @@ functions{
 
     return(w_s);
   }
-
  
   vector compute_spatial_weights(
     int n, int n_targets, int ii,
@@ -126,10 +125,10 @@ parameters {
   // random effects
   ///////////////////////////////
 
-  array[K] vector[L] uA; // weights for class A compared to B  
-  array[K] vector[L] u_stick; // stick-switch rates 
-  array[K] vector[L] u_delta; // distance tuning
-  array[K] vector[L] u_psi; // direction tuning
+  array[K] vector[L] zA; // weights for class A compared to B  
+  array[K] vector[L] z_stick; // stick-switch rates 
+  array[K] vector[L] z_delta; // distance tuning
+  array[K] vector[L] z_psi; // direction tuning
 
   real<lower = 0> sig_a;
   real<lower = 0> sig_stick;
@@ -141,16 +140,16 @@ parameters {
 transformed parameters {
 
   // combine fixed and random effects
-  array[K] vector[L] zA; 
-  array[K] vector[L] z_stick; 
-  array[K] vector[L] z_delta; 
-  array[K] vector[L] z_psi; 
+  array[K] vector[L] uA; 
+  array[K] vector[L] u_stick; 
+  array[K] vector[L] u_delta; 
+  array[K] vector[L] u_psi; 
 
   for (kk in 1:K) {
-    zA[kk] = bA[kk] + uA[kk];
-    z_stick[kk] = b_stick[kk] + u_stick[kk];
-    z_delta[kk] = rho_delta[kk] + u_delta[kk];
-    z_psi[kk]   = rho_psi[kk] + u_psi[kk];
+    uA[kk] = bA[kk] + sig_a*zA[kk];
+    u_stick[kk] = b_stick[kk] + sig_stick*z_stick[kk];
+    u_delta[kk] = rho_delta[kk] + sig_delta*z_delta[kk];
+    u_psi[kk]   = rho_psi[kk] + sig_psi*z_psi[kk];
   }
 }
 
@@ -166,18 +165,18 @@ model {
     target += normal_lpdf(rho_delta[ii] | prior_mu_rho_delta, prior_sd_rho_delta);
     target += normal_lpdf(rho_psi[ii]   | prior_mu_rho_psi, prior_sd_rho_psi);
 
-    // priors for random effects
-    target += normal_lpdf(uA[ii]      | 0, sig_a);
-    target += normal_lpdf(u_stick[ii] | 0, sig_stick);
-    target += normal_lpdf(u_delta[ii] | 0, sig_delta);
-    target += normal_lpdf(u_psi[ii]   | 0, sig_psi);
+    target += normal_lpdf(zA[ii]      | 0, 1);
+    target += normal_lpdf(z_stick[ii] | 0, 1);
+    target += normal_lpdf(z_delta[ii] | 0, 1);
+    target += normal_lpdf(z_psi[ii]   | 0, 1);
+
   }
 
   // priors for group variance
-  target += exponential_lpdf(sig_a      | 5);
-  target += exponential_lpdf(sig_stick  | 5);
-  target += exponential_lpdf(sig_delta  | 2);
-  target += exponential_lpdf(sig_psi    | 2);
+  target += exponential_lpdf(sig_a     | 1);
+  target += exponential_lpdf(sig_stick | 1);
+  target += exponential_lpdf(sig_delta | 1);
+  target += exponential_lpdf(sig_psi   | 1);
 
   //////////////////////////////////////////////////
   // // step through data row by row and define LLH
@@ -194,13 +193,13 @@ model {
     t = trial[ii];
  
     // set the weight of each target to be its class weight
-    weights = (zA[X[t], Z[ii]]) * to_vector(item_class[t]) ;
+    weights = (uA[X[t], Z[ii]]) * to_vector(item_class[t]) ;
 
     // multiply weights by stick/switch preference
-    weights = inv_logit(weights) .* inv_logit(z_stick[X[t], Z[ii]] * S[ii]); 
+    weights = inv_logit(weights) .* inv_logit(u_stick[X[t], Z[ii]] * S[ii]); 
 
     weights = weights .* compute_spatial_weights(found_order[ii], n_targets, ii,
-       z_delta[X[t], Z[ii]], z_psi[X[t], Z[ii]], 
+       u_delta[X[t], Z[ii]], u_psi[X[t], Z[ii]], 
        delta[ii], psi[ii], phi[ii],
        item_x[t], item_y[t]);
         

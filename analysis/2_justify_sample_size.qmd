@@ -162,15 +162,44 @@ m <- stan("../models/multi_level/foraging_model1.stan", data = d_list,
            chains = 4, iter = 500)
 
 saveRDS(m,"../scratch/sensiv_sim.RDS")
-
 ```
 
 Here we load in the model we fit earlier.
 
 ```{r}
 m <- readRDS("../scratch/sensiv_sim.RDS")
-
 ```
+
+
+## Now repeat for more items-per-trial
+
+
+```{r run_model, eval=FALSE}
+n_targ_per_class <- list(c(20, 20), c(10, 30), c(20, 20), c(10, 30))
+# now simulate data
+d <- sim_foraging_people(n_people = n_people,
+                         n_conditions = n_conditions,
+                         n_trials_per_cond = n_trials_per_cond,
+                         n_targ_class = n_targ_class,
+                         n_targ_per_class = n_targ_per_class,
+                         targ_class_weights = targ_class_weights, phi_class_weights = phi_class_weights,
+                         bS = b_stick, sig_d = sig_d, sig_theta = sig_theta, # fixed effects
+                         phi_stick = phi_stick, phi_d = phi_d, phi_theta = phi_theta,
+                         cond_labels) # random effects)
+# 
+write_csv(d %>% mutate(x = round(x, 3), y = round(y, 3)), "../scratch/sim_data2.csv")
+
+d_list <- prep_data_for_stan(d_found, d_stim, c("spatial", "item_class"))
+saveRDS(d_list, "../scratch/sensiv_sim2.d_list")
+
+d_list <- add_priors_to_d_list(d_list)
+
+m <- stan("../models/multi_level/foraging_model1.stan", data = d_list, 
+           chains = 4, iter = 500)
+
+saveRDS(m,"../scratch/sensiv_sim2.RDS")
+```
+
 
 ## Posterior Probabilities
 
