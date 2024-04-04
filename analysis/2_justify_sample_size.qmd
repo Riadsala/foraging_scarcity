@@ -169,9 +169,7 @@ Here we load in the model we fit earlier.
 m <- readRDS("../scratch/sensiv_sim.RDS")
 ```
 
-
 ## Now repeat for more items-per-trial
-
 
 ```{r run_model, eval=FALSE}
 n_targ_per_class <- list(c(20, 20), c(10, 30), c(20, 20), c(10, 30))
@@ -198,7 +196,6 @@ m <- stan("../models/multi_level/foraging_model1.stan", data = d_list,
 
 saveRDS(m,"../scratch/sensiv_sim2.RDS")
 ```
-
 
 ## Posterior Probabilities
 
