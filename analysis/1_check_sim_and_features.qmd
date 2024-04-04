@@ -20,11 +20,38 @@ source("../functions/get_run_info.R")
 
 ```
 
-In this document, we demonstrate how we set up our simulations, and show some example single trials to demonstrate how different parameters affect the 'behaviour' of the simulation.
+In this document, we first give a brief outline of the Clarke et al (2022) foraging model. We demonstrate how we set up our simulations, and show some example single trials to demonstrate how different parameters affect the 'behaviour' of the simulation.
+
+# A Generative Model of Foraging - Clarke et al (2022)
+
+The model treats foraging as a sampling without replacement process in which each item $i$ has probability $p_i$ of being selected as the next target. The $p_i$ depends on four parameters:
+
+- item $b_A$ - preference for selecting items of type $A$ rather than $B$.
+- item $b_S$ - preference for selecting items of the same type as the previously selected item.
+- item $\sigma_{\rho}$ - preference for selecting items close to the previously selected item.
+- item $\sigma_d$ - preference to keep selecting items along a straight line versus changing direction.
+
+These combine to give:
+
+$w_i = g\left(b_at_i + b_sm(t_i, t_{i-1})\right) \times \rho_d(i, i-1) \rho_{\theta}(i, i-1)$
+
+where $t_i = 1$ if item $i$ is of class $A$ and 0 otherwise, and $m(t_i, t_{i-1}) =1$ if item $i$ is the same class as the previously selected item. $\sigma_{\rho}$ and $\rho_d$ measure proximity and the effect of direction:
+
+$\sigma_{\rho} = e^{-\sigma_{\rho}\rho(i,j)}$
+
+$\sigma_d = e^{-\sigma_{rho}d(i,j)}$
+
+$\rho(i,j)$ is simply the Euclidean distance between items $i$ and $j$, while $d$ is defined as:
+
+$\d(i,j) = \frac{f(\text{atan2}(i, j) - \text{atan2}(i-1, i))}{\pi}$
+
+with $f(\phi_1, \phi_2) = \text{min}((\phi_1 - \phi_2) \% 2\pi, (\phi_2 - \phi_1) \% 2\pi)$. 
+
+This model is implemented in a multi-level framework, allowing each of the four parameters to vary from participant to participant. Further details including priors and full code can be found in Clarke et al (2022).
 
 # Single Trial Simulations
 
-First, we set up some initial parameters: the number of trials per condition, the number of target classes, the number of targets per class. We also set some initial model parameter values (the stick-switch parameter, the proximity parameter and the relative direction parameter). 
+First, we set up some initial parameters: the number of trials per condition, the number of target classes, and the number of targets per class. We also set some initial model parameter values (the stick-switch parameter, the proximity parameter and the relative direction parameter).
 
 We then set up a simple function to allow us to plot trials.
 
@@ -57,7 +84,7 @@ plot_item_selections <- function(d)
 
 ## A large classweight
 
-In this simulation, we adjust the class weight values so that the simulation has a preference for the first class over the second class. 
+In this simulation, we adjust the class weight values so that the simulation has a preference for the first class over the second class.
 
 ```{r}
 targ_class_weights <- c(30,1)

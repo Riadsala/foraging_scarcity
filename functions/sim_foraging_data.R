@@ -12,14 +12,14 @@ sim_foraging_people <- function(n_people = 10,
                     n_targ_class = 3, n_targ_per_class = 2, 
                     targ_class_weights, phi_class_weights,
                     bS = 0, phi_stick = 1,
-                    sig_d = 0, phi_d = 5,
-                    sig_theta = 0, phi_theta = 1,
+                    sig_rho = 0, phi_rho = 5,
+                    sig_d = 0, phi_d = 1,
                     cond_labels) {
   
   ## if some params have been specified as a constant, replicate over conditions.
   bS <- check_and_rep_param(bS, n_conditions)
+  sig_rho <- check_and_rep_param(sig_rho, n_conditions)
   sig_d <- check_and_rep_param(sig_d, n_conditions)
-  sig_theta <- check_and_rep_param(sig_theta, n_conditions)
   n_trials_per_cond <- check_and_rep_param(n_trials_per_cond, n_conditions)
 
   # generate random effects
@@ -29,10 +29,10 @@ sim_foraging_people <- function(n_people = 10,
                    sd_cw = phi_class_weights,
                    mu_stick = rep(bS, each = n_people),
                    sd_stick = phi_stick,
+                   mu_rho = rep(sig_rho, each = n_people),
+                   sd_rho = phi_rho,
                    mu_d = rep(sig_d, each = n_people),
-                   sd_d = phi_d,
-                   mu_theta = rep(sig_theta, each = n_people),
-                   sd_theta = phi_theta) 
+                   sd_d = phi_d) 
     
   dpeeps <- pmap_df(dpeeps, gen_random_fx)
 
@@ -52,8 +52,8 @@ sim_foraging_people <- function(n_people = 10,
 gen_random_fx <- function(person, block, 
                           mu_cw, sd_cw,
                           mu_stick, sd_stick,  
-                          mu_d, sd_d, 
-                          mu_theta, sd_theta) {
+                          mu_rho, sd_rho, 
+                          mu_d, sd_d) {
   
   pA <- mu_cw[1]/sum(mu_cw)
   bA <- boot::logit(pA) + rnorm(1, 0, sd_cw)
@@ -66,8 +66,8 @@ gen_random_fx <- function(person, block,
   dout <- tibble(person, block,
                  targ_class_weights = list(mu_cw),
                  bS = rnorm(1, mu_stick, sd_stick),
-                 sig_d = rnorm(1, mu_d, sd_d),
-                 sig_theta = rnorm(1, mu_theta, sd_theta))
+                 sig_rho = rnorm(1, mu_rho, sd_rho),
+                 sig_d = rnorm(1, mu_d, sd_d))
   
   return(dout)
   
@@ -76,7 +76,7 @@ gen_random_fx <- function(person, block,
 
 
 sim_foraging_person <- function(person = 1,
-                                bS, sig_d, sig_theta,
+                                bS, sig_rho, sig_d,
                                 block = 1,
                                 n_trials_per_cond = 10,
                                 n_targ_class = 2, n_targ_per_class, 
@@ -87,7 +87,7 @@ sim_foraging_person <- function(person = 1,
   d <- map_df(trls, sim_foraging_trial, 
               n_targ_class =  n_targ_class, n_targ_per_class = n_targ_per_class[[block]],
               targ_class_weights = targ_class_weights,
-              bS = bS, sig_d = sig_d, sig_theta = sig_theta) %>%
+              bS = bS, sig_rho = sig_rho, sig_d = sig_d) %>%
     mutate(condition = block)
   
   d %>% mutate(person = person) %>% 
@@ -101,7 +101,7 @@ sim_foraging_trial <- function(trl = 1,
                                n_targ_class = 2, n_targ_per_class = c(5, 15), 
                                targ_class_weights = c(0.5, 0.5),
                                bS = 0, 
-                               sig_d = 0, sig_theta = 0)  
+                               sig_rho = 0, sig_d = 0)  
 {
   
   # n_class is the number of different target classes
@@ -114,7 +114,7 @@ sim_foraging_trial <- function(trl = 1,
   targ_class_weights <- targ_class_weights / sum(targ_class_weights)
   
   # bS is the stick v switch preference
-  # sig_d and sig_theta define the spatial bias
+  # sig_rho and sig_d define the spatial bias
   # trl is the trial number
   
   # calculate total number of targets
@@ -198,10 +198,10 @@ sim_foraging_trial <- function(trl = 1,
         phi = (atan2((y - d_found$y[t-1]), (x - d_found$x[t-1])) * 180/pi) - phi ,
         phi = pmin(abs((phi %% 360)), abs((-phi %% 360))),
         phi = phi/180,
-        prox = exp(-sig_d * dist - sig_theta * phi)) -> d_remain
+        prox = exp(-sig_rho * dist - sig_d * phi)) -> d_remain
      
     } else {
-      d_remain %>% mutate(prox = exp(-sig_d * dist)) -> d_remain
+      d_remain %>% mutate(prox = exp(-sig_rho * dist)) -> d_remain
     }
     
     d_remain %>% 
@@ -236,7 +236,7 @@ sim_foraging_trial <- function(trl = 1,
   d_trial %>% mutate(
     bA = boot::logit(targ_class_weights[[1]]),
     bS = bS, 
-    sig_d = sig_d, sig_theta = sig_theta) -> d_trial
+    sig_rho = sig_rho, sig_d = sig_d) -> d_trial
   
   # order by found
   d_trial %>% arrange(found) -> d_trial
