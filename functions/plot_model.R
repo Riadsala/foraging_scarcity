@@ -22,7 +22,7 @@ plot_model_fixed <- function(post, m, d, cl = "A", gt=NULL, directions = FALSE){
   # gt is a list with our groundtruth sim parameters. 
   post <- post$fixed
   
-  m %>% recover_types(df) %>%
+  m %>% recover_types(d) %>%
     spread_draws(prior_bA, prior_b_stick, prior_rho_delta, prior_rho_psi) %>%
     ungroup() -> prior
   

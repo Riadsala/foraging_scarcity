@@ -159,7 +159,7 @@ d_list <- add_priors_to_d_list(d_list)
 ######################################################
 
 m <- stan("../models/multi_level/foraging_model1.stan", data = d_list, 
-           chains = 4, iter = 500)
+           chains = 4, iter = 1000)
 
 saveRDS(m,"../scratch/sensiv_sim.RDS")
 ```
@@ -185,15 +185,16 @@ source("../functions/post_functions.R")
 # functions for plotting the model are in this script: 
 source("../functions/plot_model.R")
 
-cl <- cond_labels
+# need to put them in alphabetical order here
+cl <- c("equal-conjunction", "equal-feature","scarce-conjunction", "scarce-feature" )
 
 post <- extract_post(m, d_found, cl)
 
 plot_model_fixed(post,m, d_found, cl,                  
                  gt = list(pA = pA, 
                            b_stick = b_stick, 
-                           rho_delta = sig_d,
-                           rho_psi = sig_theta))
+                           rho_delta = sig_rho,
+                           rho_psi = sig_d))
 
 
 ggsave("../plots/sensiv_sim.pdf", width = 8, height = 6)
@@ -209,7 +210,8 @@ post <- post$fixed
 levels(post$condition) <- cond_labels 
 
 post %>% pivot_longer(c(bA, b_stick, rho_delta, rho_psi), names_to = "param") %>%
-  pivot_wider(names_from = "condition", values_from = "value") %>%
+  separate(condition, c("scarcity", "forage_type")) %>%
+  pivot_wider(names_from = "scarcity", values_from = "value") %>%
   mutate(diff = scarce-equal) -> post
 
 post %>% group_by(param) %>%
