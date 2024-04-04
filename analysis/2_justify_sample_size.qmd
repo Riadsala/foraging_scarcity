@@ -58,7 +58,7 @@ phi_theta <- 0.5
 n_conditions <- length(n_targ_per_class)
 ```
 
-```{r run_model, eval=FALSE}
+```{r sim_data}
 # now simulate data
 d <- sim_foraging_people(n_people = n_people,
                          n_conditions = n_conditions,
@@ -76,7 +76,8 @@ write_csv(d %>% mutate(x = round(x, 3), y = round(y, 3)), "../scratch/sim_data.c
 We then read in our pre-generated data and summarise the randomly generated simulation parameters. We can see that the 'scarce' condition has a higher bA value (i.e. a preference for the rarer target type).
 
 ```{r summarise_sim_data, message = FALSE}
-d <- read_csv("../scratch/sim_data.csv")
+d <- read_csv("../scratch/sim_data.csv") %>%
+  mutate(condition = factor(condition))
 
 d %>% group_by(person, condition) %>%
   summarise(bA = unique(bA),
@@ -143,7 +144,7 @@ d_stim <- fix_person_and_trial(d_stim)
 
 The code below runs the model. However, to make it easier to compile this document, this is pre-computed.
 
-```{r create_stan_list, eval=FALSE}
+```{r create_stan_list}
 d_list <- prep_data_for_stan(d_found, d_stim, c("spatial", "item_class"))
 saveRDS(d_list, "../scratch/sensiv_sim.d_list")
 ```
