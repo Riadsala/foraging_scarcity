@@ -4,7 +4,7 @@ format: html
 editor: visual
 ---
 
-```{r, message = FALSE}
+```{r, message = FALSE, warning = FALSE}
 library(tidyverse)
 library(rstan)
 library(patchwork)
@@ -43,7 +43,7 @@ $\sigma_d = e^{-\sigma_{rho}d(i,j)}$
 
 $\rho(i,j)$ is simply the Euclidean distance between items $i$ and $j$, while $d$ is defined as:
 
-$\d(i,j) = \frac{f(\text{atan2}(i, j) - \text{atan2}(i-1, i))}{\pi}$
+$d(i,j) = \frac{f(\text{atan2}(i, j) - \text{atan2}(i-1, i))}{\pi}$
 
 with $f(\phi_1, \phi_2) = \text{min}((\phi_1 - \phi_2) \% 2\pi, (\phi_2 - \phi_1) \% 2\pi)$. 
 
@@ -64,8 +64,8 @@ n_targ_per_class <- list(c(10, 10))
 
 # some sample values
 bS <- 1
-sig_d <- 15
-sig_theta <- -2
+sig_rho <- 15
+sig_d <- -2
 ```
 
 ```{r}
@@ -92,7 +92,7 @@ d <- sim_foraging_trial(trl = 1,
                    n_targ_class = 2, n_targ_per_class = c(10, 10), 
                    targ_class_weights = targ_class_weights,
                                bS = bS, 
-                               sig_d = sig_d, sig_theta = sig_theta)  
+                               sig_rho = sig_rho, sig_d = sig_d)  
 
 
 
@@ -113,7 +113,7 @@ d <- sim_foraging_trial(trl = 1,
                         n_targ_class = 2, n_targ_per_class = c(10, 10), 
                         targ_class_weights = targ_class_weights,
                         bS = bS, 
-                        sig_d = sig_d, sig_theta = sig_theta) 
+                        sig_rho = sig_rho, sig_d = sig_d) 
 
 plot_item_selections(d) + ggtitle("preference for switching")
 rle(d$class)
@@ -130,7 +130,7 @@ d <- sim_foraging_trial(trl = 1,
                         n_targ_class = 2, n_targ_per_class = c(10, 10), 
                         targ_class_weights = targ_class_weights,
                         bS = bS, 
-                        sig_d = sig_d, sig_theta = sig_theta) 
+                        sig_rho = sig_rho, sig_d = sig_d) 
 
 plot_item_selections(d) + ggtitle("preference for sticking")
 
@@ -143,14 +143,14 @@ Here, we demonstrate a trial where all spatial effects have been removed.
 
 ```{r}
 bS = 1
+sig_rho = 0
 sig_d = 0
-sig_theta = 0
 
 d <- sim_foraging_trial(trl = 1, 
                         n_targ_class = 2, n_targ_per_class = c(10, 10), 
                         targ_class_weights = targ_class_weights,
                         bS = bS, 
-                        sig_d = sig_d, sig_theta = sig_theta) 
+                        sig_rho = sig_rho, sig_d = sig_d) 
 
 plot_item_selections(d) + ggtitle("removed spatial effects")
 
@@ -163,13 +163,13 @@ Here, we demonstrate a trial where proximity is an extremely strong effect.
 
 ```{r}
 
-sig_d = 50
+sig_rho = 50
 
 d <- sim_foraging_trial(trl = 1, 
                         n_targ_class = 2, n_targ_per_class = c(10, 10), 
                         targ_class_weights = targ_class_weights,
                         bS = bS, 
-                        sig_d = sig_d, sig_theta = sig_theta) 
+                        sig_rho = sig_rho, sig_d = sig_d) 
 
 plot_item_selections(d) + ggtitle("Strong Proximity effect")
 
@@ -188,8 +188,8 @@ targ_class_weights <- list(c(1,1))
 # fix sigmas to be based on CompBio paper
 phi_class_weights <- 0.05
 phi_stick <- 0.5
-phi_d <- 5
-phi_theta <- 0.5
+phi_rho <- 5
+phi_d <- 0.5
 
  # generate random effects
 dpeeps <- tibble(person = rep(1:n_people, n_conditions),
@@ -198,10 +198,10 @@ dpeeps <- tibble(person = rep(1:n_people, n_conditions),
                  sd_cw = phi_class_weights,
                  mu_stick = rep(bS, each = n_people),
                  sd_stick = phi_stick,
+                 mu_rho = rep(sig_rho, each = n_people),
+                 sd_rho = phi_rho,
                  mu_d = rep(sig_d, each = n_people),
-                 sd_d = phi_d,
-                 mu_theta = rep(sig_theta, each = n_people),
-                 sd_theta = phi_d) 
+                 sd_d = phi_d) 
     
 
 pmap_df(dpeeps, gen_random_fx) %>% knitr::kable()
@@ -217,15 +217,17 @@ d <- sim_foraging_people(n_people,
                     n_targ_class = 2, n_targ_per_class = 10, 
                     targ_class_weights, phi_class_weights,
                     bS = 0, phi_stick = 1,
-                    sig_d = 0, phi_d = 5,
-                    sig_theta = 0, phi_theta = 1)
+                    sig_rho = 0, phi_rho = 5,
+                    sig_d = 0, phi_d = 1,
+                    cond_labels = "condition")
 
 d %>% group_by(person, condition) %>%
   summarise(bA = unique(bA),
     bS = unique(bS),
+            sig_rho = unique(sig_rho),
             sig_d = unique(sig_d),
-            sig_theta = unique(sig_theta),
-    .groups = "drop") -> sim_params
+    .groups = "drop") %>%
+  select(-condition) -> sim_params
 
 round(sim_params,3) %>% knitr::kable()
 
