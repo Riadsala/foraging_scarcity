@@ -26,28 +26,28 @@ In this document, we first give a brief outline of the Clarke et al (2022) forag
 
 The model treats foraging as a sampling without replacement process in which each item $i$ has probability $p_i$ of being selected as the next target. The $p_i$ depends on four parameters:
 
-- item $b_A$ - preference for selecting items of type $A$ rather than $B$.
-- item $b_S$ - preference for selecting items of the same type as the previously selected item.
-- item $\sigma_{\rho}$ - preference for selecting items close to the previously selected item.
-- item $\sigma_d$ - preference to keep selecting items along a straight line versus changing direction.
+-   item $b_A$ - preference for selecting items of type $A$ rather than $B$.
+-   item $b_S$ - preference for selecting items of the same type as the previously selected item.
+-   item $\sigma_{\rho}$ - preference for selecting items close to the previously selected item.
+-   item $\sigma_d$ - preference to keep selecting items along a straight line versus changing direction.
 
 These combine to give:
 
-$w_i = g\left(b_at_i + b_sm(t_i, t_{i-1})\right) \times \rho_d(i, i-1) \rho_{\theta}(i, i-1)$
+$w_i = g\left(b_at_i) * g(b_sm(t_i, t_{i-1})\right) \times \rho_{\rho}(i, i-1) \rho_d(i, i-1)$
 
-where $t_i = 1$ if item $i$ is of class $A$ and 0 otherwise, and $m(t_i, t_{i-1}) =1$ if item $i$ is the same class as the previously selected item. $\sigma_{\rho}$ and $\rho_d$ measure proximity and the effect of direction:
+where $g$ is the inverse logistic function, $t_i = 1$ if item $i$ is of class $A$ and 0 otherwise, and $m(t_i, t_{i-1}) =1$ if item $i$ is the same class as the previously selected item. $\rho_{\rho}$ and $\rho_d$ measure proximity and the effect of direction:
 
-$\sigma_{\rho} = e^{-\sigma_{\rho}\rho(i,j)}$
+$\rho_{\rho} = e^{-\sigma_{\rho}\rho(i,j)}$
 
-$\sigma_d = e^{-\sigma_{rho}d(i,j)}$
+$\rho_d = e^{-\sigma_{\rho}d(i,j)}$
 
 $\rho(i,j)$ is simply the Euclidean distance between items $i$ and $j$, while $d$ is defined as:
 
 $d(i,j) = \frac{f(\text{atan2}(i, j) - \text{atan2}(i-1, i))}{\pi}$
 
-with $f(\phi_1, \phi_2) = \text{min}((\phi_1 - \phi_2) \% 2\pi, (\phi_2 - \phi_1) \% 2\pi)$. 
+with $f(\phi_1, \phi_2) = \text{min}((\phi_1 - \phi_2) \% 2\pi, (\phi_2 - \phi_1) \% 2\pi)$.
 
-This model is implemented in a multi-level framework, allowing each of the four parameters to vary from participant to participant. Further details including priors and full code can be found in Clarke et al (2022).
+This model is implemented in a multi-level framework implemented using Stan, allowing each of the four parameters to vary from participant to participant. Further details including priors and full code can be found in Clarke et al (2022), as well as in the GitHub repository for the current manuscript.
 
 # Single Trial Simulations
 

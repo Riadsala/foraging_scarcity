@@ -4,7 +4,7 @@ format: html
 editor: visual
 ---
 
-```{r setup, message = FALSE}
+```{r setup, message = FALSE, warning = FALSE}
 library(tidyverse)
 library(rstan)
 library(patchwork)
@@ -25,7 +25,7 @@ source("../functions/import_data.R")
 
 First we will simulate data using the parameters below. These are based on the model fits from Clarke, Hunt & Hughes (2022, Comp. Bio.) to data from Clarke et al (2022, QJEP) and Tagu & Kristjansson (2021). Please see the main manuscript for further justification.
 
-```{r sim_data}
+```{r sim_data_setup}
 ######################################################
 # first of all we want to generate some synthetic data
 ######################################################
@@ -58,7 +58,7 @@ phi_d <- 0.5
 n_conditions <- length(n_targ_per_class)
 ```
 
-```{r sim_data}
+```{r sim_data, eval = FALSE}
 # now simulate data
 d <- sim_foraging_people(n_people = n_people,
                          n_conditions = n_conditions,
@@ -117,7 +117,8 @@ d_runs %>% select(person, condition, mean_max_run, mean_num_run) %>%
   pivot_longer(-c(person, condition), names_to = "run_statistic", values_to = "value") %>%
   ggplot(aes(condition, value, fill = run_statistic)) + 
   geom_boxplot() +
-  facet_wrap(~run_statistic)
+  facet_wrap(~run_statistic) +
+  guides(x =  guide_axis(angle = 90))
 ```
 
 ## Running the model
@@ -144,7 +145,7 @@ d_stim <- fix_person_and_trial(d_stim)
 
 The code below runs the model. However, to make it easier to compile this document, this is pre-computed.
 
-```{r create_stan_list}
+```{r create_stan_list, eval = FALSE}
 d_list <- prep_data_for_stan(d_found, d_stim, c("spatial", "item_class"))
 saveRDS(d_list, "../scratch/sensiv_sim.d_list")
 ```
@@ -201,13 +202,11 @@ ggsave("../plots/sensiv_sim.pdf", width = 8, height = 6)
 ggsave("../plots/sensiv_sim.png", width = 8, height = 6)
 ```
 
-We can then compute the posterior probability of a difference between the different conditions. We can see that the model can detect the predicted bA difference between the equal and scarce conditions: the HDCI does not contain zero.
+We can then compute the posterior probability of a difference between the different conditions. For H1, we can see that the model can detect the predicted $b_A$ difference between the equal and scarce conditions: the HDCI does not contain zero.
 
 ```{r, fig.height=2.8}
 
 post2 <- post$fixed
-
-#levels(post$condition) <- cond_labels 
 
 post2 %>% pivot_longer(c(bA, b_stick, rho_delta, rho_psi), names_to = "param") %>%
   separate(condition, c("scarcity", "forage_type")) %>%
@@ -219,39 +218,49 @@ post2 %>% group_by(param) %>%
   knitr::kable()
 
 post2 %>% group_by(param) %>%
-  median_hdci(diff, .width = 0.97) %>%
+  median_hdci(diff, .width = 0.99) %>%
   knitr::kable(digits = 3)
 
 post2 %>%
   ggplot(aes(diff)) + geom_density(aes(fill = forage_type), alpha = 0.5) + 
   geom_vline(xintercept = 0, linetype = 2) + 
+  scale_fill_brewer(palette = "Greys") +
   facet_wrap(~param, scales="free", nrow = 1)
 ```
 
-## Now repeat for more items-per-trial
+We can also check for differences between the feature and conjunction conditions: for H2, we predict that we expected to see a larger value for $b_S$ in the conjunction condition compared to the feature condition. We can see that the model can detect this predicted difference: the HDCI does not contain zero. Similarly, for H3, we predict that the effect of proximity will be larger in the feature condition, and again, the model is able to detect this difference.
 
-```{r run_model}
-n_targ_per_class <- list(c(20, 20), c(10, 30), c(20, 20), c(10, 30))
-# now simulate data
-d <- sim_foraging_people(n_people = n_people,
-                         n_conditions = n_conditions,
-                         n_trials_per_cond = n_trials_per_cond,
-                         n_targ_class = n_targ_class,
-                         n_targ_per_class = n_targ_per_class,
-                         targ_class_weights = targ_class_weights, phi_class_weights = phi_class_weights,
-                         bS = b_stick, sig_rho = sig_rho, sig_d = sig_d, # fixed effects
-                         phi_stick = phi_stick, phi_rho = phi_rho, phi_d = phi_d,
-                         cond_labels) # random effects)
+```{r, fig.height=2.8}
 
-write_csv(d %>% mutate(x = round(x, 3), y = round(y, 3)), "../scratch/sim_data2.csv")
+post3 <- post$fixed
 
-d_list <- prep_data_for_stan(d_found, d_stim, c("spatial", "item_class"))
-saveRDS(d_list, "../scratch/sensiv_sim2.d_list")
+post3 %>% pivot_longer(c(bA, b_stick, rho_delta, rho_psi), names_to = "param") %>%
+  separate(condition, c("scarcity", "forage_type")) %>%
+  pivot_wider(names_from = "forage_type", values_from = "value") %>%
+  mutate(diff = feature-conjunction) -> post3
 
-d_list <- add_priors_to_d_list(d_list)
+post3 %>% group_by(param) %>%
+  summarise(p_diff_gr0 = mean(diff>0)) %>%
+  knitr::kable()
 
-m <- stan("../models/multi_level/foraging_model1.stan", data = d_list, 
-           chains = 4, iter = 1000)
+post3 %>% group_by(param) %>%
+  median_hdci(diff, .width = 0.99) %>%
+  knitr::kable(digits = 3)
 
-saveRDS(m,"../scratch/sensiv_sim2.RDS")
+post3 %>%
+  ggplot(aes(diff)) + geom_density(aes(fill = scarcity), alpha = 0.5) + 
+  geom_vline(xintercept = 0, linetype = 2) + 
+  scale_fill_brewer(palette = "Greys") +
+  facet_wrap(~param, scales="free", nrow = 1)
+```
+Finally, for H4, we can see that the model is able to predict the negative effect of relative direction, with the 99% HDCI all being negative.
+
+```{r, fig.height=2.8}
+
+post4 <- post$fixed
+
+post4 %>% 
+  median_hdci(rho_psi, .width = 0.99) %>%
+  knitr::kable(digits = 3)
+
 ```

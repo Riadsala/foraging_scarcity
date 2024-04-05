@@ -121,14 +121,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>item <span class="math inline">\(\sigma_d\)</span> - preference to keep selecting items along a straight line versus changing direction.</li>
 </ul>
 <p>These combine to give:</p>
-<p><span class="math inline">\(w_i = g\left(b_at_i + b_sm(t_i, t_{i-1})\right) \times \rho_d(i, i-1) \rho_{\theta}(i, i-1)\)</span></p>
-<p>where <span class="math inline">\(t_i = 1\)</span> if item <span class="math inline">\(i\)</span> is of class <span class="math inline">\(A\)</span> and 0 otherwise, and <span class="math inline">\(m(t_i, t_{i-1}) =1\)</span> if item <span class="math inline">\(i\)</span> is the same class as the previously selected item. <span class="math inline">\(\sigma_{\rho}\)</span> and <span class="math inline">\(\rho_d\)</span> measure proximity and the effect of direction:</p>
-<p><span class="math inline">\(\sigma_{\rho} = e^{-\sigma_{\rho}\rho(i,j)}\)</span></p>
-<p><span class="math inline">\(\sigma_d = e^{-\sigma_{rho}d(i,j)}\)</span></p>
+<p><span class="math inline">\(w_i = g\left(b_at_i) * g(b_sm(t_i, t_{i-1})\right) \times \rho_{\rho}(i, i-1) \rho_d(i, i-1)\)</span></p>
+<p>where <span class="math inline">\(g\)</span> is the inverse logistic function, <span class="math inline">\(t_i = 1\)</span> if item <span class="math inline">\(i\)</span> is of class <span class="math inline">\(A\)</span> and 0 otherwise, and <span class="math inline">\(m(t_i, t_{i-1}) =1\)</span> if item <span class="math inline">\(i\)</span> is the same class as the previously selected item. <span class="math inline">\(\rho_{\rho}\)</span> and <span class="math inline">\(\rho_d\)</span> measure proximity and the effect of direction:</p>
+<p><span class="math inline">\(\rho_{\rho} = e^{-\sigma_{\rho}\rho(i,j)}\)</span></p>
+<p><span class="math inline">\(\rho_d = e^{-\sigma_{\rho}d(i,j)}\)</span></p>
 <p><span class="math inline">\(\rho(i,j)\)</span> is simply the Euclidean distance between items <span class="math inline">\(i\)</span> and <span class="math inline">\(j\)</span>, while <span class="math inline">\(d\)</span> is defined as:</p>
 <p><span class="math inline">\(d(i,j) = \frac{f(\text{atan2}(i, j) - \text{atan2}(i-1, i))}{\pi}\)</span></p>
 <p>with <span class="math inline">\(f(\phi_1, \phi_2) = \text{min}((\phi_1 - \phi_2) \% 2\pi, (\phi_2 - \phi_1) \% 2\pi)\)</span>.</p>
-<p>This model is implemented in a multi-level framework, allowing each of the four parameters to vary from participant to participant. Further details including priors and full code can be found in Clarke et al (2022).</p>
+<p>This model is implemented in a multi-level framework implemented using Stan, allowing each of the four parameters to vary from participant to participant. Further details including priors and full code can be found in Clarke et al (2022), as well as in the GitHub repository for the current manuscript.</p>
 </section>
 <section id="single-trial-simulations" class="level1">
 <h1>Single Trial Simulations</h1>
@@ -178,7 +178,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">rle</span>(d<span class="sc">$</span>class)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Run Length Encoding
-  lengths: int [1:4] 3 2 7 8
+  lengths: int [1:4] 4 2 6 8
   values : int [1:4] 1 2 1 2</code></pre>
 </div>
 </div>
@@ -228,8 +228,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">rle</span>(d<span class="sc">$</span>class)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Run Length Encoding
-  lengths: int [1:2] 10 10
-  values : int [1:2] 1 2</code></pre>
+  lengths: int [1:3] 7 10 3
+  values : int [1:3] 1 2 1</code></pre>
 </div>
 </div>
 <section id="typical-class-values-no-spatial-effects" class="level2">
@@ -253,8 +253,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">rle</span>(d<span class="sc">$</span>class)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Run Length Encoding
-  lengths: int [1:8] 1 3 2 5 2 1 5 1
-  values : int [1:8] 2 1 2 1 2 1 2 1</code></pre>
+  lengths: int [1:7] 1 7 5 2 3 1 1
+  values : int [1:7] 1 2 1 2 1 2 1</code></pre>
 </div>
 </div>
 </section>
@@ -277,7 +277,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">rle</span>(d<span class="sc">$</span>class)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Run Length Encoding
-  lengths: int [1:12] 2 1 3 1 1 2 2 2 1 2 ...
+  lengths: int [1:12] 2 2 2 1 2 4 1 1 1 1 ...
   values : int [1:12] 1 2 1 2 1 2 1 2 1 2 ...</code></pre>
 </div>
 </div>
@@ -326,42 +326,42 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tr class="odd">
 <td style="text-align: right;">1</td>
 <td style="text-align: right;">1</td>
-<td style="text-align: left;">1.076848, 1.000000</td>
-<td style="text-align: right;">0.5304299</td>
-<td style="text-align: right;">55.44876</td>
-<td style="text-align: right;">-0.1809494</td>
+<td style="text-align: left;">1.048494, 1.000000</td>
+<td style="text-align: right;">0.5533686</td>
+<td style="text-align: right;">51.25976</td>
+<td style="text-align: right;">0.3972879</td>
 </tr>
 <tr class="even">
 <td style="text-align: right;">2</td>
 <td style="text-align: right;">1</td>
-<td style="text-align: left;">0.9634345, 1.0000000</td>
-<td style="text-align: right;">1.4337231</td>
-<td style="text-align: right;">49.80810</td>
-<td style="text-align: right;">-0.3234777</td>
+<td style="text-align: left;">0.9866721, 1.0000000</td>
+<td style="text-align: right;">1.2194394</td>
+<td style="text-align: right;">46.20611</td>
+<td style="text-align: right;">-0.6343993</td>
 </tr>
 <tr class="odd">
 <td style="text-align: right;">3</td>
 <td style="text-align: right;">1</td>
-<td style="text-align: left;">1.029565, 1.000000</td>
-<td style="text-align: right;">0.7359326</td>
-<td style="text-align: right;">59.63917</td>
-<td style="text-align: right;">-0.5447789</td>
+<td style="text-align: left;">0.9771685, 1.0000000</td>
+<td style="text-align: right;">1.3506222</td>
+<td style="text-align: right;">46.83126</td>
+<td style="text-align: right;">-0.1059433</td>
 </tr>
 <tr class="even">
 <td style="text-align: right;">4</td>
 <td style="text-align: right;">1</td>
-<td style="text-align: left;">0.9276984, 1.0000000</td>
-<td style="text-align: right;">0.5873614</td>
-<td style="text-align: right;">58.56907</td>
-<td style="text-align: right;">0.1805247</td>
+<td style="text-align: left;">0.9732345, 1.0000000</td>
+<td style="text-align: right;">0.9059138</td>
+<td style="text-align: right;">57.01390</td>
+<td style="text-align: right;">0.3024394</td>
 </tr>
 <tr class="odd">
 <td style="text-align: right;">5</td>
 <td style="text-align: right;">1</td>
-<td style="text-align: left;">0.9490242, 1.0000000</td>
-<td style="text-align: right;">0.3636503</td>
-<td style="text-align: right;">46.92313</td>
-<td style="text-align: right;">-0.3057669</td>
+<td style="text-align: left;">1.048557, 1.000000</td>
+<td style="text-align: right;">0.8913543</td>
+<td style="text-align: right;">53.67081</td>
+<td style="text-align: right;">-0.2292550</td>
 </tr>
 </tbody>
 </table>
@@ -402,38 +402,38 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td style="text-align: right;">1</td>
-<td style="text-align: right;">-0.003</td>
-<td style="text-align: right;">-1.509</td>
-<td style="text-align: right;">2.110</td>
-<td style="text-align: right;">-1.910</td>
+<td style="text-align: right;">-0.008</td>
+<td style="text-align: right;">0.337</td>
+<td style="text-align: right;">-2.849</td>
+<td style="text-align: right;">-0.394</td>
 </tr>
 <tr class="even">
 <td style="text-align: right;">2</td>
-<td style="text-align: right;">0.038</td>
-<td style="text-align: right;">1.342</td>
-<td style="text-align: right;">-11.034</td>
-<td style="text-align: right;">-0.516</td>
+<td style="text-align: right;">0.013</td>
+<td style="text-align: right;">-0.285</td>
+<td style="text-align: right;">-9.100</td>
+<td style="text-align: right;">-0.548</td>
 </tr>
 <tr class="odd">
 <td style="text-align: right;">3</td>
-<td style="text-align: right;">-0.066</td>
-<td style="text-align: right;">-1.827</td>
-<td style="text-align: right;">-2.011</td>
-<td style="text-align: right;">0.982</td>
+<td style="text-align: right;">-0.088</td>
+<td style="text-align: right;">-1.043</td>
+<td style="text-align: right;">-3.976</td>
+<td style="text-align: right;">-2.202</td>
 </tr>
 <tr class="even">
 <td style="text-align: right;">4</td>
-<td style="text-align: right;">0.126</td>
-<td style="text-align: right;">0.635</td>
-<td style="text-align: right;">-7.087</td>
-<td style="text-align: right;">1.121</td>
+<td style="text-align: right;">-0.050</td>
+<td style="text-align: right;">0.503</td>
+<td style="text-align: right;">3.249</td>
+<td style="text-align: right;">1.081</td>
 </tr>
 <tr class="odd">
 <td style="text-align: right;">5</td>
-<td style="text-align: right;">-0.083</td>
-<td style="text-align: right;">-1.468</td>
-<td style="text-align: right;">-6.207</td>
-<td style="text-align: right;">-1.428</td>
+<td style="text-align: right;">0.074</td>
+<td style="text-align: right;">-0.622</td>
+<td style="text-align: right;">8.351</td>
+<td style="text-align: right;">0.358</td>
 </tr>
 </tbody>
 </table>
