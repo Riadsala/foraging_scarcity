@@ -30,7 +30,7 @@ class Experiment():
         # Setting up experimental file
         self.date = data.getDateStr()
         self.fileName = str(self.person[0]) + "_" + str(self.person[1]) + "_" + str(self.person[2]) + "_" + self.date
-        self.dataFile = open(self.data_folder + self.fileName+'.csv', 'w') 
+        self.dataFile = open(self.data_folder + self.fileName+'_found.csv', 'w') 
         self.dataFile.write('person,block,condition,trial,attempt,id,found,score,item_class,x,y,rt\n') # this is d$found
         
         # setting up stim file
@@ -72,6 +72,9 @@ class Experiment():
             self.edf_fname = self.person[0]
             self.edf_file = self.edf_fname + ".edf"
             self.el_tracker.openDataFile(self.edf_file)
+            # Send over a command to let the tracker know the correct screen resolution
+            scn_coords = "screen_pixel_coords = 0 0 %d %d" % (self.scrn_width - 1, self.scrn_height - 1)
+            self.el_tracker.sendCommand(scn_coords)
             # configure a graphics environment (genv) for tracker calibration
             genv = EyeLinkCoreGraphicsPsychoPy(self.el_tracker, self.win)
             # request pylink to use the PsychoPy window we opened above for calibration
@@ -124,6 +127,7 @@ class Experiment():
             self.global_practice = exp_config["global_practice"][0]
 
             self.track_eyes = exp_config["track_eyes"][0]
+            self.screenshot = exp_config["screenshot"][0]
 
     def run(self):
 
@@ -180,10 +184,19 @@ class Experiment():
 
         n_blocks = len(block_file)
         blocks = []
+        blocks_one = []
+        blocks_two = []
 
         for blk in range(n_blocks):
-            block = Block(block_file["label"][blk], block_file["conditions"][blk], block_file["n_trials_per_cond"][blk], block_file["intro_text"][blk], block_file["outro_text"][blk], block_file["practice"][blk], self)
-            blocks.append(block)
+            block = Block(block_file["label"][blk], block_file["conditions"][blk], block_file["n_trials_per_cond"][blk], block_file["group"][blk], block_file["intro_text"][blk], block_file["outro_text"][blk], block_file["practice"][blk], self)
+            
+            if self.block_style == "counter_balanced":
+                if block_file["group"][blk] == "1":
+                    blocks_one.append(block)
+                elif block_file["group"][blk] == "2":
+                    blocks_two.append(block)
+            else:
+                blocks.append(block)
         
         if practice==False:
             if self.block_style == "randomised":
@@ -193,9 +206,16 @@ class Experiment():
                     blocks.sort(key=lambda blk: blk.label != self.global_practice)         
 
             elif self.block_style == "counter_balanced":
-                # implement please
-                print("to do")
-
+                random.shuffle(blocks_one)
+                random.shuffle(blocks_two)
+            # if even participant number, group 2 first. Otherwise, group 1 first.            
+                if int(self.person[0]) % 2 == 0:
+                    blocks = blocks_one + blocks_two
+                else:
+                    blocks = blocks_two + blocks_one
+                
+                print(blocks)
+                
         return(blocks)
         
     def display_intro_exp(self):
@@ -215,7 +235,7 @@ class Experiment():
         self.win.flip()
         
 class Block():
-    def __init__(self, label, condition_labels, n_trials_per_cond, intro_text, outro_text, practice, es):
+    def __init__(self, label, condition_labels, n_trials_per_cond, group, intro_text, outro_text, practice, es):
         
         self.label = label
         self.intro_text = intro_text
@@ -431,12 +451,11 @@ class Trial():
 
                 if (delta2 < (min_sep**2)):
 
-                        # update the number of pairs required fixed
+                    # update the number of pairs required fixed
                     n_fixed = n_fixed + 1
 
                     # calculate how small the current sep delta is 
                     # relative to min allowed
-
 
                     delta_ratio = (rejiggle_sep_multipler + min_sep) / math.sqrt(max(delta2, 0.001))
                         
@@ -643,6 +662,12 @@ class Trial():
         # update the window
         exp_settings.win.flip()
         
+        # save a frame, if wanted.
+        if exp_settings.screenshot == "screenshot":
+            self.imageName = str(exp_settings.person[0]) + "_" + str(self.block) + "_" + str(self.condition["label"][0]) + "_" + str(self.n)
+            exp_settings.win.getMovieFrame()
+            exp_settings.win.saveMovieFrames(str(exp_settings.data_folder + self.imageName + '.png'))
+
         clock = core.Clock()
 
         keep_going = True
@@ -686,6 +711,8 @@ class Trial():
                             self.complete = False   
                             # set score back to 0 for the next attempt 
                             self.score = 0 
+                            # set found back to 0 for the next attempt
+                            self.n_found = 0
 
                         elif self.condition["distracter_click"][0] == "as_target":
                             # in this case, treat distracters like a target
@@ -808,13 +835,13 @@ def get_grid(rows, cols, theta, es):
     jiggle_param = es.jiggle # how much random jitter should we add
 
     xmin = es.width_border
-    xmax = es.scrn_width- es.width_border
+    xmax = es.scrn_width - es.width_border
     ymin = es.height_border
     ymax = es.scrn_height - es.height_border
 
     # create one-dimensional arrays for x and y
     # generate twice as many as required so 
-    # we will the search space with items
+    # we will fill the search space with items
     # even after rotation
     x = np.linspace(-1, 2, 3*cols) 
     y = np.linspace(-1, 2, 3*rows)
@@ -826,25 +853,30 @@ def get_grid(rows, cols, theta, es):
     x = x.reshape((np.prod(x.shape),))
     y = y.reshape((np.prod(y.shape),))
 
+ 
+
+    # scale to correct size
+    x = (es.scrn_width  - 2*es.width_border)  * x + es.width_border
+    y = (es.scrn_height - 2*es.height_border) * y + es.height_border
+  
+    idx = (x > es.width_border) * (x < es.scrn_width - es.width_border) * (y > es.height_border) * (y < es.scrn_height - es.height_border) 
+    x = x[idx]
+    y = y[idx]
+
+
+    # translate so that (0, 0) is the centre of the screen
+    x = x - es.scrn_width/2
+    y = y - es.scrn_height/2
+
     # rotate lattice
     xr = np.cos(theta) * x - np.sin(theta) * y
     yr = np.sin(theta) * x + np.cos(theta) * y
 
     x = xr
     y = yr 
-
-    # scale to correct size
-    x = (es.scrn_width- 2*es.width_border)  * x + es.width_border
-    y = (es.scrn_height - 2*es.height_border) * y + es.height_border
-  
-    idx = (x > es.width_border) * (x < es.scrn_width - es.width_border) * (y > es.height_border) * (y < es.scrn_height - es.height_border) 
-
-    x = x[idx]
-    y = y[idx]
-
-    # translate so that (0, 0) is the centre of the screen
-    x = x - es.scrn_width/2
-    y = y - es.scrn_height/2
+    
+    #idx = ((x)**2 + (y)**2) < 500**2
+ 
 
     # apply random jiggle and round
     x = np.around(x + jiggle_param * np.random.randn(len(x)))
@@ -855,7 +887,6 @@ def get_grid(rows, cols, theta, es):
     return(list(zip(x, y, item_id)))
 
 def uniform_random_placement(n_items, es):
-
 
     xmin = es.width_border
     xmax = es.scrn_width - es.width_border
