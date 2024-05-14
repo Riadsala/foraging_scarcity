@@ -79,11 +79,11 @@ prep_data_for_stan <- function(df, ds, model_components = "spatial") {
                   y = as.vector(scales::rescale(y, to = c(0.01, 0.99)))) -> ds
     
     # get x y coords of all items
-    ds %>% select(person, trial, id, x) %>%  
+    ds %>% ungroup() %>% select(person, trial, id, x) %>%  
       pivot_wider(names_from = "id", values_from = "x") %>%
       select(-person, -trial) -> itemX
     
-    ds %>% select(person, trial, id, y) %>%  
+    ds %>% ungroup() %>% select(person, trial, id, y) %>%  
       pivot_wider(names_from = "id", values_from = "y") %>%
       select(-person, -trial) -> itemY
   

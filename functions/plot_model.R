@@ -32,18 +32,14 @@ plot_model_fixed <- function(post, m, d, cl = "A", gt=NULL, directions = FALSE){
   if (is.null(gt)) {
   # plot class weights
   post %>%
-    mutate(
-      difficulty = case_match(
-        difficulty,
-        "hard" ~ "conjunction",
-        "easy" ~ "feature")) %>%
+    mutate(difficulty = if_else(condition == "1" | condition == "2" | condition == "3", "conjunction", "feature")) %>%
     ggplot() + 
     geom_rect(data = prior %>% 
                 median_hdci(prior_bA, .width = c(0.53, 0.97)) %>%
                 mutate(.lower = plogis(.lower), .upper = plogis(.upper)),
               aes(ymin = -Inf, ymax = Inf, xmin = .lower, xmax = .upper), 
               fill = "orange", alpha = 0.25) +
-    geom_density(aes(plogis(bA), fill = condition), alpha = 0.5) +
+    geom_density(aes(plogis(bA), fill = scarcity), alpha = 0.5) +
     geom_vline(xintercept = 0.5, linetype = 2) +
     scale_x_continuous("class weights") +
     facet_wrap(~difficulty) + 
@@ -51,11 +47,13 @@ plot_model_fixed <- function(post, m, d, cl = "A", gt=NULL, directions = FALSE){
   
   # plot difference between class weights
     post %>% 
+      mutate(difficulty = if_else(condition == "1" | condition == "2" | condition == "3", "conjunction", "feature")) %>%
       pivot_longer(c(bA, b_stick, rho_delta, rho_psi), names_to = "param") %>%
-      pivot_wider(names_from = c("condition", "difficulty"), values_from = "value") %>%
-      unnest() %>%
-      mutate(feature = scarce_easy - equal_easy,
-             conjunction = scarce_hard - equal_hard) %>%
+      select(-condition) %>%
+      pivot_wider(names_from = c("scarcity", "difficulty"), values_from = "value") %>%
+      unnest(cols=c(scarce_conjunction:equal_feature)) %>%
+      mutate(feature = scarce_feature - equal_feature,
+             conjunction = scarce_conjunction - equal_conjunction) %>%
       pivot_longer(c(feature, conjunction), names_to = "difficulty") -> post_diff
     
     post_diff %>%
@@ -87,18 +85,14 @@ plot_model_fixed <- function(post, m, d, cl = "A", gt=NULL, directions = FALSE){
   if (is.null(gt)) {
   # plot stick-switch param
   post  %>%
-    mutate(
-      difficulty = case_match(
-        difficulty,
-        "hard" ~ "conjunction",
-        "easy" ~ "feature")) %>%
+    mutate(difficulty = if_else(condition == "1" | condition == "2" | condition == "3", "conjunction", "feature")) %>%
     ggplot()  + 
     geom_rect(data = prior %>% 
                 median_hdci(prior_b_stick, .width = c(0.53, 0.97)) %>%
                 mutate(.lower = plogis(.lower), .upper = plogis(.upper)),
               aes(ymin = -Inf, ymax = Inf, xmin = .lower, xmax = .upper), 
               fill = "orange", alpha = 0.25) + 
-    geom_density(aes(plogis(b_stick), fill = condition), alpha = 0.5) +
+    geom_density(aes(plogis(b_stick), fill = scarcity), alpha = 0.5) +
     geom_vline(xintercept = 0.5, linetype = 2) +
     scale_x_continuous("stick probability")  +
     facet_wrap(~difficulty) + 
@@ -226,7 +220,7 @@ plt_post_prior <- function(post, prior, var, xtitle, gt) {
                   median_hdci(exp(get(prior_var)), .width = c(0.53, 0.97)),
                 aes(ymin = -Inf, ymax = Inf, xmin = .lower, xmax = .upper), 
                 fill = "orange", alpha = 0.25) +  
-      geom_density(aes(exp(get(var)), fill = condition), alpha = 0.5) +
+      geom_density(aes(exp(get(var)), fill = scarcity), alpha = 0.5) +
       scale_x_continuous(xtitle) +
       coord_cartesian(xlim = c(0, 0.1)) -> plt
     
@@ -237,7 +231,7 @@ plt_post_prior <- function(post, prior, var, xtitle, gt) {
                   median_hdci(get(prior_var), .width = c(0.53, 0.97)),
                 aes(ymin = -Inf, ymax = Inf, xmin = .lower, xmax = .upper), 
                 fill = "orange", alpha = 0.25) +  
-      geom_density(aes(get(var), fill = condition), alpha = 0.5) +
+      geom_density(aes(get(var), fill = scarcity), alpha = 0.5) +
       geom_vline(xintercept = gt, linetype = 1, colour = "red") +
       scale_x_continuous(xtitle) -> plt
     

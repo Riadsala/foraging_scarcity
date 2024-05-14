@@ -1,0 +1,42 @@
+---
+title: "4 Fit model to real data"
+format: html
+editor: visual
+---
+
+```{r setup, message = FALSE}
+
+library(tidyverse)
+library(cmdstanr)
+library(tidybayes)
+library(patchwork)
+options(mc.cores = parallel::detectCores())
+
+# set ggplot2 theme
+theme_set(theme_bw())
+
+source("../functions/import_data.R")
+source("../functions/prep_data.R")
+source("../functions/plot_model.R")
+source("../functions/post_functions.R")
+
+exptname <- "real_data"
+```
+
+# Generating d list and d found
+
+First we read in the data and generate d_list and d_found.
+
+```{r, message = FALSE}
+
+d <- import_data("hughes2024")
+
+d_found <- d$found
+d_stim <- d$stim
+
+savefolder = paste0("../output/", exptname, "/")
+
+write_csv(d_found, paste0(savefolder, "d_found.csv"))
+write_csv(d_stim, paste0(savefolder, "d_stim.csv"))
+
+```
