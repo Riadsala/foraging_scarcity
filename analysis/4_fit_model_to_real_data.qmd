@@ -40,3 +40,92 @@ write_csv(d_found, paste0(savefolder, "d_found.csv"))
 write_csv(d_stim, paste0(savefolder, "d_stim.csv"))
 
 ```
+
+# Some data checking
+
+```{r}
+
+# relabelling things for easier checking
+
+d_found_check <- d_found %>%
+  mutate(
+    difficulty = case_match(
+      condition,
+      "1" ~ "conjunction",
+      "2" ~ "conjunction",
+      "3" ~ "conjunction",
+      "4" ~ "feature",
+      "5" ~ "feature",
+      "6" ~ "feature"
+    ),
+    scarcity = case_match(
+      condition, 
+      "1" ~ "A",
+      "2" ~ "AB",
+      "3" ~ "B",
+      "4" ~ "A",
+      "5" ~ "AB",
+      "6" ~ "B"
+    )
+  )
+
+# How many trials does each person have?
+
+d_found_check %>%
+  group_by(person, difficulty, scarcity) %>%
+  summarise(total_trials = length(unique(trial))) -> total_trials
+
+# How many targets of each class did people find?
+
+d_found_check %>%
+  count(person, difficulty, scarcity) -> total_found
+
+# Number of runs?
+
+d_found_check %>%
+  group_by(person, difficulty, scarcity, trial) %>%
+  mutate(switch = ifelse(item_class != lag(item_class), 1, 0)) %>%
+  summarise(num_switches = sum(switch, na.rm = TRUE)) -> total_switches
+
+ggplot(total_switches, aes(difficulty, num_switches)) + geom_boxplot()   
+
+```
+
+# Prepare and fit model
+
+Here we prepare and fit the model.
+
+```{r, eval = FALSE}
+
+d_list <- prep_data_for_stan(d$found, d$stim, c("spatial", "item_class")) 
+
+# most priors should be the same for different 1.x model versions
+d_list <- add_priors_to_d_list(d_list)
+
+mod <- cmdstan_model("../models/multi_level/foraging_model1.stan")
+
+m <- mod$sample(data = d_list, chains = 4, parallel_chains = 4)
+m$save_object(paste0("../output/", exptname, "/foraging_real.RDS"))
+
+
+```
+
+```{r, message = FALSE, warning = FALSE}
+
+m <- readRDS(paste0("../output/", exptname, "/foraging_real.RDS"))
+
+cl <- unique(d$found$condition)
+
+post <- extract_post(m, d$found, cl)
+
+# we want to merge conditions. Anna will explain why. 
+
+post$fixed %>%
+  mutate(bA = if_else(condition == "1" | condition == "4", -bA, bA),
+      scarcity = if_else(condition == "2" | condition == "5", "equal", "scarce")) -> post$fixed
+
+plot_model_fixed(post,m, d$found, cl)  #, merge_conditions = TRUE
+
+ggsave(ggsave("../plots/pilot_data.pdf", width = 8, height = 4))
+
+```
