@@ -154,7 +154,7 @@ post$fixed %>%
   mutate(bA = if_else(condition == "A", -bA, bA),
       condition = if_else(condition == "AB", "equal", "scarce")) -> post$fixed
 
-plot_model_fixed(post,m, d$found, cl)  #, merge_conditions = TRUE
+plot_model_fixed(post,m, d$found, cl, pilot = "pilot")  #, merge_conditions = TRUE
 
 ggsave(ggsave("../plots/pilot_data.pdf", width = 8, height = 4))
 

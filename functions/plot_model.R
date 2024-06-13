@@ -17,7 +17,7 @@ library(patchwork)
 options(ggplot2.discrete.colour = ggthemes::ptol_pal()(4),
         ggplot2.discrete.fill = ggthemes::ptol_pal()(4))
 
-plot_model_fixed <- function(post, m, d, cl = "A", gt=NULL, directions = FALSE){
+plot_model_fixed <- function(post, m, d, cl = "A", gt=NULL, pilot=NULL, directions = FALSE){
   
   # gt is a list with our groundtruth sim parameters. 
   post <- post$fixed
@@ -29,7 +29,7 @@ plot_model_fixed <- function(post, m, d, cl = "A", gt=NULL, directions = FALSE){
   my_widths <- c(0.53, 0.97)
   
   # for real data
-  if (is.null(gt)) {
+  if (is.null(gt) && (is.null(pilot))) {
   # plot class weights
   post %>%
     mutate(difficulty = if_else(condition == "1" | condition == "2" | condition == "3", "conjunction", "feature")) %>%
@@ -64,6 +64,47 @@ plot_model_fixed <- function(post, m, d, cl = "A", gt=NULL, directions = FALSE){
       theme(legend.position = "none", text = element_text(size=10)) + xlab('class weight difference between equal & scarce conditions') -> plt_pA_diff
   }
   
+  
+  # for pilot data
+  if (is.null(gt) && (!is.null(pilot))) {
+    # plot class weights
+    post %>%
+      mutate(
+        difficulty = case_match(
+          difficulty,
+          "hard" ~ "conjunction",
+          "easy" ~ "feature")) %>%
+      ggplot() + 
+      geom_rect(data = prior %>% 
+                  median_hdci(prior_bA, .width = c(0.53, 0.97)) %>%
+                  mutate(.lower = plogis(.lower), .upper = plogis(.upper)),
+                aes(ymin = -Inf, ymax = Inf, xmin = .lower, xmax = .upper), 
+                fill = "orange", alpha = 0.25) +
+      geom_density(aes(plogis(bA), fill = condition), alpha = 0.5) +
+      geom_vline(xintercept = 0.5, linetype = 2) +
+      scale_x_continuous("class weights") +
+      facet_wrap(~difficulty) + 
+      theme(legend.position = "bottom") -> plt_pA
+    
+    # plot difference between class weights
+    post %>% 
+      pivot_longer(c(bA, b_stick, rho_delta, rho_psi), names_to = "param") %>%
+      pivot_wider(names_from = c("condition", "difficulty"), values_from = "value") %>%
+      unnest() %>%
+      mutate(feature = scarce_easy - equal_easy,
+             conjunction = scarce_hard - equal_hard) %>%
+      pivot_longer(c(feature, conjunction), names_to = "difficulty") -> post_diff
+    
+    
+    post_diff %>%
+      filter(param == "bA") %>%
+      ggplot(aes(value)) + geom_density(fill = "grey") + 
+      geom_vline(xintercept = 0, linetype = 2) + 
+      facet_wrap(~difficulty, scales="free", nrow = 1) +
+      theme(legend.position = "none", text = element_text(size=10)) + xlab('class weight difference between equal & scarce conditions') -> plt_pA_diff
+    
+  }
+  
   # for sim data
   if (!is.null(gt)) {
     # plot class weights
@@ -82,7 +123,7 @@ plot_model_fixed <- function(post, m, d, cl = "A", gt=NULL, directions = FALSE){
     
   
   # for real data
-  if (is.null(gt)) {
+  if (is.null(gt) && (is.null(pilot))) {
   # plot stick-switch param
   post  %>%
     mutate(difficulty = if_else(condition == "1" | condition == "2" | condition == "3", "conjunction", "feature")) %>%
@@ -97,6 +138,29 @@ plot_model_fixed <- function(post, m, d, cl = "A", gt=NULL, directions = FALSE){
     scale_x_continuous("stick probability")  +
     facet_wrap(~difficulty) + 
     theme(legend.position = "bottom") -> plt_pS
+    
+  }
+  
+  # for pilot data
+  if (is.null(gt) && (!is.null(pilot))) {
+    # plot stick-switch param
+    post  %>%
+      mutate(
+        difficulty = case_match(
+          difficulty,
+          "hard" ~ "conjunction",
+          "easy" ~ "feature")) %>%
+      ggplot()  + 
+      geom_rect(data = prior %>% 
+                  median_hdci(prior_b_stick, .width = c(0.53, 0.97)) %>%
+                  mutate(.lower = plogis(.lower), .upper = plogis(.upper)),
+                aes(ymin = -Inf, ymax = Inf, xmin = .lower, xmax = .upper), 
+                fill = "orange", alpha = 0.25) + 
+      geom_density(aes(plogis(b_stick), fill = condition), alpha = 0.5) +
+      geom_vline(xintercept = 0.5, linetype = 2) +
+      scale_x_continuous("stick probability")  +
+      facet_wrap(~difficulty) + 
+      theme(legend.position = "bottom") -> plt_pS
     
   }
   
@@ -205,14 +269,15 @@ compute_rho_phi <- function(drw) {
 
 
 
-plt_post_prior <- function(post, prior, var, xtitle, gt) {
+plt_post_prior <- function(post, prior, var, xtitle, gt, pilot) {
   
   # function to plot the posterior against the prior. 
   # gt allows us to mark up the groundtruth (if available)
   
   prior_var = paste("prior", var, sep = "_")
   
-  if (var == "p_floor") 
+  # real data
+  if (var == "p_floor" && is.null(pilot))
   {
     post %>% 
       ggplot() + 
@@ -232,6 +297,32 @@ plt_post_prior <- function(post, prior, var, xtitle, gt) {
                 aes(ymin = -Inf, ymax = Inf, xmin = .lower, xmax = .upper), 
                 fill = "orange", alpha = 0.25) +  
       geom_density(aes(get(var), fill = scarcity), alpha = 0.5) +
+      geom_vline(xintercept = gt, linetype = 1, colour = "red") +
+      scale_x_continuous(xtitle) -> plt
+    
+  }
+  
+  # pilot data
+  if (var == "p_floor" && !is.null(pilot))
+  {
+    post %>% 
+      ggplot() + 
+      geom_rect(data = prior %>% 
+                  median_hdci(exp(get(prior_var)), .width = c(0.53, 0.97)),
+                aes(ymin = -Inf, ymax = Inf, xmin = .lower, xmax = .upper), 
+                fill = "orange", alpha = 0.25) +  
+      geom_density(aes(exp(get(var)), fill = condition), alpha = 0.5) +
+      scale_x_continuous(xtitle) +
+      coord_cartesian(xlim = c(0, 0.1)) -> plt
+    
+  } else {
+    post %>% 
+      ggplot() + 
+      geom_rect(data = prior %>% 
+                  median_hdci(get(prior_var), .width = c(0.53, 0.97)),
+                aes(ymin = -Inf, ymax = Inf, xmin = .lower, xmax = .upper), 
+                fill = "orange", alpha = 0.25) +  
+      geom_density(aes(get(var), fill = condition), alpha = 0.5) +
       geom_vline(xintercept = gt, linetype = 1, colour = "red") +
       scale_x_continuous(xtitle) -> plt
     
