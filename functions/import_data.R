@@ -131,10 +131,10 @@ import_hughes2024 <- function(small_test){
   
   # filter out practice trials (for now?)
   d_stim %>%
-    filter(block != "cond_prac") -> d_stim
+    filter(condition != "cond_prac") -> d_stim
   
   d_found %>%
-    filter(block != "cond_prac") -> d_found
+    filter(condition != "cond_prac") -> d_found
   
   d_found  %>%
     mutate(trial = trial + 1) %>%
