@@ -269,7 +269,7 @@ compute_rho_phi <- function(drw) {
 
 
 
-plt_post_prior <- function(post, prior, var, xtitle, gt, pilot) {
+plt_post_prior <- function(post, prior, var, xtitle, gt, pilot=NULL) {
   
   # function to plot the posterior against the prior. 
   # gt allows us to mark up the groundtruth (if available)
@@ -280,6 +280,7 @@ plt_post_prior <- function(post, prior, var, xtitle, gt, pilot) {
   if (var == "p_floor" && is.null(pilot))
   {
     post %>% 
+      mutate(difficulty = if_else(condition == "1" | condition == "2" | condition == "3", "conjunction", "feature")) %>%
       ggplot() + 
       geom_rect(data = prior %>% 
                   median_hdci(exp(get(prior_var)), .width = c(0.53, 0.97)),
@@ -287,10 +288,12 @@ plt_post_prior <- function(post, prior, var, xtitle, gt, pilot) {
                 fill = "orange", alpha = 0.25) +  
       geom_density(aes(exp(get(var)), fill = scarcity), alpha = 0.5) +
       scale_x_continuous(xtitle) +
+      facet_wrap(~difficulty) +
       coord_cartesian(xlim = c(0, 0.1)) -> plt
     
-  } else {
+  } else if (var != "p_floor" && is.null(pilot)){
     post %>% 
+      mutate(difficulty = if_else(condition == "1" | condition == "2" | condition == "3", "conjunction", "feature")) %>%
       ggplot() + 
       geom_rect(data = prior %>% 
                   median_hdci(get(prior_var), .width = c(0.53, 0.97)),
@@ -298,6 +301,7 @@ plt_post_prior <- function(post, prior, var, xtitle, gt, pilot) {
                 fill = "orange", alpha = 0.25) +  
       geom_density(aes(get(var), fill = scarcity), alpha = 0.5) +
       geom_vline(xintercept = gt, linetype = 1, colour = "red") +
+      facet_wrap(~difficulty) +
       scale_x_continuous(xtitle) -> plt
     
   }
@@ -315,7 +319,7 @@ plt_post_prior <- function(post, prior, var, xtitle, gt, pilot) {
       scale_x_continuous(xtitle) +
       coord_cartesian(xlim = c(0, 0.1)) -> plt
     
-  } else {
+  } else if (var != "p_floor" && !is.null(pilot)) {
     post %>% 
       ggplot() + 
       geom_rect(data = prior %>% 

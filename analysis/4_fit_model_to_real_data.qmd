@@ -126,6 +126,6 @@ post$fixed %>%
 
 plot_model_fixed(post,m, d$found, cl)  #, merge_conditions = TRUE
 
-ggsave(ggsave("../plots/pilot_data.pdf", width = 8, height = 4))
+ggsave(ggsave("../plots/real_data.pdf", width = 8, height = 4))
 
 ```
