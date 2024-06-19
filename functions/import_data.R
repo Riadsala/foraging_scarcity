@@ -99,6 +99,8 @@ import_hughes2024 <- function(small_test){
   
   d_stim <- tibble()
   d_found <- tibble()
+  d_age <- tibble()
+  d_gender <- tibble()
   
   for (pp in 1:length(p_folders)) {
     
@@ -110,6 +112,14 @@ import_hughes2024 <- function(small_test){
     
     d_found <- bind_rows(d_found, p_found)
     d_stim <- bind_rows(d_stim, p_stim)
+    
+    # age and gender
+    filename <- str_split_i(p_file_found, "/", 5)
+    p_age <- tibble(str_split_i(filename, "_", 2))
+    p_gender <- tibble(str_split_i(filename,"_", 3))
+    
+    d_age <- bind_rows(d_age, p_age)
+    d_gender <- bind_rows(d_gender, p_gender)
     
   }
   
@@ -217,5 +227,7 @@ import_hughes2024 <- function(small_test){
   d_stim <- fix_person_and_trial(d_stim)
   
   return(list(stim = d_stim,
-              found = d_found))
+              found = d_found,
+              age = d_age,
+              gender = d_gender))
 }

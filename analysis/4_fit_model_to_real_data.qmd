@@ -21,29 +21,66 @@ source("../functions/plot_model.R")
 source("../functions/post_functions.R")
 
 exptname <- "real_data"
+
+savefolder = paste0("../output/", exptname, "/")
+
+
 ```
 
 # Generating d list and d found
 
 First we read in the data and generate d_list and d_found.
 
-```{r, message = FALSE}
+```{r, message = FALSE, eval = FALSE}
 
 d <- import_data("hughes2024")
 
 d_found <- d$found
 d_stim <- d$stim
 
-savefolder = paste0("../output/", exptname, "/")
+age <- as.data.frame(unlist(d$age))
+gender <- as.data.frame(unlist(d$gender))
 
 write_csv(d_found, paste0(savefolder, "d_found.csv"))
 write_csv(d_stim, paste0(savefolder, "d_stim.csv"))
+write_csv(age, paste0(savefolder, "d_age.csv"))
+write_csv(gender, paste0(savefolder, "d_gender.csv"))
 
 ```
 
-# Some data checking
+```{r, message = FALSE}
+
+d_found <- read_csv(paste0(savefolder, "d_found.csv"))
+d_stim <- read_csv(paste0(savefolder, "d_stim.csv"))
+d_age <- read_csv(paste0(savefolder, "d_age.csv"))
+d_gender <- read_csv(paste0(savefolder, "d_gender.csv"))
+
+```
+
+# Demographic data
 
 ```{r}
+
+ # age
+mean_age <- mean(unlist(d_age))
+sd_age <- sd(unlist(d_age))
+
+# gender
+gender <- as_tibble(unlist(d_gender))
+gender_count <- gender %>% 
+  mutate(gender = str_to_upper(value)) %>%
+           count(gender)
+
+tot_participants <- nrow(gender)
+ 
+
+```
+
+Participants had a mean age of `r mean_age` (SD = `r sd_age`). There were `r tot_participants` participants, with `r gender_count[[1,2]]` identifying as female (`r gender_count[[1,2]]/tot_participants*100`%).
+
+# Some data checking
+
+```{r, message = FALSE}
 
 # relabelling things for easier checking
 
@@ -51,21 +88,21 @@ d_found_check <- d_found %>%
   mutate(
     difficulty = case_match(
       condition,
-      "1" ~ "conjunction",
-      "2" ~ "conjunction",
-      "3" ~ "conjunction",
-      "4" ~ "feature",
-      "5" ~ "feature",
-      "6" ~ "feature"
+      1 ~ "conjunction",
+      2 ~ "conjunction",
+      3 ~ "conjunction",
+      4 ~ "feature",
+      5 ~ "feature",
+      6 ~ "feature"
     ),
     scarcity = case_match(
       condition, 
-      "1" ~ "A",
-      "2" ~ "AB",
-      "3" ~ "B",
-      "4" ~ "A",
-      "5" ~ "AB",
-      "6" ~ "B"
+      1 ~ "A",
+      2 ~ "AB",
+      3 ~ "B",
+      4 ~ "A",
+      5 ~ "AB",
+      6 ~ "B"
     )
   )
 
@@ -114,7 +151,7 @@ m$save_object(paste0("../output/", exptname, "/foraging_real.RDS"))
 
 m <- readRDS(paste0("../output/", exptname, "/foraging_real.RDS"))
 
-cl <- unique(d$found$condition)
+cl <- unique(d_found$condition)
 
 post <- extract_post(m, d$found, cl)
 
@@ -124,7 +161,7 @@ post$fixed %>%
   mutate(bA = if_else(condition == "1" | condition == "4", -bA, bA),
       scarcity = if_else(condition == "2" | condition == "5", "equal", "scarce")) -> post$fixed
 
-plot_model_fixed(post,m, d$found, cl)  #, merge_conditions = TRUE
+plot_model_fixed(post,m, d_found, cl)  #, merge_conditions = TRUE
 
 ggsave(ggsave("../plots/real_data.pdf", width = 8, height = 4))
 
