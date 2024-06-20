@@ -150,7 +150,7 @@ import_hughes2024 <- function(small_test){
     mutate(trial = trial + 1) %>%
     select(person = "person", condition, trial = "trial",  
            id = "id", found = "found", item_class = "item_class",
-           x = "x", y = "y") %>%
+           x = "x", y = "y", rt = "rt") %>%
     mutate(item_class = as.numeric(factor(item_class)),
            condition = as.factor(condition),
            condition = as.integer(condition),
@@ -193,7 +193,7 @@ import_hughes2024 <- function(small_test){
   d_found %>%
     select(-id) %>%
     rename(id = id_seq) %>%
-    select(person, condition, trial, id, found, item_class, x, y) -> d_found
+    select(person, condition, trial, id, found, item_class, x, y, rt) -> d_found
   
   d_stim %>%
     select(-id) %>%
@@ -219,9 +219,6 @@ import_hughes2024 <- function(small_test){
   d_stim %>% mutate(x = x/xmax,
                     y = y/xmax) -> d_stim
   
-  # not relevant yet
-  #if (small_test) {
-  #}
   
   d_found <- fix_person_and_trial(d_found)
   d_stim <- fix_person_and_trial(d_stim)

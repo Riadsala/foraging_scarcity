@@ -6,32 +6,40 @@ editor: visual
 
 ```{r setup, message = FALSE}
 
+# load libraries
 library(tidyverse)
 library(cmdstanr)
 library(tidybayes)
 library(patchwork)
 options(mc.cores = parallel::detectCores())
+options(digits=2)
 
 # set ggplot2 theme
 theme_set(theme_bw())
 
+# load function scripts
 source("../functions/import_data.R")
 source("../functions/prep_data.R")
 source("../functions/plot_model.R")
 source("../functions/post_functions.R")
 
+# set experiment name and save folder
 exptname <- "real_data"
-
-savefolder = paste0("../output/", exptname, "/")
+savefolder <- paste0("../output/", exptname, "/")
 
 
 ```
 
-# Generating d list and d found
+# Initial data processing
 
-First we read in the data and generate d_list and d_found.
+First we read in the data and generate `d_list` and `d_found`, as well as demographic information.
+
+Note that the `import_data` function will remove any terminated trials (i.e. due to selecting a distractor) and thus these trials are not analysed.
 
 ```{r, message = FALSE, eval = FALSE}
+
+# This is not run by default as importing data takes some time. 
+# However, the pre-compiled CSVs are available in the save folder.
 
 d <- import_data("hughes2024")
 
@@ -57,28 +65,51 @@ d_gender <- read_csv(paste0(savefolder, "d_gender.csv"))
 
 ```
 
-# Demographic data
+## Excluded participants
+
+- Participants 1-4 were excluded from final data analysis because we accidentally ran them on a version of the experiment that did not include a practice trial.
+- Participant 26 did not complete the full experiment and therefore their data was excluded.
+- Participant 37 had a case where a target selection was mislabelled as belonging to another trial by the experimental program. In the interests of caution, we decided to exclude this dataset.
+- Participant 43 took us over the required sample size of 36, so was not used in the final analysis.
+
+We note that due to experimenter error, a small number of participants were mislabelled in the original raw data (participant 11 was originally labelled 10, participant 12 was originally labelled 11 and participant 22 was originally labelled 21). These errors have been fixed in the raw data, but otherwise no changes have been made to the original files.
+
+## Checking inter-target selection times
+
+One of our pre-registered exclusion criteria is that any trial containing an inter-target selection time of more than 5s will be removed. We find 59 cases where this happens, in 55 unique trials.
 
 ```{r}
 
- # age
-mean_age <- mean(unlist(d_age))
-sd_age <- sd(unlist(d_age))
+d_rt <- d_found %>%
+  mutate(rt_lag = lag(rt),
+         rt_lag = if_else(is.na(rt_lag), 0, rt_lag),
+         rt_lag_diff = rt - rt_lag)
 
-# gender
-gender <- as_tibble(unlist(d_gender))
-gender_count <- gender %>% 
-  mutate(gender = str_to_upper(value)) %>%
-           count(gender)
+# looking for inter-target selection times greater than 5s
+d_rt_longrt <- d_rt %>%
+  filter(rt_lag_diff > 5)
 
-tot_participants <- nrow(gender)
- 
+# which unique trials are these?
+unique_trials_to_remove <- unique(d_rt_longrt$trial)
+
+# filter d_found and d_stim to take this into account
+# also now need to renumber for modelling
+d_found <- d_found %>%
+  filter(!trial %in% unique_trials_to_remove) %>%
+  group_by(trial) %>%
+  mutate(trial = cur_group_id()) %>%
+  ungroup()
+
+d_stim <- d_stim %>%
+  filter(!trial %in% unique_trials_to_remove) %>%
+  group_by(trial) %>%
+  mutate(trial = cur_group_id()) %>%
+  ungroup()
+
 
 ```
 
-Participants had a mean age of `r mean_age` (SD = `r sd_age`). There were `r tot_participants` participants, with `r gender_count[[1,2]]` identifying as female (`r gender_count[[1,2]]/tot_participants*100`%).
-
-# Some data checking
+## Some data checking
 
 ```{r, message = FALSE}
 
@@ -117,16 +148,63 @@ d_found_check %>%
 d_found_check %>%
   count(person, difficulty, scarcity) -> total_found
 
-# Number of runs?
+```
+
+Every person in our dataset has at least 5 trials per condition, and therefore all meet the inclusion criteria for the study.
+
+## Demographic data
+
+```{r}
+
+ # age
+mean_age <- mean(unlist(d_age))
+sd_age <- sd(unlist(d_age))
+
+# gender
+gender <- as_tibble(unlist(d_gender))
+gender_count <- gender %>% 
+  mutate(gender = str_to_upper(value)) %>%
+           count(gender)
+
+tot_participants <- nrow(gender)
+ 
+
+```
+
+Participants had a mean age of `r mean_age` (SD = `r sd_age`). There were `r tot_participants` participants, with `r gender_count[[1,2]]` identifying as female (`r gender_count[[1,2]]/tot_participants*100`%).
+
+
+## Aggregate descriptive statistics
+
+```{r, message = FALSE}
+
+# Maximum run length
+
+d_found_check %>%
+  group_by(person, difficulty, scarcity, trial) %>%
+    mutate(switch = ifelse(item_class != lag(item_class), 1, 0),
+           switch = ifelse(is.na(switch), 1, switch)) %>%
+  filter(switch != 0) %>%
+  mutate(lead_found = lead(found),
+         lead_found_new = ifelse(is.na(lead_found), 21, lead_found)) %>%
+  mutate(diff = lead_found_new - found) %>%
+  summarise(max_run_length = max(diff)) -> max_run_length
+  
+ggplot(max_run_length, aes(scarcity, max_run_length, fill = difficulty)) + geom_boxplot()
+
+# Number of runs
 
 d_found_check %>%
   group_by(person, difficulty, scarcity, trial) %>%
   mutate(switch = ifelse(item_class != lag(item_class), 1, 0)) %>%
   summarise(num_switches = sum(switch, na.rm = TRUE)) -> total_switches
 
-ggplot(total_switches, aes(difficulty, num_switches)) + geom_boxplot()   
+ggplot(total_switches, aes(scarcity, num_switches, fill = difficulty)) + geom_boxplot()   
+
 
 ```
+
+In line with previous research, we can see that conjunction trials tend to have a higher maximum run length and a lower number of switches between target types compared to feature trials. Note that because the different scarcity conditions have different ratios of target types in them, it doesn't really make sense to compare across levels of scarcity: e.g. the 'AB' conditions will necessarily have a lower maximum run length because the maximum number of targets of one type is 10, compared to the 'A' and 'B' conditions where one target type will have 15 exemplars on each trial.
 
 # Prepare and fit model
 
