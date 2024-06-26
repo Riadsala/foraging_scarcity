@@ -4,13 +4,14 @@ format: html
 editor: visual
 ---
 
-```{r setup, message = FALSE}
+```{r setup, message = FALSE, warning = FALSE}
 
 # load libraries
 library(tidyverse)
 library(cmdstanr)
 library(tidybayes)
 library(patchwork)
+library(ggcorrplot)
 options(mc.cores = parallel::detectCores())
 options(digits=2)
 
@@ -234,11 +235,28 @@ m$save_object(paste0("../output/", exptname, "/foraging_real.RDS"))
 
 ```
 
-We read in our pre-fit model, and extract posterior draws.
+## Model checking
+
+We read in our pre-fit model and carry out some model checking. (Here we display only $b_A$ parameter traceplots, as the model has a lot of parameters).
+
+```{r}
+
+m <- readRDS(paste0("../output/", exptname, "/foraging_real.RDS"))
+
+m$diagnostic_summary()
+
+bayesplot::mcmc_trace(m$draws(), pars = c("bA[1]", "bA[2]", "bA[3]", "bA[4]", 
+                                               "bA[5]", "bA[6]"))
+
+```
+
+## Posterior draws
+
+Here, we extract posterior draws.
 
 ```{r, message = FALSE, warning = FALSE}
 
-m <- readRDS(paste0("../output/", exptname, "/foraging_real.RDS"))
+
 
 cl <- unique(d_found$condition)
 
@@ -723,3 +741,25 @@ plot_a_trial(d_stim, d_found, trial = 293)
 plot_a_trial(d_stim, d_found, trial = 309)
 
 ```
+### Correlations
+
+We see that there are a range of scarcity effects across different participants. We will therefore explore whether these are correlated with the other parameters in the model.
+
+```{r, message = FALSE}
+
+post_random_corr <- post_random %>%
+  group_by(person, difficulty, scarcity) %>%
+  summarise(mean_uA = mean(uA), mean_u_stick = mean(u_stick), mean_u_delta = mean(u_delta),
+            mean_u_psi = mean(u_psi)) %>%
+  ungroup() %>%
+  select(mean_uA, mean_u_stick, mean_u_delta, mean_u_psi)
+
+corr <- round(cor(post_random_corr), 2)
+  
+ggcorrplot(corr,
+           hc.order = TRUE,
+           type = "lower",
+           outline.color = "white")
+```
+
+There doesn't seem to be strong evidence for high correlations between $u_A$ and other parameters of the model.
