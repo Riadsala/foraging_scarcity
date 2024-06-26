@@ -184,38 +184,6 @@ tot_participants <- nrow(gender)
 Participants had a mean age of `r mean_age` (SD = `r sd_age`). There were `r tot_participants` participants, with `r gender_count[[1,2]]` identifying as female (`r gender_count[[1,2]]/tot_participants*100`%).
 
 
-## Aggregate descriptive statistics
-
-```{r, message = FALSE}
-
-# Maximum run length
-
-d_found_check %>%
-  group_by(person, difficulty, scarcity, trial) %>%
-    mutate(switch = ifelse(item_class != lag(item_class), 1, 0),
-           switch = ifelse(is.na(switch), 1, switch)) %>%
-  filter(switch != 0) %>%
-  mutate(lead_found = lead(found),
-         lead_found_new = ifelse(is.na(lead_found), 21, lead_found)) %>%
-  mutate(diff = lead_found_new - found) %>%
-  summarise(max_run_length = max(diff)) -> max_run_length
-  
-ggplot(max_run_length, aes(scarcity, max_run_length, fill = difficulty)) + geom_boxplot()
-
-# Number of runs
-
-d_found_check %>%
-  group_by(person, difficulty, scarcity, trial) %>%
-  mutate(switch = ifelse(item_class != lag(item_class), 1, 0)) %>%
-  summarise(num_switches = sum(switch, na.rm = TRUE)) -> total_switches
-
-ggplot(total_switches, aes(scarcity, num_switches, fill = difficulty)) + geom_boxplot()   
-
-
-```
-
-In line with previous research, we can see that conjunction trials tend to have a higher maximum run length and a lower number of switches between target types compared to feature trials. Note that because the different scarcity conditions have different ratios of target types in them, it doesn't really make sense to compare across levels of scarcity: e.g. the 'AB' conditions will necessarily have a lower maximum run length because the maximum number of targets of one type is 10, compared to the 'A' and 'B' conditions where one target type will have 15 exemplars on each trial.
-
 # Prepare and fit model
 
 Here we prepare and fit the model. Note that this process is slow, so this code is set to `eval = FALSE` as default.
@@ -267,7 +235,7 @@ post <- extract_post(m, d_found, cl)
 
 Our main hypothesis (H1) is that participants will show a preference for selecting scarce targets. We will take $b_A(equal)$ as our baseline condition and compare this to $b_A(scarce_A)$ and $b_A(scarce_B)$.
 
-First, we need to label our conditions appropriately so we know what each one means.
+First, we need to label our conditions appropriately so we know what each one means. Note that 'scarcity' being A means that target type A was scarce, AB means target types A and B had equal numbers, and B means that target type B was scarce. In the feature condition, target A is the red circle and target B is the green circle. In the conjunction condition, target A is the red square and target B is the green circle.
 
 ```{r}
 
@@ -725,6 +693,11 @@ ppt_tibble_conj <- bind_rows(ppt_tibble_conj, new_row)
 ppt_tibble_conj %>%
   filter(test1 > 0.90, test2 > 0.90)
 
+## do we have any participants who show an anti-scarcity bias?
+ppt_tibble_conj %>%
+  filter(test1 < 0.10, test2 < 0.10)
+
+
 ```
 
 There are slightly more participants who show some inclination towards a scarcity bias in the conjunction condition (although most do not meet the strict evidence threshold, and it remains a small group). Participant 6 is perhaps the strongest evidence.
@@ -739,6 +712,20 @@ plot_a_trial(d_stim, d_found, trial = 293)
 plot_a_trial(d_stim, d_found, trial = 309)
 
 ```
+
+Interestingly, we do see one participant (participant 1) who has an anti-scarcity bias and tends to choose the rarer items later in the trial.
+
+```{r}
+
+# An example of an A conjunction trial for participant 1.
+plot_a_trial(d_stim, d_found, trial = 1)
+
+# An example of an B conjunction trial for participant 1. 
+# Note the swapping of preference to the more common target type.
+plot_a_trial(d_stim, d_found, trial = 22)
+
+```
+
 ### Correlations
 
 We see that there are a range of scarcity effects across different participants. We will therefore explore whether these are correlated with the other parameters in the model.
@@ -807,5 +794,95 @@ We did not support this hypothesis: although in previous experiments, we have fo
 ```{r}
 
 plot_model_random_dir(post)
+
+```
+
+# Planned exploratory analyses
+
+## Aggregate descriptive statistics
+
+```{r, message = FALSE}
+
+# Maximum run length
+
+d_found_check %>%
+  group_by(person, difficulty, scarcity, trial) %>%
+    mutate(switch = ifelse(item_class != lag(item_class), 1, 0),
+           switch = ifelse(is.na(switch), 1, switch)) %>%
+  filter(switch != 0) %>%
+  mutate(lead_found = lead(found),
+         lead_found_new = ifelse(is.na(lead_found), 21, lead_found)) %>%
+  mutate(diff = lead_found_new - found) %>%
+  summarise(max_run_length = max(diff)) -> max_run_length
+  
+ggplot(max_run_length, aes(scarcity, max_run_length, fill = difficulty)) + geom_boxplot()
+
+# Number of runs
+
+d_found_check %>%
+  group_by(person, difficulty, scarcity, trial) %>%
+  mutate(switch = ifelse(item_class != lag(item_class), 1, 0)) %>%
+  summarise(num_switches = sum(switch, na.rm = TRUE)) -> total_switches
+
+ggplot(total_switches, aes(scarcity, num_switches, fill = difficulty)) + geom_boxplot()   
+
+
+```
+
+In line with previous research, we can see that conjunction trials tend to have a higher maximum run length and a lower number of switches between target types compared to feature trials. Note that because the different scarcity conditions have different ratios of target types in them, it doesn't really make sense to compare across levels of scarcity: e.g. the 'AB' conditions will necessarily have a lower maximum run length because the maximum number of targets of one type is 10, compared to the 'A' and 'B' conditions where one target type will have 15 exemplars on each trial.
+
+```{r, message = TRUE}
+
+post_random %>%
+  group_by(person, difficulty, scarcity) %>%
+  summarise(mean_u_stick = mean(u_stick)) -> av_u_stick
+
+total_switches %>%
+  group_by(person, difficulty, scarcity) %>%
+  summarise(mean_tot_switches = mean(num_switches)) -> av_switch
+
+av_u_stick$mean_tot_switches <- av_switch$mean_tot_switches
+
+ggplot(av_u_stick, aes(mean_u_stick, mean_tot_switches, colour = difficulty)) + geom_point()
+
+```
+
+We can see here that our model random effect parameters for sticking (where a higher value means the person was more likely to stick with the same target type) correlates well with the number of total switches - at low values of $u_{stick}$, we get a high number of total switches, and these values tend to be found in the feature condition.
+
+## Fitting a newer version of the model
+
+We do have a new implementation of the same FoMo model at https://github.com/Riadsala/FoMo. V1.0 is exactly the same mathematically as the version in the current repository, but has slightly tidied up code. 
+
+```{r}
+
+source("../../FoMo/functions/import_data.R")
+source("../../FoMo/functions/prep_data.R")
+
+d_list <- prep_data_for_stan(d_found, d_stim, c("spatial", "item_class"))
+
+modelver <- "1.0"
+
+filename <- paste0("priors_model", modelver, ".csv")
+
+priors <- read_csv(paste0("../../FoMo/models/multi_level/", filename), show_col_types = FALSE) %>%
+    pivot_longer(-param, names_to = "stat", values_to = "value") %>%
+    mutate(param = paste("prior", stat, param, sep="_")) %>%
+    select(-stat)
+  
+d_list <- append(d_list, priors %>% group_by(param) %>% deframe())
+
+d_list$n_trials_to_sim <- 1
+iter <- 1000
+
+mod <- cmdstan_model("../../FoMo/models/multi_level/FoMo1_0.stan", 
+                     cpp_options = list(stan_threads = TRUE))
+
+fit <- mod$sample(data = d_list, 
+                 chains = 4, parallel_chains = 4, threads = 4,
+                 refresh = 10, 
+                 init = 1,
+                 iter_warmup = iter, iter_sampling = iter,
+                 sig_figs = 3)
+
 
 ```

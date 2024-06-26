@@ -56,7 +56,7 @@ plot_model_fixed <- function(post, m, d, cl = "A", gt=NULL, pilot=NULL, directio
                 median_hdci(prior_bA, .width = c(0.53, 0.97)) %>%
                 mutate(.lower = plogis(.lower), .upper = plogis(.upper)),
               aes(ymin = -Inf, ymax = Inf, xmin = .lower, xmax = .upper), 
-              fill = "orange", alpha = 0.25) +
+              fill = "grey", alpha = 0.25) +
     geom_density(aes(plogis(bA), fill = scarcity), alpha = 0.5) +
     geom_vline(xintercept = 0.5, linetype = 2) +
     scale_x_continuous("class weights") +
@@ -186,7 +186,7 @@ plot_model_fixed <- function(post, m, d, cl = "A", gt=NULL, pilot=NULL, directio
                 median_hdci(prior_b_stick, .width = c(0.53, 0.97)) %>%
                 mutate(.lower = plogis(.lower), .upper = plogis(.upper)),
               aes(ymin = -Inf, ymax = Inf, xmin = .lower, xmax = .upper), 
-              fill = "orange", alpha = 0.25) + 
+              fill = "grey", alpha = 0.25) + 
     geom_density(aes(plogis(b_stick), fill = scarcity), alpha = 0.5) +
     geom_vline(xintercept = 0.5, linetype = 2) +
     scale_x_continuous("stick probability")  +
@@ -357,7 +357,7 @@ plt_post_prior <- function(post, prior, var, xtitle, gt, pilot=NULL) {
       geom_rect(data = prior %>% 
                   median_hdci(exp(get(prior_var)), .width = c(0.53, 0.97)),
                 aes(ymin = -Inf, ymax = Inf, xmin = .lower, xmax = .upper), 
-                fill = "orange", alpha = 0.25) +  
+                fill = "grey", alpha = 0.25) +  
       geom_density(aes(exp(get(var)), fill = scarcity), alpha = 0.5) +
       scale_x_continuous(xtitle) +
       facet_wrap(~difficulty) +
@@ -388,7 +388,7 @@ plt_post_prior <- function(post, prior, var, xtitle, gt, pilot=NULL) {
       geom_rect(data = prior %>% 
                   median_hdci(get(prior_var), .width = c(0.53, 0.97)),
                 aes(ymin = -Inf, ymax = Inf, xmin = .lower, xmax = .upper), 
-                fill = "orange", alpha = 0.25) +  
+                fill = "grey", alpha = 0.25) +  
       geom_density(aes(get(var), fill = scarcity), alpha = 0.5) +
       geom_vline(xintercept = gt, linetype = 1, colour = "red") +
       facet_wrap(~difficulty) +
