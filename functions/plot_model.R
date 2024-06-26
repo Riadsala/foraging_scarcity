@@ -32,7 +32,25 @@ plot_model_fixed <- function(post, m, d, cl = "A", gt=NULL, pilot=NULL, directio
   if (is.null(gt) && (is.null(pilot))) {
   # plot class weights
   post %>%
-    mutate(difficulty = if_else(condition == "1" | condition == "2" | condition == "3", "conjunction", "feature")) %>%
+      mutate(
+        difficulty = case_match(
+          condition,
+          "1" ~ "conjunction",
+          "2" ~ "conjunction",
+          "3" ~ "conjunction",
+          "4" ~ "feature",
+          "5" ~ "feature",
+          "6" ~ "feature"
+        ),
+        scarcity = case_match(
+          condition, 
+          "1" ~ "A",
+          "2" ~ "AB",
+          "3" ~ "B",
+          "4" ~ "A",
+          "5" ~ "AB",
+          "6" ~ "B"
+        )) %>%
     ggplot() + 
     geom_rect(data = prior %>% 
                 median_hdci(prior_bA, .width = c(0.53, 0.97)) %>%
@@ -46,22 +64,40 @@ plot_model_fixed <- function(post, m, d, cl = "A", gt=NULL, pilot=NULL, directio
     theme(legend.position = "bottom") -> plt_pA
   
   # plot difference between class weights
-    post %>% 
-      mutate(difficulty = if_else(condition == "1" | condition == "2" | condition == "3", "conjunction", "feature")) %>%
-      pivot_longer(c(bA, b_stick, rho_delta, rho_psi), names_to = "param") %>%
-      select(-condition) %>%
-      pivot_wider(names_from = c("scarcity", "difficulty"), values_from = "value") %>%
-      unnest(cols=c(scarce_conjunction:equal_feature)) %>%
-      mutate(feature = scarce_feature - equal_feature,
-             conjunction = scarce_conjunction - equal_conjunction) %>%
-      pivot_longer(c(feature, conjunction), names_to = "difficulty") -> post_diff
+  #  post %>% 
+  #   mutate(
+  #      difficulty = case_match(
+  #        condition,
+  #        "1" ~ "conjunction",
+  #        "2" ~ "conjunction",
+  #        "3" ~ "conjunction",
+  #        "4" ~ "feature",
+  #        "5" ~ "feature",
+  #        "6" ~ "feature"
+  #      ),
+  #      scarcity = case_match(
+  #        condition, 
+  #        "1" ~ "A",
+  #        "2" ~ "AB",
+  #        "3" ~ "B",
+  #        "4" ~ "A",
+  #        "5" ~ "AB",
+  #        "6" ~ "B"
+  #      )) %>%
+  #    pivot_longer(c(bA, b_stick, rho_delta, rho_psi), names_to = "param") %>%
+  #    select(-condition) %>%
+  #    pivot_wider(names_from = c("scarcity", "difficulty"), values_from = "value") %>%
+  #    unnest(cols=c(scarce_conjunction:equal_feature)) %>%
+  #    mutate(feature = scarce_feature - equal_feature,
+  #           conjunction = scarce_conjunction - equal_conjunction) %>%
+  #    pivot_longer(c(feature, conjunction), names_to = "difficulty") -> post_diff
     
-    post_diff %>%
-      filter(param == "bA") %>%
-      ggplot(aes(value)) + geom_density(fill = "grey") + 
-      geom_vline(xintercept = 0, linetype = 2) + 
-      facet_wrap(~difficulty, scales="free", nrow = 1) +
-      theme(legend.position = "none", text = element_text(size=10)) + xlab('class weight difference between equal & scarce conditions') -> plt_pA_diff
+  #  post_diff %>%
+  #    filter(param == "bA") %>%
+  #    ggplot(aes(value)) + geom_density(fill = "grey") + 
+  #    geom_vline(xintercept = 0, linetype = 2) + 
+  #    facet_wrap(~difficulty, scales="free", nrow = 1) +
+  #    theme(legend.position = "none", text = element_text(size=10)) + xlab('class weight difference between equal & scarce conditions') -> plt_pA_diff
   }
   
   
@@ -126,7 +162,25 @@ plot_model_fixed <- function(post, m, d, cl = "A", gt=NULL, pilot=NULL, directio
   if (is.null(gt) && (is.null(pilot))) {
   # plot stick-switch param
   post  %>%
-    mutate(difficulty = if_else(condition == "1" | condition == "2" | condition == "3", "conjunction", "feature")) %>%
+      mutate(
+        difficulty = case_match(
+          condition,
+          "1" ~ "conjunction",
+          "2" ~ "conjunction",
+          "3" ~ "conjunction",
+          "4" ~ "feature",
+          "5" ~ "feature",
+          "6" ~ "feature"
+        ),
+        scarcity = case_match(
+          condition, 
+          "1" ~ "A",
+          "2" ~ "AB",
+          "3" ~ "B",
+          "4" ~ "A",
+          "5" ~ "AB",
+          "6" ~ "B"
+        )) %>%
     ggplot()  + 
     geom_rect(data = prior %>% 
                 median_hdci(prior_b_stick, .width = c(0.53, 0.97)) %>%
@@ -231,10 +285,10 @@ plot_model_fixed <- function(post, m, d, cl = "A", gt=NULL, pilot=NULL, directio
   if (is.null(gt)) {
   layout <- "
   AAAABBBB
-  CCCCDDEE
+  CCCCDDDD
   "
   
-  plt <- (plt_pA + plt_pA_diff + plt_pS + plt_prox + plt_rel_dir) + 
+  plt <- (plt_pA + plt_pS + plt_prox + plt_rel_dir) + 
     plot_layout(design = layout, guides = 'collect') &  
     theme(legend.position = 'bottom', panel.grid = element_blank())
   
@@ -280,7 +334,25 @@ plt_post_prior <- function(post, prior, var, xtitle, gt, pilot=NULL) {
   if (var == "p_floor" && is.null(pilot))
   {
     post %>% 
-      mutate(difficulty = if_else(condition == "1" | condition == "2" | condition == "3", "conjunction", "feature")) %>%
+      mutate(
+        difficulty = case_match(
+          condition,
+          "1" ~ "conjunction",
+          "2" ~ "conjunction",
+          "3" ~ "conjunction",
+          "4" ~ "feature",
+          "5" ~ "feature",
+          "6" ~ "feature"
+        ),
+        scarcity = case_match(
+          condition, 
+          "1" ~ "A",
+          "2" ~ "AB",
+          "3" ~ "B",
+          "4" ~ "A",
+          "5" ~ "AB",
+          "6" ~ "B"
+        )) %>%
       ggplot() + 
       geom_rect(data = prior %>% 
                   median_hdci(exp(get(prior_var)), .width = c(0.53, 0.97)),
@@ -293,7 +365,25 @@ plt_post_prior <- function(post, prior, var, xtitle, gt, pilot=NULL) {
     
   } else if (var != "p_floor" && is.null(pilot)){
     post %>% 
-      mutate(difficulty = if_else(condition == "1" | condition == "2" | condition == "3", "conjunction", "feature")) %>%
+      mutate(
+        difficulty = case_match(
+          condition,
+          "1" ~ "conjunction",
+          "2" ~ "conjunction",
+          "3" ~ "conjunction",
+          "4" ~ "feature",
+          "5" ~ "feature",
+          "6" ~ "feature"
+        ),
+        scarcity = case_match(
+          condition, 
+          "1" ~ "A",
+          "2" ~ "AB",
+          "3" ~ "B",
+          "4" ~ "A",
+          "5" ~ "AB",
+          "6" ~ "B"
+        )) %>%
       ggplot() + 
       geom_rect(data = prior %>% 
                   median_hdci(get(prior_var), .width = c(0.53, 0.97)),
@@ -399,3 +489,43 @@ plot_init_sel <- function(post, d, pp=FALSE) {
    
     return(plt)
 }
+
+plot_model_random <- function(post) 
+{
+  
+  post$random %>%
+    mutate(
+      difficulty = case_match(
+        condition,
+        "1" ~ "conjunction",
+        "2" ~ "conjunction",
+        "3" ~ "conjunction",
+        "4" ~ "feature",
+        "5" ~ "feature",
+        "6" ~ "feature"
+      ),
+      scarcity = case_match(
+        condition, 
+        "1" ~ "A",
+        "2" ~ "AB",
+        "3" ~ "B",
+        "4" ~ "A",
+        "5" ~ "AB",
+        "6" ~ "B"
+      )) %>%
+    pivot_longer(starts_with("uA"), names_to = "param") %>%
+    group_by(person, difficulty, scarcity, param) %>%
+    median_hdci(value) -> d_hpdi
+  
+  d_hpdi %>% 
+    ggplot(aes(x = as.factor(person), ymin = .lower, y = value, ymax = .upper, colour = scarcity)) +
+    geom_hline(linetype = 2, yintercept = 0) + 
+    geom_linerange(position = position_dodge(width = 0.9), linewidth = 1) +
+    coord_flip() +
+    facet_wrap(~difficulty, scales = "free") +
+    xlab('Participant') -> plt
+  
+  return(plt)
+  
+}
+
