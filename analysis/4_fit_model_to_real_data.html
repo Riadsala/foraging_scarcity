@@ -394,22 +394,22 @@ $ebfmi
 <h3 class="anchored" data-anchor-id="the-effect-of-scarcity-in-the-feature-condition">The effect of scarcity in the feature condition</h3>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># conditions labelled A are where A is scarce</span></span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>condA <span class="ot">&lt;-</span> post_labelled <span class="sc">%&gt;%</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>condA_feat <span class="ot">&lt;-</span> post_labelled <span class="sc">%&gt;%</span></span>
 <span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(scarcity <span class="sc">==</span> <span class="st">"A"</span>, difficulty <span class="sc">==</span> <span class="st">"feature"</span>)</span>
 <span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a><span class="co"># conditions labelled AB are equal</span></span>
-<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>condequal <span class="ot">&lt;-</span> post_labelled <span class="sc">%&gt;%</span></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>condequal_feat <span class="ot">&lt;-</span> post_labelled <span class="sc">%&gt;%</span></span>
 <span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(scarcity <span class="sc">==</span> <span class="st">"AB"</span>, difficulty <span class="sc">==</span> <span class="st">"feature"</span>)</span>
 <span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a><span class="co"># conditions labelled B are where B is scarce</span></span>
-<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>condB <span class="ot">&lt;-</span> post_labelled <span class="sc">%&gt;%</span></span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>condB_feat <span class="ot">&lt;-</span> post_labelled <span class="sc">%&gt;%</span></span>
 <span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(scarcity <span class="sc">==</span> <span class="st">"B"</span>, difficulty <span class="sc">==</span> <span class="st">"feature"</span>)</span>
 <span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(condA<span class="sc">$</span>bA <span class="sc">-</span> condequal<span class="sc">$</span>bA <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">/</span> <span class="fu">nrow</span>(condequal)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(condA_feat<span class="sc">$</span>bA <span class="sc">-</span> condequal_feat<span class="sc">$</span>bA <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">/</span> <span class="fu">nrow</span>(condequal_feat)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 0.81</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(condequal<span class="sc">$</span>bA <span class="sc">-</span> condB<span class="sc">$</span>bA <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">/</span> <span class="fu">nrow</span>(condequal)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(condequal_feat<span class="sc">$</span>bA <span class="sc">-</span> condB_feat<span class="sc">$</span>bA <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">/</span> <span class="fu">nrow</span>(condequal_feat)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 0.73</code></pre>
 </div>
@@ -420,22 +420,22 @@ $ebfmi
 <h3 class="anchored" data-anchor-id="the-effect-of-scarcity-in-the-conjunction-condition">The effect of scarcity in the conjunction condition</h3>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># conditions labelled A are where A is scarce</span></span>
-<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>condA <span class="ot">&lt;-</span> post_labelled <span class="sc">%&gt;%</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>condA_conj <span class="ot">&lt;-</span> post_labelled <span class="sc">%&gt;%</span></span>
 <span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(scarcity <span class="sc">==</span> <span class="st">"A"</span>, difficulty <span class="sc">==</span> <span class="st">"conjunction"</span>)</span>
 <span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a><span class="co"># conditions labelled AB are equal</span></span>
-<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>condequal <span class="ot">&lt;-</span> post_labelled <span class="sc">%&gt;%</span></span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>condequal_conj <span class="ot">&lt;-</span> post_labelled <span class="sc">%&gt;%</span></span>
 <span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(scarcity <span class="sc">==</span> <span class="st">"AB"</span>, difficulty <span class="sc">==</span> <span class="st">"conjunction"</span>)</span>
 <span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a><span class="co"># conditions labelled B are where B is scarce</span></span>
-<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>condB <span class="ot">&lt;-</span> post_labelled <span class="sc">%&gt;%</span></span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>condB_conj <span class="ot">&lt;-</span> post_labelled <span class="sc">%&gt;%</span></span>
 <span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(scarcity <span class="sc">==</span> <span class="st">"B"</span>, difficulty <span class="sc">==</span> <span class="st">"conjunction"</span>)</span>
 <span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(condA<span class="sc">$</span>bA <span class="sc">-</span> condequal<span class="sc">$</span>bA <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">/</span> <span class="fu">nrow</span>(condequal)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(condA_conj<span class="sc">$</span>bA <span class="sc">-</span> condequal_conj<span class="sc">$</span>bA <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">/</span> <span class="fu">nrow</span>(condequal_conj)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 0.52</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(condequal<span class="sc">$</span>bA <span class="sc">-</span> condB<span class="sc">$</span>bA <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">/</span> <span class="fu">nrow</span>(condequal)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(condequal_conj<span class="sc">$</span>bA <span class="sc">-</span> condB_conj<span class="sc">$</span>bA <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">/</span> <span class="fu">nrow</span>(condequal_conj)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 0.92</code></pre>
 </div>
@@ -721,8 +721,8 @@ $ebfmi
 <span id="cb51-44"><a href="#cb51-44" aria-hidden="true" tabindex="-1"></a>ppt_condB <span class="ot">&lt;-</span> condB<span class="sc">$</span>bA <span class="sc">+</span> condB_r<span class="sc">$</span>uA</span>
 <span id="cb51-45"><a href="#cb51-45" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb51-46"><a href="#cb51-46" aria-hidden="true" tabindex="-1"></a>ppt <span class="ot">&lt;-</span> i</span>
-<span id="cb51-47"><a href="#cb51-47" aria-hidden="true" tabindex="-1"></a>test1 <span class="ot">&lt;-</span> <span class="fu">sum</span>(ppt_condA <span class="sc">-</span> ppt_condequal <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">/</span> <span class="fu">nrow</span>(condequal)</span>
-<span id="cb51-48"><a href="#cb51-48" aria-hidden="true" tabindex="-1"></a>test2 <span class="ot">&lt;-</span> <span class="fu">sum</span>(ppt_condequal <span class="sc">-</span> ppt_condB <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">/</span> <span class="fu">nrow</span>(condequal)</span>
+<span id="cb51-47"><a href="#cb51-47" aria-hidden="true" tabindex="-1"></a>test1 <span class="ot">&lt;-</span> <span class="fu">sum</span>(ppt_condA <span class="sc">-</span> ppt_condequal <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">/</span> <span class="fu">nrow</span>(condequal_r)</span>
+<span id="cb51-48"><a href="#cb51-48" aria-hidden="true" tabindex="-1"></a>test2 <span class="ot">&lt;-</span> <span class="fu">sum</span>(ppt_condequal <span class="sc">-</span> ppt_condB <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">/</span> <span class="fu">nrow</span>(condequal_r)</span>
 <span id="cb51-49"><a href="#cb51-49" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb51-50"><a href="#cb51-50" aria-hidden="true" tabindex="-1"></a>new_row <span class="ot">&lt;-</span> <span class="fu">tibble</span>(ppt, test1, test2)</span>
 <span id="cb51-51"><a href="#cb51-51" aria-hidden="true" tabindex="-1"></a></span>
@@ -763,13 +763,13 @@ $ebfmi
 <span id="cb53-17"><a href="#cb53-17" aria-hidden="true" tabindex="-1"></a>condB_r <span class="ot">&lt;-</span> post_random <span class="sc">%&gt;%</span></span>
 <span id="cb53-18"><a href="#cb53-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(scarcity <span class="sc">==</span> <span class="st">"B"</span>, person <span class="sc">==</span> i, difficulty <span class="sc">==</span> <span class="st">"conjunction"</span>)</span>
 <span id="cb53-19"><a href="#cb53-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb53-20"><a href="#cb53-20" aria-hidden="true" tabindex="-1"></a>ppt_condA <span class="ot">&lt;-</span> condA<span class="sc">$</span>bA <span class="sc">+</span> condA_r<span class="sc">$</span>uA</span>
-<span id="cb53-21"><a href="#cb53-21" aria-hidden="true" tabindex="-1"></a>ppt_condequal <span class="ot">&lt;-</span> condequal<span class="sc">$</span>bA <span class="sc">+</span> condequal_r<span class="sc">$</span>uA</span>
-<span id="cb53-22"><a href="#cb53-22" aria-hidden="true" tabindex="-1"></a>ppt_condB <span class="ot">&lt;-</span> condB<span class="sc">$</span>bA <span class="sc">+</span> condB_r<span class="sc">$</span>uA</span>
+<span id="cb53-20"><a href="#cb53-20" aria-hidden="true" tabindex="-1"></a>ppt_condA <span class="ot">&lt;-</span> condA_conj<span class="sc">$</span>bA <span class="sc">+</span> condA_r<span class="sc">$</span>uA</span>
+<span id="cb53-21"><a href="#cb53-21" aria-hidden="true" tabindex="-1"></a>ppt_condequal <span class="ot">&lt;-</span> condequal_conj<span class="sc">$</span>bA <span class="sc">+</span> condequal_r<span class="sc">$</span>uA</span>
+<span id="cb53-22"><a href="#cb53-22" aria-hidden="true" tabindex="-1"></a>ppt_condB <span class="ot">&lt;-</span> condB_conj<span class="sc">$</span>bA <span class="sc">+</span> condB_r<span class="sc">$</span>uA</span>
 <span id="cb53-23"><a href="#cb53-23" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb53-24"><a href="#cb53-24" aria-hidden="true" tabindex="-1"></a>ppt <span class="ot">&lt;-</span> i</span>
-<span id="cb53-25"><a href="#cb53-25" aria-hidden="true" tabindex="-1"></a>test1 <span class="ot">&lt;-</span> <span class="fu">sum</span>(ppt_condA <span class="sc">-</span> ppt_condequal <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">/</span> <span class="fu">nrow</span>(condequal)</span>
-<span id="cb53-26"><a href="#cb53-26" aria-hidden="true" tabindex="-1"></a>test2 <span class="ot">&lt;-</span> <span class="fu">sum</span>(ppt_condequal <span class="sc">-</span> ppt_condB <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">/</span> <span class="fu">nrow</span>(condequal)</span>
+<span id="cb53-25"><a href="#cb53-25" aria-hidden="true" tabindex="-1"></a>test1 <span class="ot">&lt;-</span> <span class="fu">sum</span>(ppt_condA <span class="sc">-</span> ppt_condequal <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">/</span> <span class="fu">nrow</span>(condequal_r)</span>
+<span id="cb53-26"><a href="#cb53-26" aria-hidden="true" tabindex="-1"></a>test2 <span class="ot">&lt;-</span> <span class="fu">sum</span>(ppt_condequal <span class="sc">-</span> ppt_condB <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">/</span> <span class="fu">nrow</span>(condequal_r)</span>
 <span id="cb53-27"><a href="#cb53-27" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb53-28"><a href="#cb53-28" aria-hidden="true" tabindex="-1"></a>new_row <span class="ot">&lt;-</span> <span class="fu">tibble</span>(ppt, test1, test2)</span>
 <span id="cb53-29"><a href="#cb53-29" aria-hidden="true" tabindex="-1"></a></span>
@@ -783,10 +783,10 @@ $ebfmi
 <pre><code># A tibble: 4 × 3
     ppt test1 test2
   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
-1     6 1     0.999
-2    10 0.940 1    
-3    24 0.972 0.999
-4    25 0.981 0.928</code></pre>
+1     6 1     1    
+2    10 0.941 1    
+3    24 0.978 1.00 
+4    25 0.975 0.965</code></pre>
 </div>
 </div>
 <p>There are slightly more participants who show some inclination towards a scarcity bias in the conjunction condition (although most do not meet the strict evidence threshold, and it remains a small group). Participant 6 is perhaps the strongest evidence.</p>
@@ -828,6 +828,23 @@ $ebfmi
 <p>There doesn’t seem to be strong evidence for high correlations between <span class="math inline">\(u_A\)</span> and other parameters of the model.</p>
 </section>
 </section>
+</section>
+<section id="h2-feature-vs.-conjunction" class="level1">
+<h1>H2: feature vs.&nbsp;conjunction</h1>
+<p>We predicted we will see a larger value for <span class="math inline">\(b_s\)</span> in the conjunction condition compared to the feature condition.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>feat <span class="ot">&lt;-</span> post_labelled <span class="sc">%&gt;%</span></span>
+<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(difficulty <span class="sc">==</span> <span class="st">"feature"</span>)</span>
+<span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-4"><a href="#cb58-4" aria-hidden="true" tabindex="-1"></a>conj <span class="ot">&lt;-</span> post_labelled <span class="sc">%&gt;%</span></span>
+<span id="cb58-5"><a href="#cb58-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(difficulty <span class="sc">==</span> <span class="st">"conjunction"</span>)</span>
+<span id="cb58-6"><a href="#cb58-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-7"><a href="#cb58-7" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>((conj<span class="sc">$</span>b_stick <span class="sc">-</span> feat<span class="sc">$</span>b_stick) <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">/</span> <span class="fu">nrow</span>(feat)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 1</code></pre>
+</div>
+</div>
+<p>As predicted, we see a larger value for <span class="math inline">\(b_s\)</span> in the conjunction condition (mean = 0.88) compared to the feature condition (mean = 2.16). This is in line with previous data.</p>
 </section>
 
 </main>

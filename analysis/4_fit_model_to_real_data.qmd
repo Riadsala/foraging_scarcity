@@ -256,8 +256,6 @@ Here, we extract posterior draws.
 
 ```{r, message = FALSE, warning = FALSE}
 
-
-
 cl <- unique(d_found$condition)
 
 post <- extract_post(m, d_found, cl)
@@ -335,19 +333,19 @@ We do not find support for this hypothesis: upon examining the posterior distrib
 ```{r}
 
 # conditions labelled A are where A is scarce
-condA <- post_labelled %>%
+condA_feat <- post_labelled %>%
   filter(scarcity == "A", difficulty == "feature")
 
 # conditions labelled AB are equal
-condequal <- post_labelled %>%
+condequal_feat <- post_labelled %>%
   filter(scarcity == "AB", difficulty == "feature")
 
 # conditions labelled B are where B is scarce
-condB <- post_labelled %>%
+condB_feat <- post_labelled %>%
   filter(scarcity == "B", difficulty == "feature")
 
-sum(condA$bA - condequal$bA > 0) / nrow(condequal)
-sum(condequal$bA - condB$bA > 0) / nrow(condequal)
+sum(condA_feat$bA - condequal_feat$bA > 0) / nrow(condequal_feat)
+sum(condequal_feat$bA - condB_feat$bA > 0) / nrow(condequal_feat)
 
 ```
 
@@ -358,19 +356,19 @@ The effect in the feature condition trends in the expected direction (scarcity c
 ```{r}
 
 # conditions labelled A are where A is scarce
-condA <- post_labelled %>%
+condA_conj <- post_labelled %>%
   filter(scarcity == "A", difficulty == "conjunction")
 
 # conditions labelled AB are equal
-condequal <- post_labelled %>%
+condequal_conj <- post_labelled %>%
   filter(scarcity == "AB", difficulty == "conjunction")
 
 # conditions labelled B are where B is scarce
-condB <- post_labelled %>%
+condB_conj <- post_labelled %>%
   filter(scarcity == "B", difficulty == "conjunction")
 
-sum(condA$bA - condequal$bA > 0) / nrow(condequal)
-sum(condequal$bA - condB$bA > 0) / nrow(condequal)
+sum(condA_conj$bA - condequal_conj$bA > 0) / nrow(condequal_conj)
+sum(condequal_conj$bA - condB_conj$bA > 0) / nrow(condequal_conj)
 
 ```
 
@@ -669,8 +667,8 @@ ppt_condequal <- condequal$bA + condequal_r$uA
 ppt_condB <- condB$bA + condB_r$uA
 
 ppt <- i
-test1 <- sum(ppt_condA - ppt_condequal > 0) / nrow(condequal)
-test2 <- sum(ppt_condequal - ppt_condB > 0) / nrow(condequal)
+test1 <- sum(ppt_condA - ppt_condequal > 0) / nrow(condequal_r)
+test2 <- sum(ppt_condequal - ppt_condB > 0) / nrow(condequal_r)
 
 new_row <- tibble(ppt, test1, test2)
 
@@ -710,13 +708,13 @@ condequal_r <- post_random %>%
 condB_r <- post_random %>%
   filter(scarcity == "B", person == i, difficulty == "conjunction")
 
-ppt_condA <- condA$bA + condA_r$uA
-ppt_condequal <- condequal$bA + condequal_r$uA
-ppt_condB <- condB$bA + condB_r$uA
+ppt_condA <- condA_conj$bA + condA_r$uA
+ppt_condequal <- condequal_conj$bA + condequal_r$uA
+ppt_condB <- condB_conj$bA + condB_r$uA
 
 ppt <- i
-test1 <- sum(ppt_condA - ppt_condequal > 0) / nrow(condequal)
-test2 <- sum(ppt_condequal - ppt_condB > 0) / nrow(condequal)
+test1 <- sum(ppt_condA - ppt_condequal > 0) / nrow(condequal_r)
+test2 <- sum(ppt_condequal - ppt_condB > 0) / nrow(condequal_r)
 
 new_row <- tibble(ppt, test1, test2)
 
@@ -763,3 +761,21 @@ ggcorrplot(corr,
 ```
 
 There doesn't seem to be strong evidence for high correlations between $u_A$ and other parameters of the model.
+
+# H2: feature vs. conjunction
+
+We predicted we will see a larger value for $b_s$ in the conjunction condition compared to the feature condition.
+
+```{r}
+
+feat <- post_labelled %>%
+  filter(difficulty == "feature")
+
+conj <- post_labelled %>%
+  filter(difficulty == "conjunction")
+
+sum((conj$b_stick - feat$b_stick) > 0) / nrow(feat)
+
+```
+
+As predicted, we see a larger value for $b_s$ in the conjunction condition (mean = `r mean(feat$b_stick)`) compared to the feature condition (mean = `r mean(conj$b_stick)`). This is in line with previous data.
