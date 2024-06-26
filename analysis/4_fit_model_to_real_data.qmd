@@ -778,4 +778,34 @@ sum((conj$b_stick - feat$b_stick) > 0) / nrow(feat)
 
 ```
 
-As predicted, we see a larger value for $b_s$ in the conjunction condition (mean = `r mean(feat$b_stick)`) compared to the feature condition (mean = `r mean(conj$b_stick)`). This is in line with previous data.
+As predicted, we see a larger value for $b_s$ in the conjunction condition (mean = `r mean(conj$b_stick)`) compared to the feature condition (mean = `r mean(feat$b_stick)`). This is in line with previous data.
+
+# H3: proximity bias
+
+We predicted that we would see larger proximity biases in the featue condition compared to the conjunction condition.
+
+```{r}
+
+sum((feat$rho_delta - conj$rho_delta) > 0) / nrow(feat)
+
+```
+
+As predicted, the proximity bias is larger in the feature condition (mean = `r mean(feat$rho_delta)`) compared to the conjunction condition (mean = `r mean(conj$rho_delta)`). This is in line with previous data.
+
+# H4: directional bias
+
+We predicted we would see a negative effect of relative direction.
+
+```{r}
+
+sum(post_labelled$rho_psi < 0) / nrow(post_labelled)
+
+```
+
+We did not support this hypothesis: although in previous experiments, we have found that participants have a negative effect of relative direction, in this experiment, we do not see that 99% of the posterior distribution for the relative direction parameter is negative. However, as in previous studies, we do see a reasonable amount of between-participant variability.
+
+```{r}
+
+plot_model_random_dir(post)
+
+```

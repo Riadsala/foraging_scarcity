@@ -529,3 +529,42 @@ plot_model_random <- function(post)
   
 }
 
+plot_model_random_dir <- function(post) 
+{
+  
+  post$random %>%
+    mutate(
+      difficulty = case_match(
+        condition,
+        "1" ~ "conjunction",
+        "2" ~ "conjunction",
+        "3" ~ "conjunction",
+        "4" ~ "feature",
+        "5" ~ "feature",
+        "6" ~ "feature"
+      ),
+      scarcity = case_match(
+        condition, 
+        "1" ~ "A",
+        "2" ~ "AB",
+        "3" ~ "B",
+        "4" ~ "A",
+        "5" ~ "AB",
+        "6" ~ "B"
+      )) %>%
+    pivot_longer(starts_with("u_psi"), names_to = "param") %>%
+    group_by(person, difficulty, scarcity, param) %>%
+    median_hdci(value) -> d_hpdi
+  
+  d_hpdi %>% 
+    ggplot(aes(x = as.factor(person), ymin = .lower, y = value, ymax = .upper)) +
+    geom_hline(linetype = 2, yintercept = 0) + 
+    geom_linerange(position = position_dodge(width = 0.9), linewidth = 1) +
+    coord_flip() +
+    facet_wrap(~difficulty, scales = "free") +
+    xlab('Participant') -> plt
+  
+  return(plt)
+  
+}
+

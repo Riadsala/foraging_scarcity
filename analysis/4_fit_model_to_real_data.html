@@ -844,7 +844,35 @@ $ebfmi
 <pre><code>[1] 1</code></pre>
 </div>
 </div>
-<p>As predicted, we see a larger value for <span class="math inline">\(b_s\)</span> in the conjunction condition (mean = 0.88) compared to the feature condition (mean = 2.16). This is in line with previous data.</p>
+<p>As predicted, we see a larger value for <span class="math inline">\(b_s\)</span> in the conjunction condition (mean = 2.16) compared to the feature condition (mean = 0.88). This is in line with previous data.</p>
+</section>
+<section id="h3-proximity-bias" class="level1">
+<h1>H3: proximity bias</h1>
+<p>We predicted that we would see larger proximity biases in the featue condition compared to the conjunction condition.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb60"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>((feat<span class="sc">$</span>rho_delta <span class="sc">-</span> conj<span class="sc">$</span>rho_delta) <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">/</span> <span class="fu">nrow</span>(feat)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 1</code></pre>
+</div>
+</div>
+<p>As predicted, the proximity bias is larger in the feature condition (mean = 13.22) compared to the conjunction condition (mean = 9.54). This is in line with previous data.</p>
+</section>
+<section id="h4-directional-bias" class="level1">
+<h1>H4: directional bias</h1>
+<p>We predicted we would see a negative effect of relative direction.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb62"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(post_labelled<span class="sc">$</span>rho_psi <span class="sc">&lt;</span> <span class="dv">0</span>) <span class="sc">/</span> <span class="fu">nrow</span>(post_labelled)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.23</code></pre>
+</div>
+</div>
+<p>We did not support this hypothesis: although in previous experiments, we have found that participants have a negative effect of relative direction, in this experiment, we do not see that 99% of the posterior distribution for the relative direction parameter is negative. However, as in previous studies, we do see a reasonable amount of between-participant variability.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb64"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_model_random_dir</span>(post)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="4_fit_model_to_real_data_files/figure-html/unnamed-chunk-35-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
 </section>
 
 </main>
