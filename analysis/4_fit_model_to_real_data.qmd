@@ -851,9 +851,9 @@ We can see here that our model random effect parameters for sticking (where a hi
 
 ## Fitting a newer version of the model
 
-We do have a new implementation of the same FoMo model at https://github.com/Riadsala/FoMo. V1.0 is exactly the same mathematically as the version in the current repository, but has slightly tidied up code. 
+We do have a new implementation of the same FoMo model at https://github.com/Riadsala/FoMo. V1.0 is exactly the same mathematically as the version in the current repository, but has slightly tidied up code. We can see that the basic results of the model are exactly the same.
 
-```{r}
+```{r, eval = FALSE}
 
 source("../../FoMo/functions/import_data.R")
 source("../../FoMo/functions/prep_data.R")
@@ -884,5 +884,20 @@ fit <- mod$sample(data = d_list,
                  iter_warmup = iter, iter_sampling = iter,
                  sig_figs = 3)
 
+fit$save_object(paste0("../output/", exptname, "/foraging_real_fomo.RDS"))
+
+```
+
+```{r, warning = FALSE}
+
+source("../../FoMo/functions/post_functions.R")
+source("../../FoMo/functions/plot_model.R")
+
+fit <- readRDS(paste0("../output/", exptname, "/foraging_real_fomo.RDS"))
+
+d <- list(found = d_found, stim = d_stim)
+
+post <- extract_post(fit, d)
+plot_model_fixed(post)
 
 ```

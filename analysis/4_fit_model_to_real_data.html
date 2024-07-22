@@ -300,7 +300,7 @@ $ebfmi
 <section id="h1-the-effect-of-scarcity" class="level1">
 <h1>H1: the effect of scarcity</h1>
 <p>Our main hypothesis (H1) is that participants will show a preference for selecting scarce targets. We will take <span class="math inline">\(b_A(equal)\)</span> as our baseline condition and compare this to <span class="math inline">\(b_A(scarce_A)\)</span> and <span class="math inline">\(b_A(scarce_B)\)</span>.</p>
-<p>First, we need to label our conditions appropriately so we know what each one means.</p>
+<p>First, we need to label our conditions appropriately so we know what each one means. Note that ‘scarcity’ being A means that target type A was scarce, AB means target types A and B had equal numbers, and B means that target type B was scarce. In the feature condition, target A is the red circle and target B is the green circle. In the conjunction condition, target A is the red square and target B is the green circle.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>post_labelled <span class="ot">&lt;-</span> post<span class="sc">$</span>fixed <span class="sc">%&gt;%</span></span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
@@ -924,6 +924,53 @@ using the `.groups` argument.</code></pre>
 </section>
 <section id="fitting-a-newer-version-of-the-model" class="level2">
 <h2 class="anchored" data-anchor-id="fitting-a-newer-version-of-the-model">Fitting a newer version of the model</h2>
+<p>We do have a new implementation of the same FoMo model at https://github.com/Riadsala/FoMo. V1.0 is exactly the same mathematically as the version in the current repository, but has slightly tidied up code. We can see that the basic results of the model are exactly the same.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb74"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">"../../FoMo/functions/import_data.R"</span>)</span>
+<span id="cb74-2"><a href="#cb74-2" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">"../../FoMo/functions/prep_data.R"</span>)</span>
+<span id="cb74-3"><a href="#cb74-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb74-4"><a href="#cb74-4" aria-hidden="true" tabindex="-1"></a>d_list <span class="ot">&lt;-</span> <span class="fu">prep_data_for_stan</span>(d_found, d_stim, <span class="fu">c</span>(<span class="st">"spatial"</span>, <span class="st">"item_class"</span>))</span>
+<span id="cb74-5"><a href="#cb74-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb74-6"><a href="#cb74-6" aria-hidden="true" tabindex="-1"></a>modelver <span class="ot">&lt;-</span> <span class="st">"1.0"</span></span>
+<span id="cb74-7"><a href="#cb74-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb74-8"><a href="#cb74-8" aria-hidden="true" tabindex="-1"></a>filename <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"priors_model"</span>, modelver, <span class="st">".csv"</span>)</span>
+<span id="cb74-9"><a href="#cb74-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb74-10"><a href="#cb74-10" aria-hidden="true" tabindex="-1"></a>priors <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="fu">paste0</span>(<span class="st">"../../FoMo/models/multi_level/"</span>, filename), <span class="at">show_col_types =</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb74-11"><a href="#cb74-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pivot_longer</span>(<span class="sc">-</span>param, <span class="at">names_to =</span> <span class="st">"stat"</span>, <span class="at">values_to =</span> <span class="st">"value"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb74-12"><a href="#cb74-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">param =</span> <span class="fu">paste</span>(<span class="st">"prior"</span>, stat, param, <span class="at">sep=</span><span class="st">"_"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb74-13"><a href="#cb74-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">-</span>stat)</span>
+<span id="cb74-14"><a href="#cb74-14" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb74-15"><a href="#cb74-15" aria-hidden="true" tabindex="-1"></a>d_list <span class="ot">&lt;-</span> <span class="fu">append</span>(d_list, priors <span class="sc">%&gt;%</span> <span class="fu">group_by</span>(param) <span class="sc">%&gt;%</span> <span class="fu">deframe</span>())</span>
+<span id="cb74-16"><a href="#cb74-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb74-17"><a href="#cb74-17" aria-hidden="true" tabindex="-1"></a>d_list<span class="sc">$</span>n_trials_to_sim <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb74-18"><a href="#cb74-18" aria-hidden="true" tabindex="-1"></a>iter <span class="ot">&lt;-</span> <span class="dv">1000</span></span>
+<span id="cb74-19"><a href="#cb74-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb74-20"><a href="#cb74-20" aria-hidden="true" tabindex="-1"></a>mod <span class="ot">&lt;-</span> <span class="fu">cmdstan_model</span>(<span class="st">"../../FoMo/models/multi_level/FoMo1_0.stan"</span>, </span>
+<span id="cb74-21"><a href="#cb74-21" aria-hidden="true" tabindex="-1"></a>                     <span class="at">cpp_options =</span> <span class="fu">list</span>(<span class="at">stan_threads =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb74-22"><a href="#cb74-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb74-23"><a href="#cb74-23" aria-hidden="true" tabindex="-1"></a>fit <span class="ot">&lt;-</span> mod<span class="sc">$</span><span class="fu">sample</span>(<span class="at">data =</span> d_list, </span>
+<span id="cb74-24"><a href="#cb74-24" aria-hidden="true" tabindex="-1"></a>                 <span class="at">chains =</span> <span class="dv">4</span>, <span class="at">parallel_chains =</span> <span class="dv">4</span>, <span class="at">threads =</span> <span class="dv">4</span>,</span>
+<span id="cb74-25"><a href="#cb74-25" aria-hidden="true" tabindex="-1"></a>                 <span class="at">refresh =</span> <span class="dv">10</span>, </span>
+<span id="cb74-26"><a href="#cb74-26" aria-hidden="true" tabindex="-1"></a>                 <span class="at">init =</span> <span class="dv">1</span>,</span>
+<span id="cb74-27"><a href="#cb74-27" aria-hidden="true" tabindex="-1"></a>                 <span class="at">iter_warmup =</span> iter, <span class="at">iter_sampling =</span> iter,</span>
+<span id="cb74-28"><a href="#cb74-28" aria-hidden="true" tabindex="-1"></a>                 <span class="at">sig_figs =</span> <span class="dv">3</span>)</span>
+<span id="cb74-29"><a href="#cb74-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb74-30"><a href="#cb74-30" aria-hidden="true" tabindex="-1"></a>fit<span class="sc">$</span><span class="fu">save_object</span>(<span class="fu">paste0</span>(<span class="st">"../output/"</span>, exptname, <span class="st">"/foraging_real_fomo.RDS"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb75"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb75-1"><a href="#cb75-1" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">"../../FoMo/functions/post_functions.R"</span>)</span>
+<span id="cb75-2"><a href="#cb75-2" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">"../../FoMo/functions/plot_model.R"</span>)</span>
+<span id="cb75-3"><a href="#cb75-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb75-4"><a href="#cb75-4" aria-hidden="true" tabindex="-1"></a>fit <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="fu">paste0</span>(<span class="st">"../output/"</span>, exptname, <span class="st">"/foraging_real_fomo.RDS"</span>))</span>
+<span id="cb75-5"><a href="#cb75-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb75-6"><a href="#cb75-6" aria-hidden="true" tabindex="-1"></a>d <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">found =</span> d_found, <span class="at">stim =</span> d_stim)</span>
+<span id="cb75-7"><a href="#cb75-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb75-8"><a href="#cb75-8" aria-hidden="true" tabindex="-1"></a>post <span class="ot">&lt;-</span> <span class="fu">extract_post</span>(fit, d)</span>
+<span id="cb75-9"><a href="#cb75-9" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_model_fixed</span>(post)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="4_fit_model_to_real_data_files/figure-html/unnamed-chunk-39-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
 </section>
 </section>
 
