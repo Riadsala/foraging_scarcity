@@ -1,6 +1,8 @@
 ---
 title: "3 Fit model to pilot data"
-format: html
+format: 
+  html:
+    self-contained: true
 editor: visual
 ---
 

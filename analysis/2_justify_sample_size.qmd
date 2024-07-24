@@ -1,6 +1,8 @@
 ---
 title: "2 Justify Sample Size"
-format: html
+format: 
+  html:
+    self-contained: true
 editor: visual
 ---
 
@@ -253,6 +255,7 @@ post3 %>%
   scale_fill_brewer(palette = "Greys") +
   facet_wrap(~param, scales="free", nrow = 1)
 ```
+
 Finally, for H4, we can see that the model is able to predict the negative effect of relative direction, with the 99% HDCI all being negative.
 
 ```{r, fig.height=2.8}

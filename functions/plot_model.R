@@ -62,42 +62,7 @@ plot_model_fixed <- function(post, m, d, cl = "A", gt=NULL, pilot=NULL, directio
     scale_x_continuous("class weights") +
     facet_wrap(~difficulty) + 
     theme(legend.position = "bottom") -> plt_pA
-  
-  # plot difference between class weights
-  #  post %>% 
-  #   mutate(
-  #      difficulty = case_match(
-  #        condition,
-  #        "1" ~ "conjunction",
-  #        "2" ~ "conjunction",
-  #        "3" ~ "conjunction",
-  #        "4" ~ "feature",
-  #        "5" ~ "feature",
-  #        "6" ~ "feature"
-  #      ),
-  #      scarcity = case_match(
-  #        condition, 
-  #        "1" ~ "A",
-  #        "2" ~ "AB",
-  #        "3" ~ "B",
-  #        "4" ~ "A",
-  #        "5" ~ "AB",
-  #        "6" ~ "B"
-  #      )) %>%
-  #    pivot_longer(c(bA, b_stick, rho_delta, rho_psi), names_to = "param") %>%
-  #    select(-condition) %>%
-  #    pivot_wider(names_from = c("scarcity", "difficulty"), values_from = "value") %>%
-  #    unnest(cols=c(scarce_conjunction:equal_feature)) %>%
-  #    mutate(feature = scarce_feature - equal_feature,
-  #           conjunction = scarce_conjunction - equal_conjunction) %>%
-  #    pivot_longer(c(feature, conjunction), names_to = "difficulty") -> post_diff
     
-  #  post_diff %>%
-  #    filter(param == "bA") %>%
-  #    ggplot(aes(value)) + geom_density(fill = "grey") + 
-  #    geom_vline(xintercept = 0, linetype = 2) + 
-  #    facet_wrap(~difficulty, scales="free", nrow = 1) +
-  #    theme(legend.position = "none", text = element_text(size=10)) + xlab('class weight difference between equal & scarce conditions') -> plt_pA_diff
   }
   
   
@@ -237,8 +202,8 @@ plot_model_fixed <- function(post, m, d, cl = "A", gt=NULL, pilot=NULL, directio
   
   
   # plot proximity and direction effects
-  plt_prox    <- plt_post_prior(post, prior, "rho_delta", "proximity tuning", gt$rho_delta)
-  plt_rel_dir <- plt_post_prior(post, prior, "rho_psi", "direction tuning", gt$rho_psi)
+  plt_prox    <- plt_post_prior(post, prior, "rho_delta", "proximity tuning", gt$rho_delta, pilot = pilot)
+  plt_rel_dir <- plt_post_prior(post, prior, "rho_psi", "direction tuning", gt$rho_psi, pilot = pilot)
   
   
   if (!is.null(gt)) {
@@ -282,13 +247,27 @@ plot_model_fixed <- function(post, m, d, cl = "A", gt=NULL, pilot=NULL, directio
   }
   
   # for real data
-  if (is.null(gt)) {
+  if (is.null(gt) && (is.null(pilot))) {
   layout <- "
   AAAABBBB
   CCCCDDDD
   "
   
   plt <- (plt_pA + plt_pS + plt_prox + plt_rel_dir) + 
+    plot_layout(design = layout, guides = 'collect') &  
+    theme(legend.position = 'bottom', panel.grid = element_blank())
+  
+  return(plt)
+  }
+
+  # for pilot data
+  if (is.null(gt) && (!is.null(pilot))) {
+  layout <- "
+  AAAABBBB
+  CCCCDDEE
+  "
+  
+  plt <- (plt_pA + plt_pA_diff +  plt_pS + plt_prox + plt_rel_dir) + 
     plot_layout(design = layout, guides = 'collect') &  
     theme(legend.position = 'bottom', panel.grid = element_blank())
   
@@ -323,7 +302,7 @@ compute_rho_phi <- function(drw) {
 
 
 
-plt_post_prior <- function(post, prior, var, xtitle, gt, pilot=NULL) {
+plt_post_prior <- function(post, prior, var, xtitle, gt, pilot = NULL) {
   
   # function to plot the posterior against the prior. 
   # gt allows us to mark up the groundtruth (if available)
@@ -397,7 +376,7 @@ plt_post_prior <- function(post, prior, var, xtitle, gt, pilot=NULL) {
   }
   
   # pilot data
-  if (var == "p_floor" && !is.null(pilot))
+  if (var == "p_floor" && (!is.null(pilot)))
   {
     post %>% 
       ggplot() + 
@@ -409,7 +388,7 @@ plt_post_prior <- function(post, prior, var, xtitle, gt, pilot=NULL) {
       scale_x_continuous(xtitle) +
       coord_cartesian(xlim = c(0, 0.1)) -> plt
     
-  } else if (var != "p_floor" && !is.null(pilot)) {
+  } else if (var != "p_floor" && (!is.null(pilot))) {
     post %>% 
       ggplot() + 
       geom_rect(data = prior %>% 

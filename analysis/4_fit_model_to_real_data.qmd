@@ -1,6 +1,8 @@
 ---
 title: "4 Fit model to real data"
-format: html
+format: 
+  html:
+    self-contained: true
 editor: visual
 ---
 
@@ -55,12 +57,14 @@ gender <- as.data.frame(unlist(d$gender))
 
 ## Excluded participants
 
-- Participants 1-4 were excluded from final data analysis because we accidentally ran them on a version of the experiment that did not include a practice trial.
-- Participant 26 did not complete the full experiment and therefore their data was excluded.
-- Participant 37 had a case where a target selection was mislabelled as belonging to another trial by the experimental program. In the interests of caution, we decided to exclude this dataset.
-- Participant 43 took us over the required sample size of 36, so was not used in the final analysis.
+-   Participants 1-4 were excluded from final data analysis because we accidentally ran them on a version of the experiment that did not include a practice trial.
+-   Participant 26 did not complete the full experiment and therefore their data was excluded.
+-   Participant 37 had a case where a target selection was mislabelled as belonging to another trial by the experimental program. In the interests of caution, we decided to exclude this dataset.
+-   Participant 43 took us over the required sample size of 36, so was not used in the final analysis.
 
 We note that due to experimenter error, a small number of participants were mislabelled in the original raw data (participant 11 was originally labelled 10, participant 12 was originally labelled 11 and participant 22 was originally labelled 21). These errors have been fixed in the raw data, but otherwise no changes have been made to the original files.
+
+As part of data pre-processing, the participant numbers are re-labelled so they go from 1-36, so the 'raw' participant numbers described above do not necessarily match the participant numbers used later in the supplementary materials and manuscript.
 
 ## Checking inter-target selection times
 
@@ -183,7 +187,6 @@ tot_participants <- nrow(gender)
 
 Participants had a mean age of `r mean_age` (SD = `r sd_age`). There were `r tot_participants` participants, with `r gender_count[[1,2]]` identifying as female (`r gender_count[[1,2]]/tot_participants*100`%).
 
-
 # Prepare and fit model
 
 Here we prepare and fit the model. Note that this process is slow, so this code is set to `eval = FALSE` as default.
@@ -270,6 +273,7 @@ plot_model_fixed(post, m, d_found, cl)
 ggsave(ggsave("../plots/real_data.pdf", width = 8, height = 4))
 
 ```
+
 ## Our main hypothesis
 
 We predicted that participants will show a preference for scarce targets, marginalising over the feature and conjunction conditions.
