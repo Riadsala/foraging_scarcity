@@ -1,0 +1,301 @@
+\documentclass[12pt]{article}
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage{natbib}
+\usepackage{palatino}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{authblk}
+\usepackage{hyperref}
+\usepackage{lineno}
+
+\bibliographystyle{abbrvnat}
+
+\begin{document}
+
+%%%% Article title to be placed here
+\title{The effect of target scarcity on visual foraging}
+
+\author[1]{A. E. Hughes\footnote{anna.hughes@essex.ac.uk}}
+\author[2]{H. R. Statham}
+\author[1]{A. D. F. Clarke}
+\affil[1]{Department of Psychology\\University of Essex\\  Colchester, UK}
+\affil[2]{School of Psychology\\Cardiff University\\Cardiff, UK}
+
+\maketitle
+
+\linenumbers
+
+%%%% Abstract text to be placed here %%%%%%%%%%%%
+\begin{abstract}
+Previous studies have investigated the effect of target prevalence in combination with the effect of explicit target value on human visual foraging strategies, though the conclusions have been mixed. Some find that individuals have a bias towards high-value targets even when these targets are scarcer whilst other studies find that this bias disappears when those targets are scarcer. In this study, we tested for a bias for scarce targets using standard feature vs conjunction visual foraging tasks, without an explicit value being given. Based on the idea of commodity theory and implicit value, we hypothesised that participants would show a scarcity bias. The bias was investigated using a Bayesian statistical model which has been developed for predicting target-by-target foraging behaviours. However, we found no evidence for a scarcity bias in our experiment, suggesting that participants did not inherently find rarer targets more rewarding.
+\end{abstract}
+
+
+\section{Introduction}
+
+Humans and other animals search their environment regularly, looking both for unique items, and for items where there are multiple exemplars available (such as berries on a bush). The former situation can be conceptualised as a visual search task where an observer must find a single target type from amongst distractors. The latter is referred to as foraging, in which observers search and collect multiple targets. It is considered an important behaviour given its connection to resource gathering \citep{bella2021foraging}, and has even been argued to be a key behaviour driving human cognitive evolution \citep{hills2015exploration, pretelli2022foraging}
+
+A number of studies have addressed the factors that influence foraging behaviour. Early work by \cite{dawkins1971} observed that chicks appear to peck grains in `runs' of one grain type before switching to the other. More recently \citep{kristjansson2014common} this behaviour has been studied in humans. When human participants are tasked with collecting multiple target types by sequentially tapping on them during an iPad game, they tend to consecutively select targets of one type in a series of `runs'. This is especially the case in relatively difficult `conjunction' searches where the targets are defined by a combination of two features, compared to `feature' searches where just one feature can be used to differentiate targets and distractors. (See Figure \ref{fig_exstim} for examples of the displays.) This method appears to be more efficient compared to switching between target types \citep{wolfe2019guidance}. 
+
+Target value has been shown to be one of the main factors governing the deployment of visual attention \citep{wolfe2017five}, and as such, it plays an important role in foraging behaviour. Value can be thought of as either explicit or implicit. An example of explicit value influencing foraging behaviour can be seen in a study by \cite{nityananda2021different}. They trained bees to discriminate between artificial flowers, their foraging behaviour was influenced such that they chose the more rewarding flowers (with more sucrose) in higher proportions. In humans, we can also use points and prizes as a way to manipulate explicit value e.g. by tying participant payment to gaining a certain number of points in an experiment. By contrast, implicit value is used to describe situations in which some targets may be more attractive to a forager due to an incidental feature. For example, \cite{nityananda2021different} manipulated saliency in their experiments by adjusting the colour contrast of targets compared to their background, and found that higher saliency targets were more likely to be selected than lower ones.
+
+One interesting example of implicit value is \textit{scarcity}, where a target type is visually less common in an environment. Brock's Commodity Theory is a theory from social psychology that suggests that participants may value scarce targets (or other 'useful things', including messages and experiences as well as material objects \citep{brock1992liberalization}) more highly than readily available targets \citep{brock1968implications}. Empirical evidence for this theory has been found across a range of contexts \citep{lynn1991scarcity} (although not all studies have found strong evidence for scarcity biases \citep[e.g.][]{echelbarger2017value}). A preference for scarce objects could occur because possessing a scarce object may provide a feeling of personal distinctiveness or uniqueness \citep{lynn1991scarcity}, or because scarcity can be taken as a proxy for other desirable features, such as popularity. However, there may also be more `low-level' explanations for a scarcity preference: for example, it has been argued that participants show stronger sustained attention to scarce resources, leading to more intense evaluation of the item \citep{sehnert2014scarcity}, and therefore perhaps changing behaviour.
+
+Both explicit target value and scarcity have been manipulated in the context of foraging studies. For example, \cite{wiegand2021target} manipulated explicit target value and prevalence (which can be considered equivalent to scarcity) and found that participants preferentially selected targets of higher value. However, this effect was modulated by target prevalence: participants no longer showed a preference for the higher-value targets when they had a much lower prevalence than the lower-value targets. In another study, \cite{tagu2022selection}  had participants collect a certain number of points by collecting targets, and the high value targets were rarer than lower-value ones. In contrast to \cite{wiegand2021target}, participants tended to select high-value targets earlier than low-value targets, even though the high-value targets were scarcer. \cite{wolfe2018hybrid} investigated the effect of target prevalence in a hybrid foraging task where all four possible targets had equal value, and found that participants picked the more common targets at a higher rate than the less common ones, an effect they attributed to priming. Thus, there have been mixed results in the human foraging literature on the effect of target scarcity on human foraging. It is worth noting that all the studies to date did explicitly assign targets a value (even if equal) and therefore do not necessarily tell us about the implicit value that participants may assign to targets.
+
+There have been a number of visual search studies that have investigated scarcity, focusing on the context of scarce or abundant distractors rather than studying the effect of scarce targets. In one study, where participants searched for a target amongst two types of distractor, the distractor ratio strongly affected behaviour, with participants responding more quickly when one distractor was rarer than the other \citep{shen2000distractor}. Similarly, people have been shown to be able to search relatively efficiently for a conjunction target within the smaller group of distractors when one type of distractor is more numerous than the other \citep{sobel2002roles}. Attention is therefore directed to the rarer elements of the display, in a manner that might share cognitive similarities to a `scarcity bias', although the authors themselves argued that this behaviour was observed because it is faster to start search in a smaller group compared to a larger one.
+
+In previous studies of foraging behaviour, differences between conditions have been studied using aggregate statistics, such as the number of `runs' of a particular target type (i.e. the number of times that target is selected in a row) or the total number of targets found in the longest run. However, these measures have limitations. For example, they can be biased by the spatial layout of the display. They also do not allow us to distinguish between the case where a participant sticks with a particular target because of a preference for that specific target type, compared to the case where they simply like to stay searching for the same target template, regardless of what the target is. Similarly, with these aggregate statistics methods, it is not necessarily intuitive to account for imbalances in target numbers in a display, and how we can conclude whether a `scarcer' target is selected more or less often than would be expected by chance: for example, if there are fewer of target A compared to target B, a reduced number of switches between target types compared to the case where the targets are equal in number may simply reflect the fact that fewer switches are possible.
+
+To be able to more precisely track participant behaviour in these types of foraging tasks, we have developed a generative Bayesian model based on a sampling without replacement procedure. The benefit of this model is that it is able to break down behaviour into a series of cognitive biases, such as a preference for sticking with the same target type, or a preference for selecting a nearby target type, thus overcoming some of the limitations inherent to analyses based on aggregate statistics. We have successfully demonstrated that our model can account for average patterns of behaviour in a range of human foraging experiments \citep{clarke2022foraging}. In addition, it can make relatively accurate predictions of the next target a given individual will select on a trial \citep{clarke2022bayesian}. We therefore think that our model is a powerful tool for studying and understanding the processes underlying human foraging behaviour.
+
+In the current study, participants searched amongst coloured targets and distractors, in feature and conjunction styles of foraging like that of \citep{kristjansson2014common}. In the feature task, participants had to distinguish between targets and distractors based on colour. In the conjunction task, both shape and colour had to be considered in order to differentiate targets and distractors. Participants took part in some conditions where there were equal numbers of each target types, and other conditions where one target type was more numerous than the other. We had two key aims. Firstly, we tested whether scarcity affects how participants forage. If participants implicitly value the scarcer target more highly, as Brock's Commodity Theory \citep{brock1968implications} suggests they would, we expected participants to show a preference for the scarcer target, as measured by the bias parameter in the generative foraging model. As a secondary aim, we tested the extent to which the results of \citep{clarke2022foraging} generalise to a novel set of data. To date, we have used only secondary data sets, and therefore we used the registered report format to pre-register specific hypotheses relating to the parameters in our model to test how generalisable previous findings are.
+
+\section{Methods}
+
+\subsection{Participants}
+We collected data from 36 participants, recruited from the University of Essex participant pool. This sample size is justified below in Section \ref{sec:samplesize}. Informed consent was collected at the beginning of the study and the participants were debriefed as to the nature of the study afterwards. Participants confirmed (via self-report) that they had normal or corrected-to-normal vision. Ethical approval for the experiment was granted by the University of Essex Research Ethics Sub-committee 1 (ETH2223-1093). The experiment took around 30 minutes to complete, and participants were compensated £5 for their time.
+
+\subsection{Design}
+A 2x3 within-subjects design was used. The first independent variable was the difficulty of the task, with two levels: \textit{feature} and \textit{conjunction} (details of the stimulus manipulation given below). The second independent variable was the ratio of targets of class $A$ to $B$, with three levels: target class $A$ is \textit{scarce} (5 $A$ to 15 $B$); class $B$ is \textit{scarce} (15 $A$ to 5 $B$) and an \textit{even} ratio (10 $A$ to 10 $B$). 
+
+Each participant participated in all six conditions. Within each condition, there were ten trials, meaning that they completed 60 trials. Each condition was completed as one block, and the order of blocks was counterbalanced across participants (half the participants completed the three feature blocks first, in a random order, and half completed the three conjunction blocks first, in a random order).
+
+Before beginning the experiment, each participant  completed a practice trial to familiarise themselves with the procedure: this was similar to a \textit{feature} trial with an \textit{even} ratio of targets, but using different colours (black and white for the targets, and 'old lace' and 'thistle' for the distractors: all colour names refer to the RGB hex colours) and shapes (all targets and distractors were triangles, approximately 1 unit of visual angle wide). All other features otherwise exactly resembled the main experimental trials.
+
+\subsection{Stimuli}
+The experiment was created in PsychoPy-2022.2.4 software, and code is available in our  \href{https://github.com/Riadsala/foraging_scarcity}{GitHub repository}. Each trial consisted of 40 items on a grey background. These items were organised in a grid but their placement was slightly jittered to create some irregularity, following previous studies \citep{kristjansson2014common, clarke2022stable}. Each trial included 20 targets and 20 distractors, and their position was randomised. In the feature task, blue and yellow circles were the distractors whilst green ('lime' was used as the green colour in all cases) and red circles were the targets. In the conjunction task, red circles and green squares were the distractors whilst red squares and green circles were the targets. Circle targets and distractors had a radius of 25 pixels (approximately 1 unit of visual angle), and square targets and distractors had a width and height of 25 pixels (as before, approximately 1 unit of visual angle). Examples of the stimuli can be seen in Figure 1.
+
+\subsection{Procedure}
+
+Participants completed the experiment in a quiet room with normal illumination. The experiment was conducted on a Dell Optiplex 7050 computer, with screen size 1920 x 1080 pixels (though the targets were placed within a grid of 1000 x 1000 pixels in the centre of the screen). Participants sat with their head stabilised using a chin rest at a distance of 60cm from the screen. Participants began each block by reading instructions telling them which items were the targets for that block. In each trial, they 'collected' items by clicking on them using a computer mouse. Once a target item was clicked, it immediately disappeared from the screen. If a participant clicked on a distractor, the trial immediately ended and it was restarted (up to a maximum of 5 attempts per trial): this was done to follow the procedure used in previous studies \citep{kristjansson2014common, clarke2022stable}. Trials ended when the participant had clicked on all targets, again following previous work \citep{kristjansson2014common, clarke2022stable}. Participants had to complete five valid trials with no mistakes in each condition. 
+
+Participants had their eyes tracked for the duration of the experiment using an SR EyeLink 1000 Plus eyetracker. This data is available for future exploratory analysis, but is not used in the current registered report.
+
+\begin{figure}[!h]
+\centering
+\includegraphics[width=\textwidth]{Example Stimuli.pdf}
+\caption{Example stimuli. Top row is stimuli for the feature search, bottom row is for the conjunction search. For feature, from left to right; is scarce green target condition, equal target condition, and scarce red target condition. For conjunction search, from left to right; scarce green circle condition, equal targets condition, and scarce red squares condition.}
+\label{fig_exstim}
+\end{figure}
+
+\section{Data Analysis}
+
+We used the four-parameter generative foraging model proposed by \citep{clarke2022foraging} to analyse the data. The model allows for target-by-target prediction of behaviour during visual foraging \citep{clarke2022bayesian} and a benefit of this approach is that it enables us to parameterise the factors that may affect the forager's choice of targets, such as proximity or a preference for foraging in 'runs' of a single target type \citep{kristjansson2014common}. The model also contains a `class bias' parameter which detects a preference for one target type over another type. If item scarcity does make some targets more attractive than others, we should be able to see a difference in this parameter between the \textit{scarce} and \textit{even} conditions. 
+
+We have previously shown that the model can detect differences in this parameter between value and no-value conditions of previously collected data \citep{clarke2022foraging, tagu2022selection}, and provide justification below (in Section \ref{sec:samplesize}) that we believe that we can detect small differences in target preference in our experimental design.
+
+\subsection{A four-parameter model of visual foraging}
+
+\label{sec_modeloverview}
+We model foraging as a process of weighted sampling without replacement. We assume that target items belong to one of two classes ($A$ and $B$) and details of any distractor items are neglected. In the experiment presented in this manuscript, $A$ and $B$ are red and green circles respectively for the feature task, then red squares and green circles for the conjunction task.   
+
+The probabilities of each remaining targets item are updated after each selection depending on four parameters defined as follows:
+
+\begin{itemize}
+  \item $b_A = \text{logit}(p_A)$: the logarithm of the odds of $p_A$. $p_A$ can be thought of as the probability of selecting an item of class $A$ compared to class $B$, all else being equal. Similarly, $b_B = \text{logit}(p_B)$ is the logarithm of the odds of relative attractiveness of $B$ over $A$. This attractiveness could be due to properties such as low-level salience or reward and value. A value of $b_A = 0 (p_A = 0.5)$ corresponds to a situation in which items from both classes are equally likely to be selected next. The further away this parameter is from zero, the stronger the preference for $A$ over $B$ is. In this experiment, we predicted that $b_A$ would be more strongly positive in the case where $A$ is the scarce target category, and would be more strongly negative when $B$ is the scarce target category.
+  
+  \item $b_S = \text{logit}(p_S)$: the logarithm of the odds of $p_S$, the preference for selecting an item of the same class as the previously selected item. High values of this parameter lead to 'sticky' behaviour with long runs of the same item class, while low values lead to switching behaviour in which participants alternate which item class they select. $b_S\approx0$ indicates that the class of the previously selected item has little effect on which item will be selected next.\
+  
+  \item $\sigma_{\rho}$: this parameter reflects the importance of proximity when selecting the next item. The larger $\sigma_{\rho}$ is, the more heavily weighted selection is to items that are close to the previously selected item. 
+
+  \item $\sigma_d$: measures relative direction. The larger this parameter is, the larger the preference there is for selecting items that are 'ahead' of the previously selected item. As this parameter becomes more negative, this behaviour flips and there is a preference for selecting items 'behind'.
+\end{itemize}
+
+These four parameters are fit to the data for each experimental condition: $b_A(k), b_S(k), \sigma_{\rho}(k)$ and $\sigma_d(k)$ where $k$ is one of $K$ experimental conditions. Further details of the model implementation can be found in the Supplementary Materials.
+
+\subsection{Implementation Details}
+\label{sec_implementation}
+
+The model fitting procedure was the same as \cite{clarke2022foraging} with three changes. Firstly, while a multi-level framework was used to account for the differences between participants, we did not model the correlations between random effects. This is because we previously found relatively weak correlations when modelling similar experiments in \cite{clarke2022foraging}, and this modification  significantly reduces computational time. Secondly, we adjusted the manner in which relative distances are calculated in order to account for the fact that the stimulus display is not necessarily square (although we used a square display in this experiment). \footnote{The original Stage 1 report also included the statement: 'Finally, we have incorporated the initial selection bias described in \cite{clarke2022bayesian} into the full model: this allows us to take into account a person's preference for starting each trial in a particular region of the screen (e.g. the centre, or the top left hand corner).' This turned out to be more difficult to model than anticipated, and was not critical for testing our hypotheses, so we decided not to include this feature in the models presented in the paper, but we leave this statement here for full transparency.}
+
+The following weakly informative priors were used.\footnote{Note that we made some minor adjustments in the SD values for these priors compared to the Stage 1 registered report in order to facilitate model fitting.}
+
+\begin{equation}
+    b_A, b_B \sim \mathcal{N}(0, 1)
+\end{equation}  
+\begin{equation}
+    b_S \sim \mathcal{N}(0, 1)
+\end{equation}
+\begin{equation}
+    \sigma_p \sim \mathcal{N}(15, 5)
+\end{equation}
+\begin{equation}
+    \sigma_{\rho} \sim \mathcal{N}(0, 1)
+\end{equation}
+
+Each prior was a normal distribution with a specified mean and standard deviation, and the values chosen were based on applying the model to data from previous related experiments \citep{clarke2022foraging}.   Importantly, we used the same set of priors for both the \textit{equal} and \textit{scarce} experimental conditions. 
+
+Models were fit using R \citep{Rcoreteam} and Stan \citep{rstan} (full details of the software environment are included in supplementary materials). The model fit was checked to ensure that $\hat{r} <1.01$ and the traceplots were visually inspected to check convergence.  
+
+Applying sophisticated modelling to new data can sometimes lead to unexpected problems. Such issues can sometimes be easily solved by using a different set of priors, or some other change to how the model is implemented. We have aimed to transparently document all changes from our original plan by adding footnotes into the main manuscript where relevant.
+
+Analysis materials are available on our  \href{https://github.com/Riadsala/foraging_scarcity}{GitHub repository}.
+
+\subsection{Data Exclusion}
+
+The following criteria were used for data inclusion/exclusion:
+
+\begin{itemize}
+    \item Data from terminated trials (due to selecting a distractor) were not  analysed.
+    \item Any trial containing an inter-target selection time of more than five seconds was removed.
+\end{itemize}
+
+We only analysed data from participants who had at least five trials of data for each condition after the above criteria were applied. We collected enough data to ensure we had 36 participants for the final analyses after data exclusion criteria were applied.
+
+\section{Hypotheses}
+
+\subsection{The Effect of Scarcity}
+Our main hypothesis [H1] was that participants will show a preference for selecting scarce targets. As preferences to select one target class over another may also differ due to visual salience, we took $b_A($\textit{equal}$)$ as our baseline condition and compared this to $b_A($\textit{scarce$_A$}$)$ and $b_A($\textit{scarce$_B$}$)$.
+
+We tested this hypothesis by examining the posterior distributions (given the data $D$) for the difference between these parameters: if both
+
+\begin{equation}
+     Pr(b_A(\textit{scarce}_A) - b_A(\textit{equal}) > 0|D) > 0.99
+\end{equation}
+\begin{equation}
+     Pr(b_A(\textit{equal}) - b_A(\textit{scarce}_B) > 0|D) > 0.99
+\end{equation}
+
+are true, marginalising over the \textit{feature} and \textit{conjunction} conditions, then we can conclude in favour of our hypothesis. We also used the same procedure to measure the effect of scarcity in the \textit{feature} and \textit{conjunction} conditions separately, although we had no specific hypothesis about the size or direction of potential effects. 
+
+In Stage 1, we indicated that if we did not find strong evidence in favour of our hypothesis, we would carry out exploratory analysis to a) investigate if one of the counterbalanced conditions showed a scarcity effect but not the other and/or b) investigate the extent to which it holds in a subset of participants. If there was a range of scarcity effects across different participants, we said we would explore whether these were correlated with the other parameters in our model. 
+
+We also said that in the unlikely event that we were unable to achieve a good model fit using the full four parameter model, we would fit a simpler 'sampling without replacement' model which ignores the spatial components of the model \citep{clarke2022foraging}. However, this was not necessary.
+
+\subsection{Secondary Hypotheses around model fit}
+
+We also tested a number of secondary hypotheses to test the extent to which the results of \citep{clarke2022foraging} generalise to a novel set of data:
+
+\begin{enumerate}
+    \item [H2]: If our \textit{feature} vs. \textit{conjunction} manipulation showed a similar effect as that seen in \citep{kristjansson2014common} and \citep{clarke2022stable}, we expected to see a larger value for $b_S$ in the \textit{conjunction} condition compared to the \textit{feature} condition. This was investigated by examining the posterior distribution for a difference between feature and conjunction conditions using the same procedure as above.
+    \item [H3]: We predicted there will be a large ($\sigma_{\rho}>10$) proximity bias in both conditions. Previous work has shown values of around $\sigma_{\rho}=20$ are typical. We expected the effect of proximity to be larger in the \textit{feature} condition, based on findings from \citep{kristjansson2014common} and \citep{clarke2022stable} (as analysed in \citep{clarke2022foraging}). This was investigated in a similar manner to [H2].
+    \item [H4]: We predicted we will see a negative effect of relative direction, although we predicted this effect would likely be weak (around -1) with considerable variation between individuals. In order to test this hypothesis, we calculated whether 99\% of the posterior distribution for the relative direction parameter was negative.
+\end{enumerate}
+
+\subsection{Planned exploratory analyses}
+
+A new version of our model was released by the time we collected our data, so we also present results using this (in supplementary material). This model does use include the full random effects correlation structure. An LKJ prior was used for the random effect structure \citep{LEWANDOWSKI20091989}. \footnote{Please note that in Stage 1, this sentence was mistakenly included in Section 3.2, but in the main model presented in this paper, we do not measure the correlation between random effects, and so this prior is not relevant in that case.}
+
+We also present (in supplementary material) the standard aggregate descriptive statistics used in foraging research (maximum run length and total number of runs). We do not use these in our analyses, but they provide a useful reference point for comparisons with previous research in the field.
+
+\subsection{Justification of Sample Size}
+\label{sec:samplesize}
+
+We used a simulation approach to justify our sample size. In short, we used our generative model of visual foraging to simulate data for a given set of parameters. Based on the results from \citep{clarke2022foraging} we set $b_S=1$ (i.e., $p_S=0.73$) for the feature condition with $\sigma_{\rho}=15$ and $\sigma_d=-1$. For the conjunction condition, we set $b_S=2$, $\sigma_{\rho}=10$ and  $\sigma_d=-1$. For the \textit{equal} condition (in both the feature and conjunction cases), we made both target types equally likely ($b_A=0$), while in the \textit{scarce} condition (again, for both feature and conjunction) we assumed a small preference for the less common target type of $p_A=0.6$ (i.e., $b_A=0.405$). This effect was chosen so that it was somewhat smaller than the effect of explicit value found in data from \citep{tagu2022selection} of 0.75. It is also similar to the target preference seen in \citep{clarke2022stable}: in this experiment, there was no specific experimental manipulation or hypothesis regarding a bias for one target or another, so we would expect this to be a reasonable minimal effect size of interest.
+
+We simulated 36 participants, each completing five trials per condition (this was a highly conservative estimate: in most cases, we expected that each participant will complete ten trials per condition). While five trials may seem a relatively small amount, we have shown previously that good parameter estimates can be recovered with as little as one trial of data in a similar task \citep{clarke2022foraging}. The parameters for the random effect structure were again based on results from \citep{clarke2022foraging} (see Supplementary Materials for full details and code). We then fit the four-parameter foraging model to these simulated data, the results of which can be seen in Figure \ref{fig:sensi_sim}. We can clearly detect the bias towards the less common target type in the scarce conditions. We can also see clear differences between the feature and conjunction conditions in stick probability and proximity tuning, demonstrating that we should have been able to detect these effects if they were present in the data.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{figs/sensiv_sim.pdf}
+    \caption{Posterior probabilities after fitting the model to the simulated data. The yellow-shaded background areas represent the prior distribution ($53\%$ and $97\%$ HPDIs). Red lines indicate the parameter values used in the simulation.}
+    \label{fig:sensi_sim}
+\end{figure}
+
+\subsection{Pilot Results}
+
+Pilot data was taken from 3 female participants, each performing 5 trials in all 6 conditions. When applying \citep{clarke2022foraging}'s model, we see in the $p_S$ parameter a replication of \citep{kristjansson2014common}'s findings; participants tended to stick to one target type more in the conjunction tasks compared to the feature tasks. In the $p_A$ parameter, the is a slight preference for scarce targets in the conjunction task (see Figure \ref{fig:pilot_data}). We can also see a proximity bias of approximately the expected size, although no real suggestion of a directional bias (although previously we have found this is a rather small effect). Overall, the pilot data showed that in a small number of participants, the effects seen were generally in line with our hypotheses.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{figs/pilot_data.pdf}
+    \caption{Posterior probabilities after fitting the model to the pilot data. The orange shaded background areas represent the prior distribution ($53\%$ and $97\%$ HPDIs). (\textit{top left}) Posterior distribution for $p_A$. (\textit{top right}) Posterior distributions for the difference between the \textit{scare} and \textit{equal} conditions. (\textit{bottom}) Posterior distributions for the other model parameters.}
+    \label{fig:pilot_data}
+\end{figure}
+
+\section{Results}
+
+\subsection{Data Preparation and Demographics}
+
+We collected data from 43 participants, but following removal of participants where there were technical faults or the experiment was not completed (see supplementary materials for full details) we used data from 36 participants in our final analyses. We applied the data exclusion criteria outlined above, and removed 55 trials which contained an inter-target selection time of more than 5s, but all participants continued to have at least five trials per condition. Participants had a mean age of 23.9 (SD = 4.2) and 26 of our participants identified as female.
+
+All data and digital materials/code can be found in our \href{https://github.com/Riadsala/foraging_scarcity}{GitHub repository}. Note that each participant data file contains a date stamp, and we save the experimental parameters (e.g. conditions and blocks run) with each set of participant data, to act as a lab log. The approved Stage 1 protocol is available on \href{https://osf.io/dhjs5/}{OSF}. The experiment was executed and analysed in the manner originally approved: any unforeseen changes in those approved methods and analyses have been noted below.
+
+\subsection{The Effect of Scarcity}
+
+We fit the model as described in Section \ref{sec_implementation}. Model checking procedures are detailed in the supplementary materials, but we assessed the model fit to be good based on standard procedures (e.g. checking traceplots visually for convergence). The posterior density distributions are illustrated in Figure \ref{fig:real_data}. Overall, we can see that many parameters have been estimated by the model to be very similar across the different conditions of the experiment (the posterior distributions overlap in many cases).
+
+We hypothesised that participants will show a preference for scarce targets across both \textit{feature} and \textit{conjunction} conditions. The top left panel of Figure \ref{fig:real_data} shows the posterior distributions for $p_A$ i.e. the relative attractiveness of target A over target B. A posterior distribution shifted to the right of 0.5 indicates that target A was relatively preferred; a posterior distribution shifted towards the left of 0.5 indicates that target A was not preferred, and instead participants preferred target B.
+
+In the \textit{feature} condition, scarcity condition A (where target type A was less common) is slightly shifted to the right, and scarcity condition B (where target type B was less common) is slightly shifted to the left, as predicted. However, these are not very strong shifts. A similar pattern is seen in the \textit{conjunction} condition, although there is a shift even for the AB condition (where the number of each target type was equal). This indicates that that target type A was preferred generally, for a reason other than scarcity.
+
+Despite the slight trends seen in the graph, we did not find evidence for an effect of scarcity according to our pre-registered criteria: we did not find that $99\%$ of the difference between the posterior distributions for the $b_A$ parameter was greater than zero for the two relevant comparisons, instead finding $67\%$ for condition AB subtracted from condition A, and $82\%$ for condition B subtracted from condition AB. 
+
+We also measured the effects of scarcity separately in the \textit{feature} and \textit{conjunction} conditions separately. Again, we did not find evidence for a scarcity effect based on the $99\%$ criterion (see supplementary materials for full details).
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{figs/real_data.pdf}
+    \caption{Posterior probabilities after fitting the model to the real data. The grey shaded background areas represent the prior distribution ($53\%$ and $97\%$ HPDIs). (\textit{top left}) Posterior distribution for $p_A$. (\textit{top right}) Posterior distributions for the stick probability $p_S$. (\textit{bottom left}) Posterior distributions for the proximity tuning parameter $\sigma_{\rho}$. (\textit{bottom right}) Posterior distributions for the direction tuning parameter.}
+    \label{fig:real_data}
+\end{figure}
+
+\subsubsection{Exploratory analyses for scarcity}
+
+Given that we did not find strong evidence in favour of our hypothesis, we carried out exploratory analyses. Firstly, we investigated whether one of the counterbalanced conditions showed a scarcity effect but not the other (some participants completed \textit{feature} conditions first, whereas others completed \textit{conjunction} conditions first \footnote{Note that due to a minor coding error and uneven data exclusion, we did not have exactly equal numbers in each condition: 14 participants completed the feature condition first, and 22 participants completed the conjunction condition first.}). There was no evidence for this suggestion, with neither group showing a scarcity effect (see supplementary material for full details). 
+
+Secondly, we investigated whether there was a subgroup of participants who showed a scarcity effect. From Figure \ref{fig:random_effects}, we can see that participants tended to be fairly similar in their behaviour in the \textit{feature} condition, while there were a wider variety of strategies evident in the \textit{conjunction} condition. Marginalising across both \textit{feature} and \textit{conjunction} conditions, we did not see any individuals with a scarcity bias. However, if we consider just the conjunction condition, participant 6 shows evidence for a scarcity bias, and three other participants (10, 24 and 25) are close to meeting the evidence threshold. However, there is also one person (participant 1) who shows an anti-scarcity bias, being more likely to pick the most common target in each condition. It therefore seems likely that participants pick idiosyncratic strategies to complete the task in the \textit{conjunction} condition: in some cases, this can look like a scarcity bias, but other strategies are also possible.
+
+While there are a range of scarcity effects across different participants, we did not find good evidence that these are correlated with other parameters in our model (see supplementary materials for full details).
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{figs/random_effects.pdf}
+    \caption{The random effects $u_A$ for each participant, for all scarcity and difficulty (feature vs. conjunction) conditions.}
+    \label{fig:random_effects}
+\end{figure}
+
+\subsection{Secondary Hypotheses around model fit}
+
+
+\begin{enumerate}
+    \item [H2]: We found a larger value for $b_S$ in the \textit{conjunction} condition compared to the \textit{feature} condition, as predicted (see Figure \ref{fig:real_data}, top right).
+    \item [H3]: We found a larger proximity bias in the  \textit{feature} condition compared to the conjunction condition, as predicted (see Figure \ref{fig:real_data}, bottom left), supporting H3. In both cases, the proximity bias was relatively large, although our original prediction that ($\sigma_{\rho}>10$) was only true for the \textit{feature} condition.
+    \item [H4]: We did not find that $99\%$ of the posterior distribution for the relative direction parameter was negative (see \ref{fig:real_data}, bottom right). Therefore our data does not support H4, where we predicted we would see a negative effect of relative direction.
+\end{enumerate}
+
+\subsection{Planned exploratory analyses}
+
+In the supplementary material, we present the standard aggregate descriptive statistics used in foraging research (maximum run length and total number of runs). In keeping with previous findings, we see that the \textit{conjunction} conditions have a greater maximum run length and a smaller number of runs compared to the \textit{feature} conditions. The model's random effect parameters for each person for sticking with the same target type correlate well with their total number of switches, confirming that this parameter in our model maps well on to this traditional measure.
+
+We also present results (in the supplementary material) using a more recent version of our foraging model, which is mathematically equivalent to the main version used in this paper, but with a tidier code base. The basic findings remained identical to those presented in Figure \ref{fig:real_data}.
+
+\subsection{Further exploratory analyses}
+
+During the review process, a reviewer suggested that one reason for the lack of scarcity effects is that participants may need time to learn which target is scarcer, and therefore we might only see strong effects in later trials. We tested this by analysing the first half of trials separately from the second half (see supplementary material for full details), but we did not see any difference in the results in the first half vs. the second half, and in both cases, there was no evidence for a scarcity bias. 
+
+\section{Discussion}
+
+In the current study, we tested whether target scarcity affects how people forage. We predicted that participants would implicitly value the scarcer target in a display more highly, as suggested by Brock's Commodity Theory \citep{brock1968implications}. However, our analyses suggested that there was no strong evidence for an effect of scarcity, either for group-level analysis or at the level of individual participants.
+
+These results are perhaps surprising in the context of previous findings \citep{brock1992liberalization, lynn1991scarcity} that have suggested that scarcity effects can be found across a wide variety of contexts. However, it is worth noting that these studies predominantly relate to 'higher-level' reasoning tasks rather than low level perceptual ones: for example, in one study, participants were asked whether they preferred a scarce or available art print \citep{lynn1989scarcity}. Our findings therefore perhaps support the idea that if people do have a preference for scarce objects, this may be a 'cognitive' bias that reflects high-level desirable factors, such as believing that items are scarce because they are popular, rather than a 'low-level' bias where people show stronger sustained attention to less common items \citep{sehnert2014scarcity}. Interestingly, a previous study showed that children and adults care more about variety than scarcity when selecting novel items, but were more likely to select scarce items for themselves when they were in a context with multiple recipients \citep{echelbarger2017value}. This perhaps strengthens the argument that the social context may be key to triggering scarcity effects.
+
+A related, but distinct, idea is that the instructions given to the participants in the experiment may be important. In many previous social psychology studies on scarcity, the participants are explicitly told by the experimenter that one type of target is scarce, and another is more common, as in the example of the art print given above \citep{lynn1989scarcity}. This is distinct from the current experiment, where participants are not told which stimulus is scarcer. However, prevalence studies in visual search have shown that these different scenarios may have different effects on search behaviour, with top-down instructions potentially altering low-level attentional biases \citep{horowitz2017prevalence}.  This could suggest that while the scarcity effects may need a 'top-down' input that was not present in our experiment, they could still act via 'low level' biases. An interesting avenue for future exploration could be to run an experiment where participants are specifically instructed that certain targets are more prevalent than others, and to see if this alters behaviour. 
+
+A final explanation is that perhaps our participants did find the scarcer targets more rewarding, but there were other factors in the experimental design that changed the `selection balance', meaning that the participant behaviour on our task was mostly impacted by other, stronger factors \citep{tagu2022selection}. Previous research using more cognitive tasks have found effects of target prevalence: in the most directly comparable study, where all targets had equal value, the effect was in the opposite of our prediction, in that participants were more likely to choose the more common targets \citep{wolfe2018hybrid}. We did not find any evidence for this type of 'anti-scarcity' bias in our study either. We think this may reflect some interesting methodological differences that perhaps altered the `selection balance`. Firstly, \cite{wolfe2018hybrid} used a design where participants were able to move on from a 'patch' at any time of their choosing, rather than the exhaustive search that our participants were required to complete. They also used four targets in their study, compared to our two, and targets made up a smaller proportion of the display (around $20-30\%$) than in our experiment. Finally, each target collected the participant points, and therefore participants aimed to collect as many points as possible over the experiment. It therefore seems likely that a sensible strategy for participants to maximise their points in their experiment would be to search for the most numerous targets, as these were still relatively rare and difficult to find in the display, and then move on to the next screen rather than spending a lot of time trying to find even rarer scarce targets. In our study, participants gained no explicit benefit from finding one type of target before the other, and our results suggest that there was no implicit benefit to them prioritising either the more or less frequent target type.
+
+Despite finding no evidence for scarcity biases, we did see that participants had an overall preference for target type A in the \textit{conjunction} condition: all three scarcity conditions showed a positively skewed class weight distribution. This was not seen in the \textit{feature} condition, where in the AB condition, people showed a similar preference for the two target types. For the \textit{conjunction} condition, the bias for target type A (red squares) seems unlikely to relate to differences in salience of the colours chosen: the same colours (red and green) were used in the \textit{feature} condition, and did not seem to lead to bias. We therefore speculate that this effect may reflect a difference in shape salience, perhaps because circles were used as targets in all trials, so the square stimulus was slightly more novel and salient overall. Another possible explanation could be that the rotation of the targets matters: the square targets are more `unique' compared to the circle targets, which all continue to have the same orientation when rotated, which may make the squares more salient. Interestingly, previous work using the same stimuli also shows a similar bias when analysed using our model e.g. the datasets in \cite{clarke2022stable} and \cite{kristjansson2014common}, as re-analysed in \cite{clarke2022foraging}. The design of our experiment means that this 'baseline' preference is unlikely to matter for understanding the effects of scarcity, but it is worth noting that these types of underlying saliency preferences appear to be stable and repeatable across individuals and experiments, and therefore it may be interesting in future work to try to understand more fully why they occur.
+
+A secondary aim of this experiment was to test the generalisability of the results from \cite{clarke2022foraging}. To date, we have only tested our modelling framework on secondary datasets, so we wanted to see to what extent the previous findings replicate to a novel, pre-registered set of data. In the main experiment, the findings were very similar to previous work: we find that people are more likely to stick with the same target type in the \textit{conjunction} condition compared to the \textit{feature} condition, as has been found in \citep{kristjansson2014common, clarke2022stable} and many other foraging studies. We also find the values of $b_S$ our model converged on for this set of experimental data were very similar to those found in \citep{clarke2022foraging}. Similarly, we found that proximity was an important parameter in the model, and the effect was larger for the \textit{feature} condition, as predicted. However, the absolute values for the effect of proximity were a little smaller than we originally predicted, particularly for the \textit{conjunction} condition. This may be due to slight model adjustments compared to our original paper \citep{clarke2022foraging}, particularly in the way that relative distance is calculated, or may  reflect methodological differences. We would recommend that inferences about proximity using the model are based on differences between conditions within an experiment, as these seem to be replicable.
+
+We predicted that we would see a negative effect of relative direction, with participants being slightly more likely to 'track back' on themselves to pick up targets behind the last selected one than to continue on in a straight line. We made this prediction because we found this effect in our re-analysis of \citep{clarke2022stable} in \cite{clarke2022foraging}. However, in the current dataset, we found no evidence for any type of direction bias, with the posterior distributions being centred on zero. One possible difference with the current experiment was that the number of targets was smaller than used in previous experiments (20 vs. 40), which may make it harder to detect differences in directional strategy. Future modelling work could carry out sensitivity analyses to investigate this further.
+
+\section{Conclusion}
+
+Overall, we find no evidence that target scarcity affects participant's behaviour in a foraging task, challenging Brock's Commodity Theory \citep{brock1968implications} that suggests that participants should implicitly value scarce targets more highly. However, we are able to replicate many of the results from \citep{clarke2022foraging}, suggesting that the modelling findings from that study broadly generalise to a new set of data.
+
+We would argue that our modelling approach is a powerful method to develop our understanding of the cognitive processes that underlie human foraging behaviour. Given that many visual search tasks involve repeated sampling of the environment, even if only one final correct target is present, this modelling approach may also generalise fruitfully to a wider range of search behaviours. The modelling framework is also flexible, meaning that other relevant cognitive parameters can be easily included (e.g. memory), again broadening the scope of the questions that could be answered using this approach.
+
+
+\raggedright
+\section*{Acknowledgments}
+
+We thank Nikita Chandu and Simone O'Connor for their assistance collecting data for this study. This research was supported by the Economic and Social Research Council (ESRC, ES/S016120/1). 
+
+%%%%%%%%%% Insert bibliography here %%%%%%%%%%%%%%
+
+\bibliography{bibliography.bib}
+
+\end{document}

@@ -905,3 +905,197 @@ post <- extract_post(fit, d)
 plot_model_fixed(post)
 
 ```
+
+## Reviewer question: effect of learning
+
+In response to a reviewer question, the analysis below asks: is it possible that participants need time to learn which target is scarcer? We split the dataset into two and separately analyse the first five and last five trials for each condition and participant. However, we find no evidence of a stronger scarcity bias in later trials of the experiment.
+
+### Fitting the models
+
+```{r}
+
+# first half
+d_found_firsthalf <- d_found %>%
+  filter(trial_p < 6)  %>%
+  group_by(trial) %>%
+  mutate(trial = cur_group_id()) %>%
+  ungroup()
+
+d_stim_firsthalf <- d_stim %>%
+  filter(trial_p < 6) %>%
+  group_by(trial) %>%
+  mutate(trial = cur_group_id()) %>%
+  ungroup()
+
+```
+
+```{r, eval = FALSE}
+
+d_list_firsthalf <- prep_data_for_stan(d_found_firsthalf, d_stim_firsthalf, c("spatial", "item_class")) 
+
+# most priors should be the same for different 1.x model versions
+d_list_firsthalf <- add_priors_to_d_list(d_list_firsthalf)
+
+mod <- cmdstan_model("../models/multi_level/foraging_model1.stan")
+
+m_firsthalf <- mod$sample(data = d_list_firsthalf, chains = 4, parallel_chains = 4)
+m_firsthalf$save_object(paste0("../output/", exptname, "/foraging_real_firsthalf.RDS"))
+
+```
+
+```{r}
+
+# second half
+d_found_secondhalf <- d_found %>%
+  filter(trial_p > 5)  %>%
+  group_by(trial) %>%
+  mutate(trial = cur_group_id()) %>%
+  ungroup()
+
+d_stim_secondhalf <- d_stim %>%
+  filter(trial_p > 5) %>%
+  group_by(trial) %>%
+  mutate(trial = cur_group_id()) %>%
+  ungroup()
+
+```
+
+```{r, eval = FALSE}
+
+d_list_secondhalf <- prep_data_for_stan(d_found_secondhalf, d_stim_secondhalf, c("spatial", "item_class")) 
+
+# most priors should be the same for different 1.x model versions
+d_list_secondhalf <- add_priors_to_d_list(d_list_secondhalf)
+
+mod <- cmdstan_model("../models/multi_level/foraging_model1.stan")
+
+m_secondhalf <- mod$sample(data = d_list_secondhalf, chains = 4, parallel_chains = 4)
+m_secondhalf$save_object(paste0("../output/", exptname, "/foraging_real_secondhalf.RDS"))
+
+```
+
+### The effect of scarcity in the first half of trials
+
+
+```{r}
+
+source("../functions/plot_model.R")
+source("../functions/post_functions.R")
+
+```
+
+```{r}
+
+m_firsthalf <- readRDS(paste0("../output/", exptname, "/foraging_real_firsthalf.RDS"))
+
+cl <- unique(d_found_firsthalf$condition)
+
+post_firsthalf <- extract_post(m_firsthalf, d_found_firsthalf, cl)
+
+post_firsthalf_labelled <- post_firsthalf$fixed %>%
+  mutate(
+    difficulty = case_match(
+      condition,
+      "1" ~ "conjunction",
+      "2" ~ "conjunction",
+      "3" ~ "conjunction",
+      "4" ~ "feature",
+      "5" ~ "feature",
+      "6" ~ "feature"
+    ),
+    scarcity = case_match(
+      condition, 
+      "1" ~ "A",
+      "2" ~ "AB",
+      "3" ~ "B",
+      "4" ~ "A",
+      "5" ~ "AB",
+      "6" ~ "B"
+    )
+  )
+
+```
+
+```{r}
+
+# conditions labelled A are where A is scarce
+condA <- post_firsthalf_labelled %>%
+  filter(scarcity == "A")
+
+# conditions labelled AB are equal
+condequal <- post_firsthalf_labelled %>%
+  filter(scarcity == "AB")
+
+# conditions labelled B are where B is scarce
+condB <- post_firsthalf_labelled %>%
+  filter(scarcity == "B")
+
+sum(condA$bA - condequal$bA > 0) / nrow(condequal)
+sum(condequal$bA - condB$bA > 0) / nrow(condequal)
+
+```
+
+```{r, message = FALSE, warning = FALSE}
+
+plot_model_fixed(post_firsthalf, m_firsthalf, d_found_firsthalf, cl)  
+
+```
+
+### The effect of scarcity in the second half of trials
+
+```{r}
+
+m_secondhalf <- readRDS(paste0("../output/", exptname, "/foraging_real_secondhalf.RDS"))
+
+cl <- unique(d_found_secondhalf$condition)
+
+post_secondhalf <- extract_post(m_secondhalf, d_found_secondhalf, cl)
+
+post_secondhalf_labelled <- post_secondhalf$fixed %>%
+  mutate(
+    difficulty = case_match(
+      condition,
+      "1" ~ "conjunction",
+      "2" ~ "conjunction",
+      "3" ~ "conjunction",
+      "4" ~ "feature",
+      "5" ~ "feature",
+      "6" ~ "feature"
+    ),
+    scarcity = case_match(
+      condition, 
+      "1" ~ "A",
+      "2" ~ "AB",
+      "3" ~ "B",
+      "4" ~ "A",
+      "5" ~ "AB",
+      "6" ~ "B"
+    )
+  )
+
+```
+
+```{r}
+
+# conditions labelled A are where A is scarce
+condA <- post_secondhalf_labelled %>%
+  filter(scarcity == "A")
+
+# conditions labelled AB are equal
+condequal <- post_secondhalf_labelled %>%
+  filter(scarcity == "AB")
+
+# conditions labelled B are where B is scarce
+condB <- post_secondhalf_labelled %>%
+  filter(scarcity == "B")
+
+sum(condA$bA - condequal$bA > 0) / nrow(condequal)
+sum(condequal$bA - condB$bA > 0) / nrow(condequal)
+
+```
+
+```{r, message = FALSE, warning = FALSE}
+
+plot_model_fixed(post_secondhalf, m_secondhalf, d_found_secondhalf, cl)  
+
+```
