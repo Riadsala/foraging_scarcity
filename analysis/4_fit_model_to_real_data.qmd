@@ -271,6 +271,7 @@ post_labelled <- post$fixed %>%
 plot_model_fixed(post, m, d_found, cl) 
 
 ggsave(ggsave("../plots/real_data.pdf", width = 8, height = 4))
+ggsave("../plots/real_data.png", width = 8, height = 4, dpi = 300)
 
 ```
 
@@ -573,6 +574,7 @@ Our other planned exploratory analysis involves assessing the extent to which in
 plot_model_random(post)
 
 ggsave(ggsave("../plots/random_effects.pdf", width = 8, height = 8))
+ggsave("../plots/random_effects.png", width = 8, height = 8, dpi = 300)
 
 ```
 
@@ -975,7 +977,6 @@ m_secondhalf$save_object(paste0("../output/", exptname, "/foraging_real_secondha
 ```
 
 ### The effect of scarcity in the first half of trials
-
 
 ```{r}
 

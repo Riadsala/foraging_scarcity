@@ -201,7 +201,7 @@ plot_model_fixed(post,m, d_found, cl,
 
 
 ggsave("../plots/sensiv_sim.pdf", width = 8, height = 6)
-ggsave("../plots/sensiv_sim.png", width = 8, height = 6)
+ggsave("../plots/sensiv_sim.png", width = 8, height = 6, dpi = 300)
 ```
 
 We can then compute the posterior probability of a difference between the different conditions. For H1, we can see that the model can detect the predicted $b_A$ difference between the equal and scarce conditions: the HDCI does not contain zero.

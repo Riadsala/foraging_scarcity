@@ -310,7 +310,7 @@ plt_post_prior <- function(post, prior, var, xtitle, gt, pilot = NULL) {
   prior_var = paste("prior", var, sep = "_")
   
   # real data
-  if (var == "p_floor" && is.null(pilot))
+  if (var == "p_floor" && is.null(pilot) && is.null(gt))
   {
     post %>% 
       mutate(
@@ -342,7 +342,8 @@ plt_post_prior <- function(post, prior, var, xtitle, gt, pilot = NULL) {
       facet_wrap(~difficulty) +
       coord_cartesian(xlim = c(0, 0.1)) -> plt
     
-  } else if (var != "p_floor" && is.null(pilot)){
+  } else if (var != "p_floor" && is.null(pilot) && is.null(gt)){
+    
     post %>% 
       mutate(
         difficulty = case_match(
@@ -369,8 +370,18 @@ plt_post_prior <- function(post, prior, var, xtitle, gt, pilot = NULL) {
                 aes(ymin = -Inf, ymax = Inf, xmin = .lower, xmax = .upper), 
                 fill = "grey", alpha = 0.25) +  
       geom_density(aes(get(var), fill = scarcity), alpha = 0.5) +
+      scale_x_continuous(xtitle) +
+      facet_wrap(~difficulty) -> plt
+    
+  } else if (var != "p_floor" && is.null(pilot) && (!is.null(gt))) { # for sim data
+    post %>% 
+      ggplot() + 
+      geom_rect(data = prior %>% 
+                  median_hdci(get(prior_var), .width = c(0.53, 0.97)),
+                aes(ymin = -Inf, ymax = Inf, xmin = .lower, xmax = .upper), 
+                fill = "orange", alpha = 0.25) +  
+      geom_density(aes(get(var), fill = condition), alpha = 0.5) +
       geom_vline(xintercept = gt, linetype = 1, colour = "red") +
-      facet_wrap(~difficulty) +
       scale_x_continuous(xtitle) -> plt
     
   }
@@ -400,6 +411,8 @@ plt_post_prior <- function(post, prior, var, xtitle, gt, pilot = NULL) {
       scale_x_continuous(xtitle) -> plt
     
   }
+  
+
   
   return(plt)
   
